@@ -7,7 +7,7 @@ registries:
     password: dummy # Required by dependabot
 updates:
   - package-ecosystem: "gradle"
-    directory: ""
+    directory: "/"
     registries:
       - gradle-plugin-portal
     schedule:
