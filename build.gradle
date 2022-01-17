@@ -48,8 +48,8 @@ You may also remove `plugin-publish`, `signing` and `grgit` from the `plugins {}
 version = providers.environmentVariable("RELEASE_OVERRIDE_VERSION").forUseAtConfigurationTime().getOrNull() ?: version
 
 pluginBundle {
-    website = "https://github.com/gradle/gradle-enterprise-build-config-samples/tree/master/common-custom-user-data-gradle-plugin"
-    vcsUrl = "https://github.com/gradle/gradle-enterprise-build-config-samples.git"
+    website = "https://github.com/gradle/common-custom-user-data-gradle-plugin"
+    vcsUrl = "https://github.com/gradle/common-custom-user-data-gradle-plugin.git"
     tags = ["gradle", "gradle enterprise"]
 }
 
