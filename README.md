@@ -1,6 +1,6 @@
-## Common Custom User Data Gradle Plugin [![Plugin Portal](https://img.shields.io/maven-metadata/v?metadataUrl=https://plugins.gradle.org/m2/com/gradle/common-custom-user-data-gradle-plugin/maven-metadata.xml&label=Plugin%20Portal)](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin) [![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.gradle.org/scans)
+# Common Custom User Data Gradle Plugin [![Plugin Portal](https://img.shields.io/maven-metadata/v?metadataUrl=https://plugins.gradle.org/m2/com/gradle/common-custom-user-data-gradle-plugin/maven-metadata.xml&label=Plugin%20Portal)](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin) [![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.gradle.org/scans)
 
-### Overview
+## Overview
 
 The Common Custom User Data Gradle Plugin for Gradle Enterprise enhances published build scans
 by adding a set of tags, links and custom values that have proven to be useful for many projects building with Gradle Enterprise.
@@ -9,7 +9,7 @@ You can leverage this plugin for your project in one of two ways:
 1. Apply the published plugin directly in your build and immediately benefit from enhanced build scans
 2. Copy this repository and develop a customized version of the plugin to standardize Gradle Enterprise usage across multiple projects
 
-#### Captured data
+## Captured data
 
 The additional tags, links and custom values captured by this plugin include:
 - A tag representing the operating system
@@ -20,7 +20,7 @@ The additional tags, links and custom values captured by this plugin include:
 See [CustomBuildScanEnhancements.java](./src/main/java/com/gradle/CustomBuildScanEnhancements.java) for details on what data is
 captured and under which conditions.
 
-#### Configuration overrides
+## Configuration overrides
 
 This plugin also allows overriding various Gradle Enterprise related settings via system properties and environment variables:
 - Gradle Enterprise general configuration
@@ -54,12 +54,12 @@ to modify the build scripts. For example, to disable the local build cache when 
 |---|gradle.cache.remote.shard|GRADLE_CACHE_REMOTE_SHARD|
 </details>
 
-### Applying the published plugin
+## Applying the published plugin
 
 The Common Custom User Data Gradle Plugin is available in the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin). This plugin
 requires the [Gradle Enterprise Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.enterprise) to also be applied in your build in order to have an effect.
 
-#### Gradle 6.x (or newer)
+### Gradle 6.x (or newer)
 
 The plugin needs to be applied in `settings.gradle`, alongside the `com.gradle.enterprise` plugin:
 
@@ -72,7 +72,7 @@ plugins {
 }
 ```
 
-#### Gradle 5.x
+### Gradle 5.x
 
 The plugin needs to be applied in `build.gradle` of the root project, alongside the `com.gradle.build-scan` plugin:
 
@@ -85,7 +85,7 @@ plugins {
 }
 ```
 
-### Developing a customized version of the plugin
+## Developing a customized version of the plugin
 
 For more flexibility, we recommend creating a copy of this repository so that you may develop a customized version of the plugin and publish it internally for your projects to consume.
 
@@ -100,11 +100,11 @@ Refer to the [Javadoc](https://docs.gradle.com/enterprise/gradle-plugin/api/) fo
 
 See the [Gradle User Manual](https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html#custom-plugin-repositories) for more details on publishing Gradle plugins to an internal repository.
 
-### Changelog
+## Changelog
 
 Refer to the [changelog](https://github.com/gradle/gradle-enterprise-build-config-samples/blob/master/common-custom-user-data-gradle-plugin/CHANGELOG.md) to see detailed changes on the versions.
 
-### License
+## License
 
 The Gradle Enterprise Common Custom User Data Gradle Plugin is open-source software released under the [Apache 2.0 License][apache-license].
 
