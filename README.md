@@ -7,7 +7,7 @@
 
 # Common Custom User Data Gradle Plugin [![Plugin Portal](https://img.shields.io/maven-metadata/v?metadataUrl=https://plugins.gradle.org/m2/com/gradle/common-custom-user-data-gradle-plugin/maven-metadata.xml&label=Plugin%20Portal)](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin) [![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.gradle.org/scans)
 
-The Common Custom User Data Gradle Plugin for Gradle Enterprise enhances published build scans
+The Common Custom User Data Gradle plugin for Gradle Enterprise enhances published build scans
 by adding a set of tags, links and custom values that have proven to be useful for many projects building with Gradle Enterprise.
 
 You can leverage this plugin for your project in one of two ways:
@@ -61,8 +61,11 @@ to modify the build scripts. For example, to disable the local build cache when 
 
 ## Applying the published plugin
 
-The Common Custom User Data Gradle Plugin is available in the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin). This plugin
+The Common Custom User Data Gradle plugin is available in the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin). This plugin
 requires the [Gradle Enterprise Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.enterprise) to also be applied in your build in order to have an effect.
+
+In order for the Common Custom User Gradle plugin to become active, you need to register it in the `settings.gradle` file of your project. The `settings.gradle` file is
+the same file where you have already declared the Gradle Enterprise Gradle plugin. See [here](settings.gradle) for an example.
 
 ### Gradle 6.x (or newer)
 
