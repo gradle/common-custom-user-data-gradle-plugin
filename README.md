@@ -67,32 +67,6 @@ requires the [Gradle Enterprise Gradle plugin](https://plugins.gradle.org/plugin
 In order for the Common Custom User Gradle plugin to become active, you need to register it in the `settings.gradle` file of your project. The `settings.gradle` file is
 the same file where you have already declared the Gradle Enterprise Gradle plugin. See [here](settings.gradle) for an example.
 
-### Gradle 6.x (or newer)
-
-The plugin needs to be applied in `settings.gradle`, alongside the `com.gradle.enterprise` plugin:
-
-```groovy
-plugins {
-    // …
-    id 'com.gradle.enterprise' version '3.8'
-    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.2'
-    // …
-}
-```
-
-### Gradle 5.x
-
-The plugin needs to be applied in `build.gradle` of the root project, alongside the `com.gradle.build-scan` plugin:
-
-```groovy
-plugins {
-    // …
-    id 'com.gradle.build-scan' version '3.8'
-    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.2'
-    // …
-}
-```
-
 ## Developing a customized version of the plugin
 
 For more flexibility, we recommend creating a copy of this repository so that you may develop a customized version of the plugin and publish it internally for your projects to consume.
