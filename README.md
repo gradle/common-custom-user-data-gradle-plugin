@@ -22,6 +22,14 @@ plugin requires the [Gradle Enterprise Gradle plugin](https://plugins.gradle.org
 In order for the Common Custom User Gradle plugin to become active, you need to register it in the `settings.gradle` file of your project. The `settings.gradle` file is the same
 file where you have already declared the Gradle Enterprise Gradle plugin. See [here](settings.gradle) for an example.
 
+### Version compatibility
+
+This table details the version compatibility of the Common Custom User Data Gradle plugin with the Gradle Enterprise Gradle plugin.
+
+| Common Custom User Data Gradle plugin versions | Gradle Enterprise Gradle plugin versions |
+| ---------------------------------------------- | ---------------------------------------- |
+| `1.0+`                                         | `3.0+`                                   |
+
 ## Captured data
 
 The additional tags, links and custom values captured by this plugin include:
