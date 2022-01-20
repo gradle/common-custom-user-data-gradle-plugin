@@ -14,6 +14,14 @@ You can leverage this plugin for your project in one of two ways:
 1. Apply the published plugin directly in your build and immediately benefit from enhanced build scans
 2. Copy this repository and develop a customized version of the plugin to standardize Gradle Enterprise usage across multiple projects
 
+## Applying the published plugin
+
+The Common Custom User Data Gradle plugin is available in the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin). This
+plugin requires the [Gradle Enterprise Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.enterprise) to also be applied in your build in order to have an effect.
+
+In order for the Common Custom User Gradle plugin to become active, you need to register it in the `settings.gradle` file of your project. The `settings.gradle` file is the same
+file where you have already declared the Gradle Enterprise Gradle plugin. See [here](settings.gradle) for an example.
+
 ## Captured data
 
 The additional tags, links and custom values captured by this plugin include:
@@ -58,14 +66,6 @@ to modify the build scripts. For example, to disable the local build cache when 
 |buildCache.remote.setAllowUntrustedServer|gradle.cache.remote.allowUntrustedServer|GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER|
 |---|gradle.cache.remote.shard|GRADLE_CACHE_REMOTE_SHARD|
 </details>
-
-## Applying the published plugin
-
-The Common Custom User Data Gradle plugin is available in the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin). This plugin
-requires the [Gradle Enterprise Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.enterprise) to also be applied in your build in order to have an effect.
-
-In order for the Common Custom User Gradle plugin to become active, you need to register it in the `settings.gradle` file of your project. The `settings.gradle` file is
-the same file where you have already declared the Gradle Enterprise Gradle plugin. See [here](settings.gradle) for an example.
 
 ## Developing a customized version of the plugin
 
