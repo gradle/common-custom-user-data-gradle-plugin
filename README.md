@@ -11,8 +11,8 @@ The Common Custom User Data Gradle plugin for Gradle Enterprise enhances publish
 by adding a set of tags, links and custom values that have proven to be useful for many projects building with Gradle Enterprise.
 
 You can leverage this plugin for your project in one of two ways:
-1. Apply the published plugin directly in your build and immediately benefit from enhanced build scans
-2. Copy this repository and develop a customized version of the plugin to standardize Gradle Enterprise usage across multiple projects
+1. [Apply the published plugin](#applying-the-published-plugin) directly in your build and immediately benefit from enhanced build scans
+2. Copy this repository and [develop a customized version of the plugin](#developing-a-customized-version-of-the-plugin) to standardize Gradle Enterprise usage across multiple projects
 
 ## Applying the published plugin
 
