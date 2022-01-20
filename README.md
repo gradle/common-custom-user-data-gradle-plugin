@@ -20,7 +20,9 @@ The Common Custom User Data Gradle plugin is available in the [Gradle Plugin Por
 plugin requires the [Gradle Enterprise Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.enterprise) to also be applied in your build in order to have an effect.
 
 In order for the Common Custom User Gradle plugin to become active, you need to register it in the `settings.gradle` file of your project. The `settings.gradle` file is the same
-file where you have already declared the Gradle Enterprise Gradle plugin. See [here](settings.gradle) for an example.
+file where you have already declared the Gradle Enterprise Gradle plugin.
+
+See [here](settings.gradle) for an example.
 
 ### Version compatibility
 
