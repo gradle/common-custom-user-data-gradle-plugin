@@ -94,7 +94,7 @@ See the [Gradle User Manual](https://docs.gradle.org/current/userguide/publishin
 
 ## Changelog
 
-Refer to the [changelog](CHANGELOG.md) to see detailed changes on the versions.
+Refer to the [release history](https://github.com/gradle/common-custom-user-data-gradle-plugin/releases) to see detailed changes on the versions.
 
 ## Learn more
 
