@@ -3,7 +3,6 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'com.gradle.plugin-publish' version '0.20.0'
-    id 'org.ajoberstar.grgit' version '4.1.1'
     id 'com.github.breadmoirai.github-release' version '2.2.12'
 }
 
@@ -43,7 +42,7 @@ tasks.withType(ValidatePlugins).configureEach {
 /*
 The rest of the build logic in this file is only required for publishing to the Gradle Plugin Portal.
 When using this project as a template for your own plugin to publish internally, you should delete all code following this comment.
-You may also remove `plugin-publish`, `signing` and `grgit` from the `plugins {}` block above.
+You may also remove `plugin-publish` and `signing` from the `plugins {}` block above.
  */
 pluginBundle {
     website = "https://github.com/gradle/common-custom-user-data-gradle-plugin"
@@ -63,7 +62,7 @@ signing {
 }
 
 githubRelease {
-   token = System.getenv("GRGIT_USER") ?: ''
+   token = System.getenv("CCUD_GIT_TOKEN") ?: ''
    owner = "gradle"
    repo = "common-custom-user-data-gradle-plugin"
    targetCommitish = "main"
@@ -74,11 +73,8 @@ githubRelease {
    body = layout.projectDirectory.file("release/changes.md").asFile.text.trim()
 }
 
-tasks.register('createReleaseTag') {
-    doFirst {
-        grgit.tag.add(name: releaseTag())
-        grgit.push(tags: true)
-    }
+tasks.register('createReleaseTag', CreateGitTag) {
+    tagName = releaseTag()
 }
 
 tasks.named("githubRelease") {
