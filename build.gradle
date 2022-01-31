@@ -3,11 +3,11 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'com.gradle.plugin-publish' version '0.20.0'
-    id "org.ajoberstar.grgit" version "4.1.1"
+    id 'com.github.breadmoirai.github-release' version '2.2.12'
 }
 
 group = 'com.gradle'
-version = '1.6.3-SNAPSHOT'
+version = layout.projectDirectory.file("release/version.txt").asFile.text.trim()
 
 repositories {
     gradlePluginPortal()
@@ -42,11 +42,8 @@ tasks.withType(ValidatePlugins).configureEach {
 /*
 The rest of the build logic in this file is only required for publishing to the Gradle Plugin Portal.
 When using this project as a template for your own plugin to publish internally, you should delete all code following this comment.
-You may also remove `plugin-publish`, `signing` and `grgit` from the `plugins {}` block above.
+You may also remove `plugin-publish` and `signing` from the `plugins {}` block above.
  */
-
-version = providers.environmentVariable("RELEASE_OVERRIDE_VERSION").forUseAtConfigurationTime().getOrNull() ?: version
-
 pluginBundle {
     website = "https://github.com/gradle/common-custom-user-data-gradle-plugin"
     vcsUrl = "https://github.com/gradle/common-custom-user-data-gradle-plugin.git"
@@ -64,9 +61,26 @@ signing {
     sign(configurations.archives)
 }
 
-task tagRelease {
-    doFirst {
-        grgit.tag.add(name: "common-custom-user-data-gradle-plugin-${version}")
-        grgit.push(tags: true)
-    }
+githubRelease {
+   token = System.getenv("CCUD_GIT_TOKEN") ?: ''
+   owner = "gradle"
+   repo = "common-custom-user-data-gradle-plugin"
+   targetCommitish = "main"
+   releaseName = version.toString()
+   tagName = releaseTag()
+   prerelease = false
+   overwrite = false
+   body = layout.projectDirectory.file("release/changes.md").asFile.text.trim()
+}
+
+tasks.register('createReleaseTag', CreateGitTag) {
+    tagName = releaseTag()
+}
+
+tasks.named("githubRelease") {
+    dependsOn("createReleaseTag")
+}
+
+def releaseTag() {
+    return "v${version}"
 }
