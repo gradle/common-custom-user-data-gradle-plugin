@@ -32,6 +32,7 @@ final class Utils {
             // invalidate configuration cache if different Gradle property value is set on the cmd line,
             // but in any case access Gradle property directly since project properties set in a build script or
             // init script are not fetched by ProviderFactory.gradleProperty
+            //noinspection deprecation
             providers.gradleProperty(name).forUseAtConfigurationTime();
         }
         return Optional.ofNullable((String) gradle.getRootProject().findProperty(name));
