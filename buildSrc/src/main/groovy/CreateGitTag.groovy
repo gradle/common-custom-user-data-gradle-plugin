@@ -44,4 +44,5 @@ abstract class CreateGitTag extends DefaultTask {
             execSpec.commandLine(args)
         }
     }
+
 }
