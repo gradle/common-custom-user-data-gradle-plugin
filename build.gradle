@@ -67,25 +67,25 @@ githubRelease {
    owner = "gradle"
    repo = "common-custom-user-data-gradle-plugin"
    targetCommitish = "main"
-   releaseName = releaseName()
-   tagName = releaseTag()
+   releaseName = gitHubReleaseName()
+   tagName = gitReleaseTag()
    prerelease = false
    overwrite = false
    body = layout.projectDirectory.file("release/changes.md").asFile.text.trim()
 }
 
 tasks.register('createReleaseTag', CreateGitTag) {
-    tagName = releaseTag()
+    tagName = gitReleaseTag()
 }
 
 tasks.named("githubRelease") {
     dependsOn("createReleaseTag")
 }
 
-def releaseName() {
+def gitHubReleaseName() {
     return version.toString()
 }
 
-def releaseTag() {
+def gitReleaseTag() {
     return "v${version}"
 }
