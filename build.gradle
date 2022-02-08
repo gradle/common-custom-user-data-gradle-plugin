@@ -44,6 +44,7 @@ The rest of the build logic in this file is only required for publishing to the 
 When using this project as a template for your own plugin to publish internally, you should delete all code following this comment.
 You may also remove `plugin-publish` and `signing` from the `plugins {}` block above.
  */
+
 pluginBundle {
     website = "https://github.com/gradle/common-custom-user-data-gradle-plugin"
     vcsUrl = "https://github.com/gradle/common-custom-user-data-gradle-plugin.git"
@@ -66,21 +67,25 @@ githubRelease {
    owner = "gradle"
    repo = "common-custom-user-data-gradle-plugin"
    targetCommitish = "main"
-   releaseName = version.toString()
-   tagName = releaseTag()
+   releaseName = gitHubReleaseName()
+   tagName = gitReleaseTag()
    prerelease = false
    overwrite = false
    body = layout.projectDirectory.file("release/changes.md").asFile.text.trim()
 }
 
 tasks.register('createReleaseTag', CreateGitTag) {
-    tagName = releaseTag()
+    tagName = gitReleaseTag()
 }
 
 tasks.named("githubRelease") {
     dependsOn("createReleaseTag")
 }
 
-def releaseTag() {
+def gitHubReleaseName() {
+    return version.toString()
+}
+
+def gitReleaseTag() {
     return "v${version}"
 }
