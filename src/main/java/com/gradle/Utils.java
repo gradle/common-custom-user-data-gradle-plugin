@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 final class Utils {
 
     static Optional<String> projectProperty(String name, ProviderFactory providers, Gradle gradle) {
-        if (isGradle65OrNewer()) {
+        if (isGradle65OrNewer() && !isGradle74OrNewer()) {
             // invalidate configuration cache if different Gradle property value is set on the cmd line,
             // but in any case access Gradle property directly since project properties set in a build script or
             // init script are not fetched by ProviderFactory.gradleProperty
@@ -53,7 +53,7 @@ final class Utils {
     }
 
     static Optional<String> envVariable(String name, ProviderFactory providers) {
-        if (isGradle65OrNewer()) {
+        if (isGradle65OrNewer() && !isGradle74OrNewer()) {
             Provider<String> variable = providers.environmentVariable(name).forUseAtConfigurationTime();
             return Optional.ofNullable(variable.getOrNull());
         }
@@ -69,7 +69,7 @@ final class Utils {
     }
 
     static Optional<String> sysProperty(String name, ProviderFactory providers) {
-        if (isGradle65OrNewer()) {
+        if (isGradle65OrNewer() && !isGradle74OrNewer()) {
             Provider<String> property = providers.systemProperty(name).forUseAtConfigurationTime();
             return Optional.ofNullable(property.getOrNull());
         }
@@ -86,7 +86,9 @@ final class Utils {
 
     static Optional<String> firstSysPropertyKeyStartingWith(String keyPrefix, ProviderFactory providers) {
         Optional<String> key = firstKeyStartingWith(keyPrefix, System.getProperties());
-        if (isGradle65OrNewer()) {
+        if (isGradle74OrNewer()) {
+            key.ifPresent(System::getProperty);
+        } else if (isGradle65OrNewer()) {
             key.ifPresent(k -> providers.systemProperty(k).forUseAtConfigurationTime());
         }
         return key;
@@ -153,7 +155,12 @@ final class Utils {
     static InputStream readFile(String name, ProviderFactory providers, Gradle gradle) throws FileNotFoundException {
         if (isGradle65OrNewer()) {
             RegularFile file = gradle.getRootProject().getLayout().getProjectDirectory().file(name);
-            Provider<byte[]> fileContent = providers.fileContents(file).getAsBytes().forUseAtConfigurationTime();
+            Provider<byte[]> fileContent;
+            if (isGradle74OrNewer()) {
+                fileContent = providers.fileContents(file).getAsBytes();
+            } else {
+                fileContent = providers.fileContents(file).getAsBytes().forUseAtConfigurationTime();
+            }
             return new ByteArrayInputStream(fileContent.getOrElse(new byte[0]));
         }
         return new FileInputStream(name);
@@ -215,6 +222,10 @@ final class Utils {
 
     private static boolean isGradle65OrNewer() {
         return GradleVersion.current().compareTo(GradleVersion.version("6.5")) >= 0;
+    }
+
+    private static boolean isGradle74OrNewer() {
+        return GradleVersion.current().compareTo(GradleVersion.version("7.4")) >= 0;
     }
 
     private Utils() {
