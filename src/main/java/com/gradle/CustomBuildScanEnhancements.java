@@ -19,7 +19,6 @@ import static com.gradle.Utils.execAndCheckSuccess;
 import static com.gradle.Utils.execAndGetStdOut;
 import static com.gradle.Utils.isNotEmpty;
 import static com.gradle.Utils.redactUserInfo;
-import static com.gradle.Utils.stripPrefix;
 import static com.gradle.Utils.urlEncode;
 
 /**
@@ -57,8 +56,7 @@ final class CustomBuildScanEnhancements {
             gradle.projectsEvaluated(g -> {
                 Optional<String> invokedFromAndroidStudio = projectProperty("android.injected.invoked.from.ide");
                 Optional<String> androidStudioVersion = projectProperty("android.injected.studio.version");
-                Optional<String> newIdeaVersion = sysProperty("idea.version");
-                Optional<String> oldIdeaVersion = firstSysPropertyKeyStartingWith("idea.version");
+                Optional<String> ideaVersion = sysProperty("idea.version");
                 Optional<String> eclipseVersion = sysProperty("eclipse.buildId");
                 Optional<String> ideaSync = sysProperty("idea.sync.active");
                 if (ideaSync.isPresent()) {
@@ -67,12 +65,9 @@ final class CustomBuildScanEnhancements {
                 if (invokedFromAndroidStudio.isPresent()) {
                     buildScan.tag("Android Studio");
                     androidStudioVersion.ifPresent(v -> buildScan.value("Android Studio version", v));
-                } else if (newIdeaVersion.isPresent()) {
+                } else if (ideaVersion.isPresent()) {
                     buildScan.tag("IntelliJ IDEA");
-                    buildScan.value("IntelliJ IDEA version", newIdeaVersion.get());
-                } else if (oldIdeaVersion.isPresent()) {
-                    buildScan.tag("IntelliJ IDEA");
-                    buildScan.value("IntelliJ IDEA version", stripPrefix("idea.version", oldIdeaVersion.get()));
+                    buildScan.value("IntelliJ IDEA version", ideaVersion.get());
                 } else if (eclipseVersion.isPresent()) {
                     buildScan.tag("Eclipse");
                     buildScan.value("Eclipse version", eclipseVersion.get());
@@ -397,10 +392,6 @@ final class CustomBuildScanEnhancements {
 
     private Optional<String> sysProperty(String name) {
         return Utils.sysProperty(name, providers);
-    }
-
-    private Optional<String> firstSysPropertyKeyStartingWith(String keyPrefix) {
-        return Utils.firstSysPropertyKeyStartingWith(keyPrefix, providers);
     }
 
     private Properties readPropertiesFile(String fileName) {

@@ -84,24 +84,6 @@ final class Utils {
         return sysProperty(name, providers).map(Duration::parse);
     }
 
-    static Optional<String> firstSysPropertyKeyStartingWith(String keyPrefix, ProviderFactory providers) {
-        Optional<String> key = firstKeyStartingWith(keyPrefix, System.getProperties());
-        if (isGradle74OrNewer()) {
-            key.ifPresent(System::getProperty);
-        } else if (isGradle65OrNewer()) {
-            key.ifPresent(k -> providers.systemProperty(k).forUseAtConfigurationTime());
-        }
-        return key;
-    }
-
-    private static Optional<String> firstKeyStartingWith(String keyPrefix, Properties properties) {
-        return properties.keySet().stream()
-            .filter(s -> s instanceof String)
-            .map(s -> (String) s)
-            .filter(s -> s.startsWith(keyPrefix))
-            .findFirst();
-    }
-
     static boolean isNotEmpty(String value) {
         return value != null && !value.isEmpty();
     }
