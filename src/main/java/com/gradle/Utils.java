@@ -155,11 +155,9 @@ final class Utils {
     static InputStream readFile(String name, ProviderFactory providers, Gradle gradle) throws FileNotFoundException {
         if (isGradle65OrNewer()) {
             RegularFile file = gradle.getRootProject().getLayout().getProjectDirectory().file(name);
-            Provider<byte[]> fileContent;
-            if (isGradle74OrNewer()) {
-                fileContent = providers.fileContents(file).getAsBytes();
-            } else {
-                fileContent = providers.fileContents(file).getAsBytes().forUseAtConfigurationTime();
+            Provider<byte[]> fileContent = providers.fileContents(file).getAsBytes();
+            if (!isGradle74OrNewer()) {
+                fileContent = fileContent.forUseAtConfigurationTime();
             }
             return new ByteArrayInputStream(fileContent.getOrElse(new byte[0]));
         }
