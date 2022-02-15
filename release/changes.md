@@ -1,3 +1,3 @@
-- Avoid calling buildFinished after build is finished
-- Gradle 7.4+ Config Cache Support
-- Remove special logic to deal with old versions of IntelliJ
+- [FIX] - Remove special logic to deal with old versions of IntelliJ
+- [FIX] - Avoid calling buildFinished after build is finished
+- [FIX] - Gradle 7.4+ Config Cache Support
