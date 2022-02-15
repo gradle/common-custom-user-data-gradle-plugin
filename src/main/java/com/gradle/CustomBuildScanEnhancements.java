@@ -1,5 +1,6 @@
 package com.gradle;
 
+import com.gradle.scan.plugin.BuildResult;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Action;
 import org.gradle.api.Task;
@@ -7,6 +8,8 @@ import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.testing.Test;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -28,12 +31,15 @@ final class CustomBuildScanEnhancements {
 
     private final BuildScanExtension buildScan;
     private final ProviderFactory providers;
+    private final CustomValueSearchLinker customValueSearchLinker;
     private final Gradle gradle;
 
     CustomBuildScanEnhancements(BuildScanExtension buildScan, ProviderFactory providers, Gradle gradle) {
         this.buildScan = buildScan;
         this.providers = providers;
         this.gradle = gradle;
+        this.customValueSearchLinker = new CustomValueSearchLinker(buildScan);
+        buildScan.buildFinished(customValueSearchLinker);
     }
 
     // Apply all build scan enhancements via custom tags, links, and values
@@ -259,15 +265,17 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureGitMetadata() {
-        buildScan.background(new CaptureGitMetadataAction(providers));
+        buildScan.background(new CaptureGitMetadataAction(providers, customValueSearchLinker));
     }
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanExtension> {
 
         private final ProviderFactory providers;
+        private final CustomValueSearchLinker customValueSearchLinker;
 
-        private CaptureGitMetadataAction(ProviderFactory providers) {
+        private CaptureGitMetadataAction(ProviderFactory providers, CustomValueSearchLinker customValueSearchLinker) {
             this.providers = providers;
+            this.customValueSearchLinker = customValueSearchLinker;
         }
 
         @Override
@@ -289,7 +297,7 @@ final class CustomBuildScanEnhancements {
                 buildScan.value("Git commit id", gitCommitId);
             }
             if (isNotEmpty(gitCommitShortId)) {
-                addCustomValueAndSearchLink(buildScan, "Git commit id", "Git commit id short", gitCommitShortId);
+                addCustomValueAndSearchLink(buildScan, customValueSearchLinker, "Git commit id", "Git commit id short", gitCommitShortId);
             }
             if (isNotEmpty(gitBranchName)) {
                 buildScan.tag(gitBranchName);
@@ -344,22 +352,43 @@ final class CustomBuildScanEnhancements {
     }
 
     private void addCustomValueAndSearchLink(String name, String value) {
-        addCustomValueAndSearchLink(buildScan, name, name, value);
+        addCustomValueAndSearchLink(buildScan, customValueSearchLinker, name, name, value);
     }
 
-    private static void addCustomValueAndSearchLink(BuildScanExtension buildScan, String linkLabel, String name, String value) {
-        // Set custom values immediately, but do not add custom links until 'buildFinished' since
-        // creating customs links requires the server url to be fully configured
+    private static void addCustomValueAndSearchLink(BuildScanExtension buildScan, CustomValueSearchLinker customValueSearchLinker, String linkLabel, String name, String value) {
         buildScan.value(name, value);
-        buildScan.buildFinished(result -> addSearchLinkForCustomValue(buildScan, linkLabel, name, value));
+        customValueSearchLinker.registerLink(linkLabel, name, value);
     }
 
-    private static void addSearchLinkForCustomValue(BuildScanExtension buildScan, String linkLabel, String name, String value) {
-        String server = buildScan.getServer();
-        if (server != null) {
+    /**
+     * Collects custom values that should have a search link, and creates these links in `buildFinished`.
+     * The actual construction of the links must be deferred to ensure the Server URL is set.
+     * This functionality needs to be in a separate static class in order to work with configuration cache.
+     */
+    private static class CustomValueSearchLinker implements Action<BuildResult> {
+        private final Map<String, String> customValueLinks = new LinkedHashMap<>();
+        private final BuildScanExtension buildScan;
+
+        private CustomValueSearchLinker(BuildScanExtension buildScan) {
+            this.buildScan = buildScan;
+        }
+
+        public synchronized void registerLink(String linkLabel, String name, String value) {
             String searchParams = "search.names=" + urlEncode(name) + "&search.values=" + urlEncode(value);
-            String url = appendIfMissing(server, "/") + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
-            buildScan.link(linkLabel + " build scans", url);
+            customValueLinks.put(linkLabel, searchParams);
+        }
+
+        @Override
+        public synchronized void execute(BuildResult buildResult) {
+            String server = buildScan.getServer();
+            if (server == null) {
+                return;
+            }
+
+            customValueLinks.forEach((linkLabel, searchParams) -> {
+                String url = appendIfMissing(server, "/") + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
+                buildScan.link(linkLabel + " build scans", url);
+            });
         }
     }
 
