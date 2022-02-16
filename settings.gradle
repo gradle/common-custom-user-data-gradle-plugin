@@ -4,3 +4,16 @@ plugins {
 }
 
 rootProject.name = 'common-custom-user-data-gradle-plugin'
+
+def isCI = System.getenv('GITHUB_ACTIONS') != null
+
+gradleEnterprise {
+    server = "https://ge.solutions-team.gradle.com"
+    buildScan {
+        captureTaskInputFiles = true
+        uploadInBackground = !isCI
+        publishAlways()
+        publishIfAuthenticated()
+    }
+}
+

@@ -16,5 +16,7 @@ jobs:
           distribution: 'adopt'
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
         with:
           arguments: build -x signArchives -i
