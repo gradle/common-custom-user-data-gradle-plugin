@@ -296,7 +296,7 @@ final class CustomBuildScanEnhancements {
                 buildScan.value("Git commit id", gitCommitId);
             }
             if (isNotEmpty(gitCommitShortId)) {
-                addCustomValueAndSearchLink(buildScan, customValueSearchLinker, "Git commit id", "Git commit id short", gitCommitShortId);
+                customValueSearchLinker.addCustomValueAndSearchLink("Git commit id", "Git commit id short", gitCommitShortId);
             }
             if (isNotEmpty(gitBranchName)) {
                 buildScan.tag(gitBranchName);
@@ -380,6 +380,11 @@ final class CustomBuildScanEnhancements {
             return customValueSearchLinker;
         }
 
+        public void addCustomValueAndSearchLink(String linkLabel, String name, String value) {
+            buildScan.value(name, value);
+            registerLink(linkLabel, name, value);
+        }
+
         public synchronized void registerLink(String linkLabel, String name, String value) {
             String searchParams = "search.names=" + urlEncode(name) + "&search.values=" + urlEncode(value);
             customValueLinks.put(linkLabel, searchParams);
@@ -388,14 +393,12 @@ final class CustomBuildScanEnhancements {
         @Override
         public synchronized void execute(BuildResult buildResult) {
             String server = buildScan.getServer();
-            if (server == null) {
-                return;
+            if (server != null) {
+                customValueLinks.forEach((linkLabel, searchParams) -> {
+                    String url = appendIfMissing(server, "/") + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
+                    buildScan.link(linkLabel + " build scans", url);
+                });
             }
-
-            customValueLinks.forEach((linkLabel, searchParams) -> {
-                String url = appendIfMissing(server, "/") + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
-                buildScan.link(linkLabel + " build scans", url);
-            });
         }
 
     }
