@@ -38,8 +38,7 @@ final class CustomBuildScanEnhancements {
         this.buildScan = buildScan;
         this.providers = providers;
         this.gradle = gradle;
-        this.customValueSearchLinker = new CustomValueSearchLinker(buildScan);
-        buildScan.buildFinished(customValueSearchLinker);
+        this.customValueSearchLinker = CustomValueSearchLinker.registerWith(buildScan);
     }
 
     // Apply all build scan enhancements via custom tags, links, and values
@@ -365,12 +364,20 @@ final class CustomBuildScanEnhancements {
      * The actual construction of the links must be deferred to ensure the Server URL is set.
      * This functionality needs to be in a separate static class in order to work with configuration cache.
      */
-    private static class CustomValueSearchLinker implements Action<BuildResult> {
-        private final Map<String, String> customValueLinks = new LinkedHashMap<>();
+    private static final class CustomValueSearchLinker implements Action<BuildResult> {
+
         private final BuildScanExtension buildScan;
+        private final Map<String, String> customValueLinks;
 
         private CustomValueSearchLinker(BuildScanExtension buildScan) {
             this.buildScan = buildScan;
+            this.customValueLinks = new LinkedHashMap<>();
+        }
+
+        private static CustomValueSearchLinker registerWith(BuildScanExtension buildScan) {
+            CustomValueSearchLinker customValueSearchLinker = new CustomValueSearchLinker(buildScan);
+            buildScan.buildFinished(customValueSearchLinker);
+            return customValueSearchLinker;
         }
 
         public synchronized void registerLink(String linkLabel, String name, String value) {
@@ -390,6 +397,7 @@ final class CustomBuildScanEnhancements {
                 buildScan.link(linkLabel + " build scans", url);
             });
         }
+
     }
 
     private void captureTestParallelization() {
