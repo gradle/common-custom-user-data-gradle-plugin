@@ -94,11 +94,11 @@ final class CustomBuildScanEnhancements {
             envVariable("BUILD_NUMBER").ifPresent(value ->
                 buildScan.value("CI build number", value));
             envVariable("NODE_NAME").ifPresent(value ->
-                addCustomValueAndSearchLink("CI node", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI node", value));
             envVariable("JOB_NAME").ifPresent(value ->
-                addCustomValueAndSearchLink("CI job", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
             envVariable("STAGE_NAME").ifPresent(value ->
-                addCustomValueAndSearchLink("CI stage", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
         }
 
         if (isTeamCity()) {
@@ -120,9 +120,9 @@ final class CustomBuildScanEnhancements {
                 buildNumber.ifPresent(value ->
                     buildScan.value("CI build number", value));
                 buildTypeId.ifPresent(value ->
-                    addCustomValueAndSearchLink("CI build config", value));
+                    customValueSearchLinker.addCustomValueAndSearchLink("CI build config", value));
                 projectProperty("agent.name").ifPresent(value ->
-                    addCustomValueAndSearchLink("CI agent", value));
+                    customValueSearchLinker.addCustomValueAndSearchLink("CI agent", value));
             });
         }
 
@@ -132,9 +132,9 @@ final class CustomBuildScanEnhancements {
             envVariable("CIRCLE_BUILD_NUM").ifPresent(value ->
                 buildScan.value("CI build number", value));
             envVariable("CIRCLE_JOB").ifPresent(value ->
-                addCustomValueAndSearchLink("CI job", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
             envVariable("CIRCLE_WORKFLOW_ID").ifPresent(value ->
-                addCustomValueAndSearchLink("CI workflow", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI workflow", value));
         }
 
         if (isBamboo()) {
@@ -143,11 +143,11 @@ final class CustomBuildScanEnhancements {
             envVariable("bamboo_buildNumber").ifPresent(value ->
                 buildScan.value("CI build number", value));
             envVariable("bamboo_planName").ifPresent(value ->
-                addCustomValueAndSearchLink("CI plan", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI plan", value));
             envVariable("bamboo_buildPlanName").ifPresent(value ->
-                addCustomValueAndSearchLink("CI build plan", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI build plan", value));
             envVariable("bamboo_agentId").ifPresent(value ->
-                addCustomValueAndSearchLink("CI agent", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI agent", value));
         }
 
         if (isGitHubActions()) {
@@ -157,9 +157,9 @@ final class CustomBuildScanEnhancements {
                 buildScan.link("GitHub Actions build", "https://github.com/" + gitHubRepository.get() + "/actions/runs/" + gitHubRunId.get());
             }
             envVariable("GITHUB_WORKFLOW").ifPresent(value ->
-                addCustomValueAndSearchLink("CI workflow", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI workflow", value));
             envVariable("GITHUB_RUN_ID").ifPresent(value ->
-                addCustomValueAndSearchLink("CI run", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI run", value));
         }
 
         if (isGitLab()) {
@@ -167,10 +167,10 @@ final class CustomBuildScanEnhancements {
                 buildScan.link("GitLab build", url));
             envVariable("CI_PIPELINE_URL").ifPresent(url ->
                 buildScan.link("GitLab pipeline", url));
-            envVariable("CI_JOB_NAME").ifPresent(value1 ->
-                addCustomValueAndSearchLink("CI job", value1));
+            envVariable("CI_JOB_NAME").ifPresent(value ->
+                customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
             envVariable("CI_JOB_STAGE").ifPresent(value ->
-                addCustomValueAndSearchLink("CI stage", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
         }
 
         if (isTravis()) {
@@ -179,7 +179,7 @@ final class CustomBuildScanEnhancements {
             envVariable("TRAVIS_BUILD_NUMBER").ifPresent(value ->
                 buildScan.value("CI build number", value));
             envVariable("TRAVIS_JOB_NAME").ifPresent(value ->
-                addCustomValueAndSearchLink("CI job", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
             envVariable("TRAVIS_EVENT_TYPE").ifPresent(buildScan::tag);
         }
 
@@ -207,11 +207,11 @@ final class CustomBuildScanEnhancements {
                 buildScan.link("GoCD", goServerUrl.get());
             }
             pipelineName.ifPresent(value ->
-                addCustomValueAndSearchLink("CI pipeline", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI pipeline", value));
             jobName.ifPresent(value ->
-                addCustomValueAndSearchLink("CI job", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
             stageName.ifPresent(value ->
-                addCustomValueAndSearchLink("CI stage", value));
+                customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
         }
     }
 
@@ -350,15 +350,6 @@ final class CustomBuildScanEnhancements {
 
     }
 
-    private void addCustomValueAndSearchLink(String name, String value) {
-        addCustomValueAndSearchLink(buildScan, customValueSearchLinker, name, name, value);
-    }
-
-    private static void addCustomValueAndSearchLink(BuildScanExtension buildScan, CustomValueSearchLinker customValueSearchLinker, String linkLabel, String name, String value) {
-        buildScan.value(name, value);
-        customValueSearchLinker.registerLink(linkLabel, name, value);
-    }
-
     /**
      * Collects custom values that should have a search link, and creates these links in `buildFinished`.
      * The actual construction of the links must be deferred to ensure the Server URL is set.
@@ -380,12 +371,17 @@ final class CustomBuildScanEnhancements {
             return customValueSearchLinker;
         }
 
+        private void addCustomValueAndSearchLink(String name, String value) {
+            buildScan.value(name, value);
+            registerLink(name, name, value);
+        }
+
         public void addCustomValueAndSearchLink(String linkLabel, String name, String value) {
             buildScan.value(name, value);
             registerLink(linkLabel, name, value);
         }
 
-        public synchronized void registerLink(String linkLabel, String name, String value) {
+        private synchronized void registerLink(String linkLabel, String name, String value) {
             String searchParams = "search.names=" + urlEncode(name) + "&search.values=" + urlEncode(value);
             customValueLinks.put(linkLabel, searchParams);
         }
