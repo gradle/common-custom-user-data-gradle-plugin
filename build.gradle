@@ -57,8 +57,8 @@ signing {
 
     useInMemoryPgpKeys(
         providers.environmentVariable("PGP_SIGNING_KEY").forUseAtConfigurationTime().orNull,
-        providers.environmentVariable("PGP_SIGNING_KEY_PASSPHRASE").forUseAtConfigurationTime().orNull)
-
+        providers.environmentVariable("PGP_SIGNING_KEY_PASSPHRASE").forUseAtConfigurationTime().orNull
+    )
     sign(configurations.archives)
 }
 
