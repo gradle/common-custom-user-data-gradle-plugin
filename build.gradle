@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.gradle'
-version = layout.projectDirectory.file("release/version.txt").asFile.text.trim()
+version = layout.projectDirectory.file('release/version.txt').asFile.text.trim()
 
 repositories {
     gradlePluginPortal()
@@ -46,40 +46,40 @@ You may also remove `plugin-publish` and `signing` from the `plugins {}` block a
  */
 
 pluginBundle {
-    website = "https://github.com/gradle/common-custom-user-data-gradle-plugin"
-    vcsUrl = "https://github.com/gradle/common-custom-user-data-gradle-plugin.git"
-    tags = ["gradle", "gradle enterprise"]
+    website = 'https://github.com/gradle/common-custom-user-data-gradle-plugin'
+    vcsUrl = 'https://github.com/gradle/common-custom-user-data-gradle-plugin.git'
+    tags = ['gradle', 'gradle enterprise']
 }
 
 signing {
     // Require publications to be signed on CI. Otherwise, publication will be signed only if keys are provided.
-    required providers.environmentVariable("CI").forUseAtConfigurationTime().isPresent()
+    required providers.environmentVariable('CI').forUseAtConfigurationTime().isPresent()
 
     useInMemoryPgpKeys(
-        providers.environmentVariable("PGP_SIGNING_KEY").forUseAtConfigurationTime().orNull,
-        providers.environmentVariable("PGP_SIGNING_KEY_PASSPHRASE").forUseAtConfigurationTime().orNull
+        providers.environmentVariable('PGP_SIGNING_KEY').forUseAtConfigurationTime().orNull,
+        providers.environmentVariable('PGP_SIGNING_KEY_PASSPHRASE').forUseAtConfigurationTime().orNull
     )
     sign(configurations.archives)
 }
 
 githubRelease {
-   token = System.getenv("CCUD_GIT_TOKEN") ?: ''
-   owner = "gradle"
-   repo = "common-custom-user-data-gradle-plugin"
-   targetCommitish = "main"
+   token = System.getenv('CCUD_GIT_TOKEN') ?: ''
+   owner = 'gradle'
+   repo = 'common-custom-user-data-gradle-plugin'
+   targetCommitish = 'main'
    releaseName = gitHubReleaseName()
    tagName = gitReleaseTag()
    prerelease = false
    overwrite = false
-   body = layout.projectDirectory.file("release/changes.md").asFile.text.trim()
+   body = layout.projectDirectory.file('release/changes.md').asFile.text.trim()
 }
 
 tasks.register('createReleaseTag', CreateGitTag) {
     tagName = gitReleaseTag()
 }
 
-tasks.named("githubRelease") {
-    dependsOn("createReleaseTag")
+tasks.named('githubRelease') {
+    dependsOn('createReleaseTag')
 }
 
 def gitHubReleaseName() {
@@ -87,5 +87,5 @@ def gitHubReleaseName() {
 }
 
 def gitReleaseTag() {
-    return "v${version}"
+    return 'v${version}'
 }
