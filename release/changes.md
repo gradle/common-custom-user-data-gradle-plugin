@@ -1,0 +1,1 @@
+- [FIX] - Publish signature files
