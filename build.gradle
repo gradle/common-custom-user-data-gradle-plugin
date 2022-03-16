@@ -95,5 +95,5 @@ def gitHubReleaseName() {
 }
 
 def gitReleaseTag() {
-    return 'v${version}'
+    return "v${version}"
 }
