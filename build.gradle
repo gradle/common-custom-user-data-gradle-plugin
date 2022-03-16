@@ -24,6 +24,8 @@ java {
 }
 
 gradlePlugin {
+    automatedPublishing = false
+
     plugins {
         commonCustomUserData {
             id = 'com.gradle.common-custom-user-data-gradle-plugin'
@@ -49,6 +51,11 @@ pluginBundle {
     website = 'https://github.com/gradle/common-custom-user-data-gradle-plugin'
     vcsUrl = 'https://github.com/gradle/common-custom-user-data-gradle-plugin.git'
     tags = ['android', 'java', 'gradle enterprise']
+
+    mavenCoordinates {
+        groupId = 'com.gradle'
+        artifactId = 'common-custom-user-data-gradle-plugin'
+    }
 }
 
 signing {
