@@ -400,7 +400,7 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureTestParallelization() {
-        gradle.allprojects(p ->
+        gradle.afterProject(p ->
             p.getTasks().withType(Test.class).configureEach(captureMaxParallelForks(buildScan))
         );
     }
