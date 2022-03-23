@@ -1,1 +1,0 @@
-- [FIX] - Fix plugin failure with Gradle project isolation enabled
