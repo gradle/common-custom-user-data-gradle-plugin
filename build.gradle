@@ -1,5 +1,6 @@
 plugins {
     id 'java-gradle-plugin'
+    id 'groovy'
     id 'maven-publish'
     id 'signing'
     id 'com.gradle.plugin-publish' version '0.21.0'
@@ -16,6 +17,8 @@ repositories {
 
 dependencies {
     compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.9'
+
+    testImplementation 'org.spockframework:spock-core:2.1-groovy-3.0'
 }
 
 wrapperUpgrade {
@@ -50,6 +53,37 @@ tasks.withType(ValidatePlugins).configureEach {
     enableStricterValidation = true
 }
 
+// A local repo we publish our library to for testing in order to workaround limitations
+// in the TestKit plugin classpath.
+def localRepo = file("$buildDir/local-repo")
+publishing {
+    // Since for now we need to set `gradlePlugin { automatedPublishing = false ... }`, we have to create manually
+    // the Maven publication. This can be removed once a new `plugin-publish` version supports automatically
+    // publishing signatures
+    publications {
+        maven(MavenPublication) {
+            groupId = group
+            artifactId = artifactId
+            version = version
+
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = localRepo.toURI()
+        }
+    }
+}
+
+tasks.withType(Test).configureEach {
+    dependsOn publish
+    workingDir projectDir
+    systemProperty "local.repo", projectDir.toPath().relativize(localRepo.toPath()).toString()
+    systemProperty "com.gradle.common-custom-user-data-gradle-plugin.version", version
+    useJUnitPlatform()
+}
+
 /*
 The rest of the build logic in this file is only required for publishing to the Gradle Plugin Portal.
 When using this project as a template for your own plugin to publish internally, you should delete all code following this comment.
@@ -75,7 +109,7 @@ signing {
         providers.environmentVariable('PGP_SIGNING_KEY').orNull,
         providers.environmentVariable('PGP_SIGNING_KEY_PASSPHRASE').orNull
     )
-    
+
     sign(configurations.archives)
 }
 
