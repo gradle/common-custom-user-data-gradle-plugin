@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'com.gradle.plugin-publish' version '0.21.0'
-    id 'com.github.breadmoirai.github-release' version '2.2.12'
+    id 'com.github.breadmoirai.github-release' version '2.3.3'
     id 'org.gradle.wrapper-upgrade' version '0.10.1'
 }
 
