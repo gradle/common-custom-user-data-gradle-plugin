@@ -388,13 +388,14 @@ final class CustomBuildScanEnhancements {
 
         @Override
         public synchronized void execute(BuildResult buildResult) {
-            String server = buildScan.getServer();
-            if (server != null) {
-                customValueLinks.forEach((linkLabel, searchParams) -> {
-                    String url = appendIfMissing(server, "/") + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
-                    buildScan.link(linkLabel + " build scans", url);
-                });
-            }
+            // TODO: this fails with GE plugin 1.16, BuildScanExtension#getServer does not exist there
+//            String server = buildScan.getServer();
+//            if (server != null) {
+//                customValueLinks.forEach((linkLabel, searchParams) -> {
+//                    String url = appendIfMissing(server, "/") + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
+//                    buildScan.link(linkLabel + " build scans", url);
+//                });
+//            }
         }
 
     }

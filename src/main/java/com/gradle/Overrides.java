@@ -1,6 +1,7 @@
 package com.gradle;
 
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
+import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
@@ -39,6 +40,11 @@ final class Overrides {
     }
 
     void configureGradleEnterprise(GradleEnterpriseExtension gradleEnterprise) {
+        sysPropertyOrEnvVariable(GRADLE_ENTERPRISE_URL, providers).ifPresent(gradleEnterprise::setServer);
+        booleanSysPropertyOrEnvVariable(GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(gradleEnterprise::setAllowUntrustedServer);
+    }
+
+    void configureGradleEnterprise(BuildScanExtension gradleEnterprise) {
         sysPropertyOrEnvVariable(GRADLE_ENTERPRISE_URL, providers).ifPresent(gradleEnterprise::setServer);
         booleanSysPropertyOrEnvVariable(GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(gradleEnterprise::setAllowUntrustedServer);
     }
