@@ -39,7 +39,8 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         settings.getPluginManager().withPlugin("com.gradle.enterprise", __ -> {
             CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
 
-            GradleEnterpriseExtension gradleEnterprise = settings.getExtensions().getByType(GradleEnterpriseExtension.class);
+            Object extension = settings.getExtensions().getByName("gradleEnterprise");
+            GradleEnterpriseExtension gradleEnterprise = ProxyFactory.createProxy(extension, GradleEnterpriseExtension.class);
             customGradleEnterpriseConfig.configureGradleEnterprise(gradleEnterprise);
 
             BuildScanExtension buildScan = gradleEnterprise.getBuildScan();
@@ -67,7 +68,8 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
             CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
 
-            GradleEnterpriseExtension gradleEnterprise = project.getExtensions().getByType(GradleEnterpriseExtension.class);
+            Object extension = project.getExtensions().getByName("gradleEnterprise");
+            GradleEnterpriseExtension gradleEnterprise = ProxyFactory.createProxy(extension, GradleEnterpriseExtension.class);
             customGradleEnterpriseConfig.configureGradleEnterprise(gradleEnterprise);
 
             BuildScanExtension buildScan = gradleEnterprise.getBuildScan();
