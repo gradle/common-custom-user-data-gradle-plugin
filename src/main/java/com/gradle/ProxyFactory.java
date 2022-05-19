@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
 
-class ProxyFactory {
+final class ProxyFactory {
 
     static <T> T createProxy(Object target, Class<T> targetInterface) {
         return newProxyInstance(targetInterface, new ProxyingInvocationHandler(target));
@@ -18,20 +18,20 @@ class ProxyFactory {
         return (T) Proxy.newProxyInstance(targetInterface.getClassLoader(), new Class[]{targetInterface}, invocationHandler);
     }
 
-    private static class ProxyingInvocationHandler implements InvocationHandler {
+    private static final class ProxyingInvocationHandler implements InvocationHandler {
 
         private final Object target;
 
-        ProxyingInvocationHandler(Object target) {
+        private ProxyingInvocationHandler(Object target) {
             this.target = target;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
             try {
-                Class<?>[] parameterTypes = method.getParameterTypes();
-                Method targetMethod = target.getClass().getMethod(method.getName(), convertTypes(parameterTypes, target.getClass().getClassLoader()));
-                Object result = targetMethod.invoke(target, toTargetArgs(args));
+                Method targetMethod = target.getClass().getMethod(method.getName(), convertTypes(method.getParameterTypes(), target.getClass().getClassLoader()));
+                Object[] targetArgs = toTargetArgs(args);
+                Object result = targetMethod.invoke(target, targetArgs);
                 if (result == null || isJdkType(result.getClass())) {
                     return result;
                 }
@@ -41,7 +41,7 @@ class ProxyFactory {
             }
         }
 
-        private Object[] toTargetArgs(Object[] args) {
+        private static Object[] toTargetArgs(Object[] args) {
             if (args == null || args.length == 0) {
                 return args;
             }
@@ -55,16 +55,16 @@ class ProxyFactory {
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})
-        private Action<Object> adaptActionArg(Action action) {
+        private static Action<Object> adaptActionArg(Action action) {
             return arg -> action.execute(createLocalProxy(arg));
         }
 
-        private Object createLocalProxy(Object target) {
+        private static Object createLocalProxy(Object target) {
             ClassLoader localClassLoader = ProxyFactory.class.getClassLoader();
             return Proxy.newProxyInstance(
-                    localClassLoader,
-                    convertTypes(collectInterfaces(target.getClass()), localClassLoader),
-                    new ProxyingInvocationHandler(target)
+                localClassLoader,
+                convertTypes(collectInterfaces(target.getClass()), localClassLoader),
+                new ProxyingInvocationHandler(target)
             );
         }
 
@@ -89,20 +89,21 @@ class ProxyFactory {
                 return parameterTypes;
             }
             return Arrays.stream(parameterTypes)
-                    .map(type -> {
-                        try {
-                            return classLoader.loadClass(type.getName());
-                        } catch (Exception e) {
-                            throw new RuntimeException("Failed to load class: " + type.getName(), e);
-                        }
-                    })
-                    .toArray(Class<?>[]::new);
+                .map(type -> {
+                    try {
+                        return classLoader.loadClass(type.getName());
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to load class: " + type.getName(), e);
+                    }
+                })
+                .toArray(Class<?>[]::new);
         }
 
-        private boolean isJdkType(Class<?> type) {
+        private static boolean isJdkType(Class<?> type) {
             ClassLoader typeClassLoader = type.getClassLoader();
             return typeClassLoader == null || typeClassLoader.equals(Object.class.getClassLoader());
         }
+
     }
 
 }
