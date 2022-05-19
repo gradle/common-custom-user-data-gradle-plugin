@@ -6,7 +6,9 @@ import org.gradle.api.Action;
 import org.gradle.api.Task;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
+import org.gradle.util.GradleVersion;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -407,9 +409,14 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureTestParallelization() {
-        gradle.afterProject(p ->
-            p.getTasks().withType(Test.class).configureEach(captureMaxParallelForks(buildScan))
-        );
+        gradle.afterProject(p -> {
+            TaskCollection<Test> tests = p.getTasks().withType(Test.class);
+            if (GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0) {
+                tests.configureEach(captureMaxParallelForks(buildScan));
+            } else {
+                tests.all(captureMaxParallelForks(buildScan));
+            }
+        });
     }
 
     private static Action<Test> captureMaxParallelForks(BuildScanExtension buildScan) {
