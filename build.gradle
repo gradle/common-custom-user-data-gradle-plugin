@@ -4,7 +4,7 @@ plugins {
     id 'signing'
     id 'com.gradle.plugin-publish' version '0.21.0'
     id 'com.github.breadmoirai.github-release' version '2.3.7'
-    id 'org.gradle.wrapper-upgrade' version '0.10.1'
+    id 'org.gradle.wrapper-upgrade' version '0.10.2'
 }
 
 group = 'com.gradle'
