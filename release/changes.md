@@ -1,1 +1,0 @@
-- [FIX] - Fix class loading issues when plugin is applied via init script while Gradle Enterprise plugin is applied by the build
