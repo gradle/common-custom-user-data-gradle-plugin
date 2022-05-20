@@ -3,7 +3,6 @@ package com.gradle;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
-import org.gradle.caching.http.HttpBuildCache;
 
 /**
  * Provide standardized Gradle Enterprise configuration.
@@ -20,7 +19,7 @@ final class CustomGradleEnterpriseConfig {
         */
     }
 
-    void configureGradleEnterprise(BuildScanExtension buildScan) {
+    void configureGradleEnterpriseOnGradle4(BuildScanExtension buildScan) {
         /* Example of Gradle Enterprise configuration
 
         buildScan.setServer("https://enterprise-samples.gradle.com");
@@ -37,6 +36,16 @@ final class CustomGradleEnterpriseConfig {
         buildScan.publishAlways();
         buildScan.setCaptureTaskInputFiles(true);
         buildScan.setUploadInBackground(!isCiServer);
+
+        */
+    }
+
+    void configureBuildScanPublishingOnGradle4(BuildScanExtension buildScan) {
+        /* Example of build scan publishing configuration
+
+        boolean isCiServer = System.getenv().containsKey("CI");
+
+        buildScan.publishAlways();
 
         */
     }

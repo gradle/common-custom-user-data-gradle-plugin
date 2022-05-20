@@ -99,8 +99,9 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
             Object extension = project.getExtensions().getByName("buildScan");
             BuildScanExtension buildScan = ProxyFactory.createProxy(extension, BuildScanExtension.class);
-            customGradleEnterpriseConfig.configureGradleEnterprise(buildScan);
+            customGradleEnterpriseConfig.configureGradleEnterpriseOnGradle4(buildScan);
 
+            customGradleEnterpriseConfig.configureBuildScanPublishingOnGradle4(buildScan);
             CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, project.getGradle());
             buildScanEnhancements.apply();
 
