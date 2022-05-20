@@ -390,19 +390,22 @@ final class CustomBuildScanEnhancements {
 
         @Override
         public synchronized void execute(BuildResult buildResult) {
-            try {
-                buildScan.getClass().getMethod("getServer");
-            } catch (NoSuchMethodException e) {
-                // This method doesn't exist for Gradle <= 4.x.
-                return;
-            }
-
-            String server = buildScan.getServer();
+            String server = getServer(buildScan);
             if (server != null) {
                 customValueLinks.forEach((linkLabel, searchParams) -> {
                     String url = appendIfMissing(server, "/") + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
                     buildScan.link(linkLabel + " build scans", url);
                 });
+            }
+        }
+
+        private static String getServer(BuildScanExtension buildScan) {
+            try {
+                buildScan.getClass().getMethod("getServer");
+                return buildScan.getServer();
+            } catch (NoSuchMethodException e) {
+                // not available in Gradle 4.x / Build Scan plugin 1.x
+                return null;
             }
         }
 
