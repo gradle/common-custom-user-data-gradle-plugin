@@ -1,1 +1,0 @@
-- [NEW] - Add Gradle 4.x and Gradle Enterprise Plugin 1.16 compatibility
