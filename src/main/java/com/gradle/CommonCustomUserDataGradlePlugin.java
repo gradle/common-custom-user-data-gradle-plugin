@@ -68,10 +68,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     }
 
     private void applyProjectPluginGradle5(Project project) {
-        if (!project.equals(project.getRootProject())) {
-            throw new GradleException("Common custom user data plugin may only be applied to root project");
-        }
-
+        ensureRootProject(project);
         project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
             CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
 
@@ -96,9 +93,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     }
 
     private void applyProjectPluginGradle4(Project project) {
-        if (!project.equals(project.getRootProject())) {
-            throw new GradleException("Common custom user data plugin may only be applied to root project");
-        }
+        ensureRootProject(project);
         project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
             CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
 
@@ -129,6 +124,12 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
     private static boolean isGradle4OrNewer() {
         return GradleVersion.current().compareTo(GradleVersion.version("4.0")) >= 0;
+    }
+
+    private static void ensureRootProject(Project project) {
+        if (!project.equals(project.getRootProject())) {
+            throw new GradleException("common-custom-user-data-gradle-plugin may only be applied to the Root project");
+        }
     }
 
 }
