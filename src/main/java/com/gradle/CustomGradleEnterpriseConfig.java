@@ -20,11 +20,11 @@ final class CustomGradleEnterpriseConfig {
         */
     }
 
-    void configureGradleEnterprise(BuildScanExtension gradleEnterprise) {
+    void configureGradleEnterprise(BuildScanExtension buildScan) {
         /* Example of Gradle Enterprise configuration
 
-        gradleEnterprise.setServer("https://enterprise-samples.gradle.com");
-        gradleEnterprise.setAllowUntrustedServer(false);
+        buildScan.setServer("https://enterprise-samples.gradle.com");
+        buildScan.setAllowUntrustedServer(false);
 
         */
     }

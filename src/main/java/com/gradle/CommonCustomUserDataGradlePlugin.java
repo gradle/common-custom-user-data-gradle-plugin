@@ -97,7 +97,8 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
             CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
 
-            BuildScanExtension buildScan = project.getExtensions().getByType(BuildScanExtension.class);
+            Object extension = project.getExtensions().getByName("buildScan");
+            BuildScanExtension buildScan = ProxyFactory.createProxy(extension, BuildScanExtension.class);
             customGradleEnterpriseConfig.configureGradleEnterprise(buildScan);
 
             CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, project.getGradle());
