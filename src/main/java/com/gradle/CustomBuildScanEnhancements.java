@@ -414,7 +414,7 @@ final class CustomBuildScanEnhancements {
     private void captureTestParallelization() {
         gradle.afterProject(p -> {
             TaskCollection<Test> tests = p.getTasks().withType(Test.class);
-            if (GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0) {
+            if (isGradle5OrNewer()) {
                 tests.configureEach(captureMaxParallelForks(buildScan));
             } else {
                 tests.all(captureMaxParallelForks(buildScan));
@@ -449,6 +449,10 @@ final class CustomBuildScanEnhancements {
 
     private Properties readPropertiesFile(String fileName) {
         return Utils.readPropertiesFile(fileName, providers, gradle);
+    }
+
+    private static boolean isGradle5OrNewer() {
+        return GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0;
     }
 
 }
