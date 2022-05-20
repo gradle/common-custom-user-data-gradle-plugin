@@ -111,7 +111,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             // including those set in the root project's build.gradle(.kts)
             project.afterEvaluate(___ -> {
                 Overrides overrides = new Overrides(providers);
-                overrides.configureGradleEnterprise(buildScan);
+                overrides.configureGradleEnterpriseOnGradle4(buildScan);
             });
         });
     }
