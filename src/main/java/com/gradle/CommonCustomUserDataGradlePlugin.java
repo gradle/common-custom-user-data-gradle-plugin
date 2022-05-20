@@ -25,16 +25,18 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         if (target instanceof Settings) {
             if (!isGradle6OrNewer()) {
                 throw new GradleException("For Gradle versions prior to 6.0, common-custom-user-data-gradle-plugin must be applied to the Root project");
+            } else {
+                applySettingsPlugin((Settings) target);
             }
-            applySettingsPlugin((Settings) target);
         } else if (target instanceof Project) {
             if (isGradle6OrNewer()) {
                 throw new GradleException("For Gradle versions 6.0 and newer, common-custom-user-data-gradle-plugin must be applied to Settings");
-            }
-            if (isGradle4()) {
+            } else if (isGradle5OrNewer()) {
+                applyProjectPluginGradle5((Project) target);
+            } else if (isGradle4OrNewer()) {
                 applyProjectPluginGradle4((Project) target);
             } else {
-                applyProjectPlugin((Project) target);
+                throw new GradleException("For Gradle versions prior to 4.0, common-custom-user-data-gradle-plugin is not supported");
             }
         }
     }
@@ -65,10 +67,11 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         });
     }
 
-    private void applyProjectPlugin(Project project) {
+    private void applyProjectPluginGradle5(Project project) {
         if (!project.equals(project.getRootProject())) {
             throw new GradleException("Common custom user data plugin may only be applied to root project");
         }
+
         project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
             CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
 
@@ -120,8 +123,12 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         return GradleVersion.current().compareTo(GradleVersion.version("6.0")) >= 0;
     }
 
-    static boolean isGradle4() {
-        return GradleVersion.current().compareTo(GradleVersion.version("4.0")) >= 0 &&  GradleVersion.current().compareTo(GradleVersion.version("5.0")) < 0;
+    private static boolean isGradle5OrNewer() {
+        return GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0;
+    }
+
+    private static boolean isGradle4OrNewer() {
+        return GradleVersion.current().compareTo(GradleVersion.version("4.0")) >= 0;
     }
 
 }
