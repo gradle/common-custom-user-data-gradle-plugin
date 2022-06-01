@@ -1,0 +1,1 @@
+- [FIX] - Fix an exception when the Allow Untrusted Server override is applied
