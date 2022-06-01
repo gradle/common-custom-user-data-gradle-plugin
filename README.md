@@ -34,9 +34,10 @@ See [here](settings.gradle) for an example.
 
 This table details the version compatibility of the Common Custom User Data Gradle plugin with the Gradle Enterprise Gradle plugin.
 
-| Common Custom User Data Gradle plugin versions | Gradle Enterprise Gradle plugin versions |
-| ---------------------------------------------- | ---------------------------------------- |
-| `1.0+`                                         | `3.0+`                                   |
+| Common Custom User Data Gradle plugin versions | Gradle Enterprise Gradle plugin versions | Gradle version |
+| ---------------------------------------------- | ---------------------------------------- | -------------- |
+| `1.0+`                                         | `3.0+`                                   | `5.0+`         | 
+| `1.7+`                                         | `1.8+`                                   | `4.0+`         |
 
 ## Captured data
 
