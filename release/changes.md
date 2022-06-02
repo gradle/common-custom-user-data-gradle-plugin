@@ -1,1 +1,0 @@
-- [FIX] - Fix exception thrown when the `allowUntrustedServer` override is applied
