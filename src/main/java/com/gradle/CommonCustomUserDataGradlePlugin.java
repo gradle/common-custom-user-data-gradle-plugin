@@ -2,6 +2,7 @@ package com.gradle;
 
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -11,6 +12,7 @@ import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.util.GradleVersion;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 
 public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
@@ -59,11 +61,16 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
             // configuration changes applied in this block will override earlier configuration settings,
             // including those set in the settings.gradle(.kts)
-            settings.getGradle().settingsEvaluated(___ -> {
+            Action<Settings> settingsAction = ___ -> {
                 Overrides overrides = new Overrides(providers);
                 overrides.configureGradleEnterprise(gradleEnterprise);
                 overrides.configureBuildCache(buildCache);
-            });
+            };
+
+            // it is possible that settings have already been evaluated by now, in which case the settingsEvaluated
+            // callback will not fire
+            settingsAction.execute(settings);
+            settings.getGradle().settingsEvaluated(settingsAction);
         });
     }
 
@@ -133,5 +140,4 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             throw new GradleException("common-custom-user-data-gradle-plugin may only be applied to the Root project");
         }
     }
-
 }
