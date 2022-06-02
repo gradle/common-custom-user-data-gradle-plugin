@@ -90,6 +90,10 @@ final class ProxyFactory {
             }
             return Arrays.stream(parameterTypes)
                 .map(type -> {
+                    if (isJdkType(type)) {
+                        return type;
+                    }
+
                     try {
                         return classLoader.loadClass(type.getName());
                     } catch (Exception e) {
