@@ -2,6 +2,7 @@ package com.gradle;
 
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -11,6 +12,7 @@ import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.util.GradleVersion;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 
 public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
@@ -59,11 +61,19 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
             // configuration changes applied in this block will override earlier configuration settings,
             // including those set in the settings.gradle(.kts)
-            settings.getGradle().settingsEvaluated(___ -> {
+            Action<Settings> settingsAction = ___ -> {
                 Overrides overrides = new Overrides(providers);
                 overrides.configureGradleEnterprise(gradleEnterprise);
                 overrides.configureBuildCache(buildCache);
-            });
+            };
+
+            // it is possible that settings have already been evaluated by now, in which case the settingsEvaluated
+            // callback will not fire
+            if (settingsHaveBeenEvaluated()) {
+                settingsAction.execute(settings);
+            } else {
+                settings.getGradle().settingsEvaluated(settingsAction);
+            }
         });
     }
 
@@ -134,4 +144,9 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         }
     }
 
+    private boolean settingsHaveBeenEvaluated() {
+        return Arrays.stream(Thread.currentThread().getStackTrace())
+            .map(StackTraceElement::getMethodName)
+            .anyMatch(s -> s.contains("settingsEvaluated"));
+    }
 }
