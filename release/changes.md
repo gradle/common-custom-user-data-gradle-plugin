@@ -1,0 +1,1 @@
+- [FIX] Fix configuration override functionality for Gradle 6.x+

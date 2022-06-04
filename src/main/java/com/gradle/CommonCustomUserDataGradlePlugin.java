@@ -67,8 +67,8 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
                 overrides.configureBuildCache(buildCache);
             };
 
-            // it is possible that settings have already been evaluated by now, in which case the settingsEvaluated
-            // callback will not fire
+            // it is possible that the settings have already been evaluated by now, in which case
+            // a settingsEvaluated callback would not fire anymore
             if (settingsHaveBeenEvaluated()) {
                 settingsAction.execute(settings);
             } else {
@@ -149,4 +149,5 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             .map(StackTraceElement::getMethodName)
             .anyMatch(s -> s.contains("settingsEvaluated"));
     }
+
 }
