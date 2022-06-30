@@ -1,0 +1,19 @@
+name: Pull Request Workflow
+
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  label-contributor-pull-requests:
+    if: github.event.pull_request.author_association == 'CONTRIBUTOR'
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label Contributor Pull Requests
+        uses: actions/labeler@v4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
