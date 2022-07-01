@@ -2,7 +2,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'signing'
-    id 'com.gradle.plugin-publish' version '0.21.0'
+    id 'com.gradle.plugin-publish' version '1.0.0'
     id 'com.github.breadmoirai.github-release' version '2.4.1'
     id 'org.gradle.wrapper-upgrade' version '0.10.2'
 }
@@ -33,7 +33,7 @@ java {
 }
 
 gradlePlugin {
-    automatedPublishing = false
+    automatedPublishing = true
 
     plugins {
         commonCustomUserData {
@@ -60,12 +60,7 @@ pluginBundle {
     website = 'https://github.com/gradle/common-custom-user-data-gradle-plugin'
     vcsUrl = 'https://github.com/gradle/common-custom-user-data-gradle-plugin.git'
     tags = ['android', 'java', 'gradle enterprise']
-
-    mavenCoordinates {
-        groupId = 'com.gradle'
-        artifactId = 'common-custom-user-data-gradle-plugin'
     }
-}
 
 signing {
     // Require publications to be signed on CI. Otherwise, publication will be signed only if keys are provided.
@@ -75,8 +70,6 @@ signing {
         providers.environmentVariable('PGP_SIGNING_KEY').orNull,
         providers.environmentVariable('PGP_SIGNING_KEY_PASSPHRASE').orNull
     )
-
-    sign(configurations.archives)
 }
 
 githubRelease {
@@ -98,10 +91,6 @@ tasks.register('createReleaseTag', CreateGitTag) {
 
 tasks.named('githubRelease').configure {
     dependsOn('createReleaseTag')
-}
-
-tasks.named('publishPlugins').configure {
-    notCompatibleWithConfigurationCache("$name task does not support configuration caching")
 }
 
 tasks.withType(Sign).configureEach {
