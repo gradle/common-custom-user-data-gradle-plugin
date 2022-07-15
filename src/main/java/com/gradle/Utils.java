@@ -162,7 +162,7 @@ final class Utils {
         }
     }
 
-    static String execAndGetStdOut(String... args) {
+    static Optional<String> execAndGetStdOut(String... args) {
         Runtime runtime = Runtime.getRuntime();
         Process process;
         try {
@@ -177,7 +177,7 @@ final class Utils {
                 String ignore = readFully(error);
 
                 boolean finished = process.waitFor(10, TimeUnit.SECONDS);
-                return finished && process.exitValue() == 0 ? trimAtEnd(standardText) : null;
+                return finished && process.exitValue() == 0 ? Optional.of(trimAtEnd(standardText)) : Optional.empty();
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);

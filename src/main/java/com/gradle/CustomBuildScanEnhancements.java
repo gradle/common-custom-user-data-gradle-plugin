@@ -14,18 +14,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.gradle.Utils.appendIfMissing;
 import static com.gradle.Utils.execAndCheckSuccess;
-import static com.gradle.Utils.execAndGetStdOut;
-import static com.gradle.Utils.isNotEmpty;
 import static com.gradle.Utils.redactUserInfo;
 import static com.gradle.Utils.urlEncode;
-
 /**
  * Adds a standard set of useful tags, links and custom values to all build scans published.
  */
@@ -281,44 +277,35 @@ final class CustomBuildScanEnhancements {
 
         @Override
         public void execute(BuildScanExtension buildScan) {
-            if (!isGitInstalled()) {
-                return;
-            }
+            GitMetadata.GitMetadataBuilder builder = new GitMetadata.GitMetadataBuilder(isGitInstalled());
+            Optional<String> gitRepo = builder.fromCmd("git", "config", "--get", "remote.origin.url").build().resolve();
+            Optional<String> gitCommitId = builder.fromCmd("git", "rev-parse", "--verify", "HEAD").build().resolve();
+            Optional<String> gitCommitShortId = builder.fromCmd("git", "rev-parse", "--short=8", "--verify", "HEAD").build().resolve();
+            Optional<String> gitStatus = builder.fromCmd( "git", "status", "--porcelain").build().resolve();
+            Optional<String> gitBranchName = builder.fromCmd("git", "rev-parse", "--abbrev-ref", "HEAD").fromEnv(this::getGitBranchNameFromEnv).build().resolve();
 
-            String gitRepo = execAndGetStdOut("git", "config", "--get", "remote.origin.url");
-            String gitCommitId = execAndGetStdOut("git", "rev-parse", "--verify", "HEAD");
-            String gitCommitShortId = execAndGetStdOut("git", "rev-parse", "--short=8", "--verify", "HEAD");
-            String gitBranchName = getGitBranchName(() -> execAndGetStdOut("git", "rev-parse", "--abbrev-ref", "HEAD"));
-            String gitStatus = execAndGetStdOut("git", "status", "--porcelain");
-
-            if (isNotEmpty(gitRepo)) {
-                buildScan.value("Git repository", redactUserInfo(gitRepo));
-            }
-            if (isNotEmpty(gitCommitId)) {
-                buildScan.value("Git commit id", gitCommitId);
-            }
-            if (isNotEmpty(gitCommitShortId)) {
-                customValueSearchLinker.addCustomValueAndSearchLink("Git commit id", "Git commit id short", gitCommitShortId);
-            }
-            if (isNotEmpty(gitBranchName)) {
-                buildScan.tag(gitBranchName);
-                buildScan.value("Git branch", gitBranchName);
-            }
-            if (isNotEmpty(gitStatus)) {
+            gitRepo.ifPresent(s -> buildScan.value("Git repository", redactUserInfo(s)));
+            gitCommitId.ifPresent(s -> buildScan.value("Git commit id", s));
+            gitCommitShortId.ifPresent(s -> customValueSearchLinker.addCustomValueAndSearchLink("Git commit id", "Git commit id short", s));
+            gitBranchName.ifPresent(s -> {
+                buildScan.tag(s);
+                buildScan.value("Git branch", s);
+            });
+            gitStatus.ifPresent(s -> {
                 buildScan.tag("Dirty");
-                buildScan.value("Git status", gitStatus);
-            }
+                buildScan.value("Git status", s);
+            });
 
-            if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
-                if (gitRepo.contains("github.com/") || gitRepo.contains("github.com:")) {
-                    Matcher matcher = Pattern.compile("(.*)github\\.com[/|:](.*)").matcher(gitRepo);
+            if (gitRepo.isPresent() && gitCommitId.isPresent()) {
+                if (gitRepo.get().contains("github.com/") || gitRepo.get().contains("github.com:")) {
+                    Matcher matcher = Pattern.compile("(.*)github\\.com[/|:](.*)").matcher(gitRepo.get());
                     if (matcher.matches()) {
                         String rawRepoPath = matcher.group(2);
                         String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
                         buildScan.link("Github source", "https://github.com/" + repoPath + "/tree/" + gitCommitId);
                     }
-                } else if (gitRepo.contains("gitlab.com/") || gitRepo.contains("gitlab.com:")) {
-                    Matcher matcher = Pattern.compile("(.*)gitlab\\.com[/|:](.*)").matcher(gitRepo);
+                } else if (gitRepo.get().contains("gitlab.com/") || gitRepo.get().contains("gitlab.com:")) {
+                    Matcher matcher = Pattern.compile("(.*)gitlab\\.com[/|:](.*)").matcher(gitRepo.get());
                     if (matcher.matches()) {
                         String rawRepoPath = matcher.group(2);
                         String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
@@ -332,14 +319,11 @@ final class CustomBuildScanEnhancements {
             return execAndCheckSuccess("git", "--version");
         }
 
-        private String getGitBranchName(Supplier<String> gitCommand) {
+        private Optional<String> getGitBranchNameFromEnv() {
             if (isJenkins() || isHudson()) {
-                Optional<String> branch = Utils.envVariable("BRANCH_NAME", providers);
-                if (branch.isPresent()) {
-                    return branch.get();
-                }
+                return Utils.envVariable("BRANCH_NAME", providers);
             }
-            return gitCommand.get();
+            return Optional.empty();
         }
 
         private boolean isJenkins() {
