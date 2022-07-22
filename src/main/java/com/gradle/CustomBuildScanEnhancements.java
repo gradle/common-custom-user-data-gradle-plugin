@@ -223,8 +223,7 @@ final class CustomBuildScanEnhancements {
             if (Stream.of(azureServerUrl, azureProject, buildId).allMatch(Optional::isPresent)) {
                 //noinspection OptionalGetWithoutIsPresent
                 String buildUrl = String.format("%s%s/_build/results?buildId=%s",
-                        azureServerUrl.get(), azureProject.get(), buildId.get()
-                );
+                    azureServerUrl.get(), azureProject.get(), buildId.get());
                 buildScan.link("Azure Pipelines build", buildUrl);
             } else if (azureServerUrl.isPresent()) {
                 buildScan.link("Azure Pipelines", azureServerUrl.get());
