@@ -230,8 +230,8 @@ final class CustomBuildScanEnhancements {
                 buildScan.link("Azure Pipelines", azureServerUrl.get());
             }
 
-            envVariable("BUILD_BUILDID").ifPresent(value ->
-                    buildScan.value("CI build number", value));
+            buildId.ifPresent(value ->
+                buildScan.value("CI build number", value));
         }
     }
 
