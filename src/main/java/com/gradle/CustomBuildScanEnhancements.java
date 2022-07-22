@@ -215,10 +215,27 @@ final class CustomBuildScanEnhancements {
             stageName.ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
         }
+
+        if(isAzurePipelines()) {
+            Optional<String> azureServerUrl = envVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI");
+            Optional<String> azureProject = envVariable("SYSTEM_TEAMPROJECT");
+            Optional<String> buildId = envVariable("BUILD_BUILDID");
+            if (Stream.of(azureServerUrl, azureProject, buildId).allMatch(Optional::isPresent)) {
+                //noinspection OptionalGetWithoutIsPresent
+                String buildUrl = String.format("%s%s/_build/results?buildId=%s",
+                    azureServerUrl.get(), azureProject.get(), buildId.get());
+                buildScan.link("Azure Pipelines build", buildUrl);
+            } else if (azureServerUrl.isPresent()) {
+                buildScan.link("Azure Pipelines", azureServerUrl.get());
+            }
+
+            buildId.ifPresent(value ->
+                buildScan.value("CI build number", value));
+        }
     }
 
     private boolean isCi() {
-        return isGenericCI() || isJenkins() || isHudson() || isTeamCity() || isCircleCI() || isBamboo() || isGitHubActions() || isGitLab() || isTravis() || isBitrise() || isGoCD();
+        return isGenericCI() || isJenkins() || isHudson() || isTeamCity() || isCircleCI() || isBamboo() || isGitHubActions() || isGitLab() || isTravis() || isBitrise() || isGoCD() || isAzurePipelines();
     }
 
     private boolean isGenericCI() {
@@ -263,6 +280,10 @@ final class CustomBuildScanEnhancements {
 
     private boolean isGoCD() {
         return envVariable("GO_SERVER_URL").isPresent();
+    }
+
+    private boolean isAzurePipelines() {
+        return envVariable("TF_BUILD").isPresent();
     }
 
     private void captureGitMetadata() {
@@ -343,6 +364,11 @@ final class CustomBuildScanEnhancements {
                 if (branch.isPresent()) {
                     return branch.get();
                 }
+            } else if (isAzurePipelines()){
+                Optional<String> branch = Utils.envVariable("BUILD_SOURCEBRANCH", providers);
+                if (branch.isPresent()) {
+                    return branch.get();
+                }
             }
             return gitCommand.get();
         }
@@ -358,6 +384,11 @@ final class CustomBuildScanEnhancements {
         private boolean isGitLab() {
             return Utils.envVariable("GITLAB_CI", providers).isPresent();
         }
+
+        private boolean isAzurePipelines() {
+            return Utils.envVariable("TF_BUILD", providers).isPresent();
+        }
+
     }
 
     /**
