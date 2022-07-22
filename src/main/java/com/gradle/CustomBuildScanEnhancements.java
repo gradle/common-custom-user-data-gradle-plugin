@@ -379,6 +379,7 @@ final class CustomBuildScanEnhancements {
         private boolean isAzurePipelines() {
             return Utils.envVariable("TF_BUILD", providers).isPresent();
         }
+
     }
 
     /**
