@@ -359,12 +359,12 @@ final class CustomBuildScanEnhancements {
                 if (branch.isPresent()) {
                     return branch.get();
                 }
-            } else if (isGitLab()){
+            } else if (isGitLab()) {
                 Optional<String> branch = Utils.envVariable("CI_COMMIT_REF_NAME", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
-            } else if (isAzurePipelines()){
+            } else if (isAzurePipelines()) {
                 Optional<String> branch = Utils.envVariable("BUILD_SOURCEBRANCH", providers);
                 if (branch.isPresent()) {
                     return branch.get();
