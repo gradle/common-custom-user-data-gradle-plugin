@@ -43,9 +43,9 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         }
     }
 
-    public static void apply(GradleEnterpriseExtension gradleEnterprise, ProviderFactory providers, Settings settings) {
+    public static void apply(Object gradleEnterprise, ProviderFactory providers, Settings settings) {
         applySettingsPlugin(
-                gradleEnterprise,
+                ProxyFactory.createProxy(gradleEnterprise, GradleEnterpriseExtension.class),
                 providers,
                 settings
         );
