@@ -45,13 +45,14 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
     public static void apply(Object gradleEnterprise, ProviderFactory providers, Settings settings) {
         applySettingsPlugin(
-                ProxyFactory.createProxy(gradleEnterprise, GradleEnterpriseExtension.class),
+                gradleEnterprise,
                 providers,
                 settings
         );
     }
 
-    private static void applySettingsPlugin(GradleEnterpriseExtension gradleEnterprise, ProviderFactory providers, Settings settings) {
+    private static void applySettingsPlugin(Object gradleEnterpriseExtension, ProviderFactory providers, Settings settings) {
+        GradleEnterpriseExtension gradleEnterprise = ProxyFactory.createProxy(gradleEnterpriseExtension, GradleEnterpriseExtension.class);
         CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
 
         customGradleEnterpriseConfig.configureGradleEnterprise(gradleEnterprise);
@@ -82,7 +83,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     }
 
     private void applySettingsPlugin(Settings settings) {
-        settings.getPluginManager().withPlugin("com.gradle.enterprise", __ -> applySettingsPlugin(ProxyFactory.createProxy(settings.getExtensions().getByName("gradleEnterprise"), GradleEnterpriseExtension.class), providers, settings));
+        settings.getPluginManager().withPlugin("com.gradle.enterprise", __ -> applySettingsPlugin(settings.getExtensions().getByName("gradleEnterprise"), providers, settings));
     }
 
     private void applyProjectPluginGradle5(Project project) {
