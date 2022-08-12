@@ -67,7 +67,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
         // configuration changes applied in this block will override earlier configuration settings,
         // including those set in the settings.gradle(.kts)
-        Action<Settings> settingsAction = __ -> {
+        Action<Settings> settingsAction = ___ -> {
             Overrides overrides = new Overrides(providers);
             overrides.configureGradleEnterprise(gradleEnterprise);
             overrides.configureBuildCache(buildCache);
@@ -155,8 +155,8 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
     private static boolean settingsHaveBeenEvaluated() {
         return Arrays.stream(Thread.currentThread().getStackTrace())
-                .map(StackTraceElement::getMethodName)
-                .anyMatch(s -> s.contains("settingsEvaluated"));
+            .map(StackTraceElement::getMethodName)
+            .anyMatch(s -> s.contains("settingsEvaluated"));
     }
 
 }
