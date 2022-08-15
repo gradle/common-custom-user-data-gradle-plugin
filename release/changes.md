@@ -1,0 +1,3 @@
+- [NEW] Detect Azure pipeline and add respective custom tags, values and links
+- [NEW] Detect Gitlab branch name on CI
+- [NEW] Provide static plugin application method
