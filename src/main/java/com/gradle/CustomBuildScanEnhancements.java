@@ -51,6 +51,7 @@ final class CustomBuildScanEnhancements {
         captureCiMetadata();
         captureGitMetadata();
         captureTestParallelization();
+        captureKotlinJvmArguments();
     }
 
     private void captureOs() {
@@ -216,7 +217,7 @@ final class CustomBuildScanEnhancements {
                 customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
         }
 
-        if(isAzurePipelines()) {
+        if (isAzurePipelines()) {
             Optional<String> azureServerUrl = envVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI");
             Optional<String> azureProject = envVariable("SYSTEM_TEAMPROJECT");
             Optional<String> buildId = envVariable("BUILD_BUILDID");
@@ -472,6 +473,23 @@ final class CustomBuildScanEnhancements {
                 }
             });
         };
+    }
+
+    private void captureKotlinJvmArguments() {
+        gradle.projectsEvaluated(g -> {
+            Optional<String> kotlinJvmArgs = projectProperty("kotlin.daemon.jvmargs");
+            if (kotlinJvmArgs.isPresent()) {
+                buildScan.value("kotlin.daemon.jvmargs", kotlinJvmArgs.get());
+            } else {
+                Optional<String> jvmArgs = projectProperty("org.gradle.jvmargs");
+                if (jvmArgs.isPresent()) {
+                    Matcher matcher = Pattern.compile(".*-Dkotlin.daemon.jvm.options=([^ ]*)").matcher(jvmArgs.get());
+                    if (matcher.matches()) {
+                        buildScan.value("kotlin.daemon.jvmargs", matcher.group(1));
+                    }
+                }
+            }
+        });
     }
 
     private Optional<String> envVariable(String name) {
