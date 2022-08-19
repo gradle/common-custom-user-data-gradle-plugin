@@ -217,7 +217,7 @@ final class CustomBuildScanEnhancements {
                 customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
         }
 
-        if (isAzurePipelines()) {
+        if(isAzurePipelines()) {
             Optional<String> azureServerUrl = envVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI");
             Optional<String> azureProject = envVariable("SYSTEM_TEAMPROJECT");
             Optional<String> buildId = envVariable("BUILD_BUILDID");
