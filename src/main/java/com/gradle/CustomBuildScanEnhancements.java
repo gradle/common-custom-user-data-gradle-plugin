@@ -107,21 +107,19 @@ final class CustomBuildScanEnhancements {
             // Wait for projects to load to ensure Gradle project properties are initialized
             gradle.projectsEvaluated(g -> {
                 Optional<String> teamCityConfigFile = projectProperty("teamcity.configuration.properties.file");
-                Optional<String> buildNumber = projectProperty("build.number");
-                Optional<String> buildTypeId = projectProperty("teamcity.buildType.id");
+                Optional<String> buildId = projectProperty("teamcity.build.id");
                 if (teamCityConfigFile.isPresent()
-                    && buildNumber.isPresent()
-                    && buildTypeId.isPresent()) {
+                    && buildId.isPresent()) {
                     Properties properties = readPropertiesFile(teamCityConfigFile.get());
                     String teamCityServerUrl = properties.getProperty("teamcity.serverUrl");
                     if (teamCityServerUrl != null) {
-                        String buildUrl = appendIfMissing(teamCityServerUrl, "/") + "viewLog.html?buildNumber=" + urlEncode(buildNumber.get()) + "&buildTypeId=" + urlEncode(buildTypeId.get());
+                        String buildUrl = appendIfMissing(teamCityServerUrl, "/") + "viewLog.html?buildId=" + urlEncode(buildId.get());
                         buildScan.link("TeamCity build", buildUrl);
                     }
                 }
-                buildNumber.ifPresent(value ->
+                projectProperty("build.number").ifPresent(value ->
                     buildScan.value("CI build number", value));
-                buildTypeId.ifPresent(value ->
+                projectProperty("teamcity.buildType.id").ifPresent(value ->
                     customValueSearchLinker.addCustomValueAndSearchLink("CI build config", value));
                 projectProperty("agent.name").ifPresent(value ->
                     customValueSearchLinker.addCustomValueAndSearchLink("CI agent", value));
