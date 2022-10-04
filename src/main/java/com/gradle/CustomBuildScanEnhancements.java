@@ -10,6 +10,7 @@ import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.util.GradleVersion;
 
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -57,22 +58,57 @@ final class CustomBuildScanEnhancements {
         sysProperty("os.name").ifPresent(buildScan::tag);
     }
 
+    private enum IdeaFlavour {
+        INTELLIJ("JetBrains", "IntelliJ IDEA"),
+        ANDROID_STUDIO("Google", "Android Studio");
+
+        private final String vendor;
+        private final String label;
+
+        IdeaFlavour(String vendor, String label) {
+            this.vendor = vendor;
+            this.label = label;
+        }
+
+        static Optional<IdeaFlavour> getByVendor(String str) {
+            return EnumSet.allOf(IdeaFlavour.class).stream()
+                    .filter(ide -> ide.vendor.equalsIgnoreCase(str))
+                    .findFirst();
+        }
+    }
+
     private void captureIde() {
         if (!isCi()) {
             // Wait for projects to load to ensure Gradle project properties are initialized
             gradle.projectsEvaluated(g -> {
+                Optional<String> ideaVendorName = sysProperty("idea.vendor.name");
+                Optional<String> ideaVersion = sysProperty("idea.version");
                 Optional<String> invokedFromAndroidStudio = projectProperty("android.injected.invoked.from.ide");
                 Optional<String> androidStudioVersion = projectProperty("android.injected.studio.version");
-                Optional<String> ideaVersion = sysProperty("idea.version");
                 Optional<String> eclipseVersion = sysProperty("eclipse.buildId");
                 Optional<String> ideaSync = sysProperty("idea.sync.active");
                 if (ideaSync.isPresent()) {
                     buildScan.tag("IDE sync");
                 }
-                if (invokedFromAndroidStudio.isPresent()) {
+                if (ideaVendorName.isPresent()) {
+                    IdeaFlavour.getByVendor(ideaVendorName.get()).ifPresent(ideaFlavour -> {
+                        buildScan.tag(ideaFlavour.label);
+                        switch(ideaFlavour) {
+                            case INTELLIJ:
+                                ideaVersion.ifPresent(v -> buildScan.value("IntelliJ IDEA version", v));
+                                break;
+                            case ANDROID_STUDIO:
+                                // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (ie. 2020.3.1 Patch 3 instead of 2020.3)
+                                androidStudioVersion.ifPresent(v -> buildScan.value("Android Studio version", v));
+                                break;
+                        }
+                    });
+                } else if (invokedFromAndroidStudio.isPresent()) {
+                    // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
                     buildScan.tag("Android Studio");
                     androidStudioVersion.ifPresent(v -> buildScan.value("Android Studio version", v));
                 } else if (ideaVersion.isPresent()) {
+                    // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
                     buildScan.tag("IntelliJ IDEA");
                     buildScan.value("IntelliJ IDEA version", ideaVersion.get());
                 } else if (eclipseVersion.isPresent()) {
