@@ -10,7 +10,6 @@ import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.util.GradleVersion;
 
-import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -58,25 +57,6 @@ final class CustomBuildScanEnhancements {
         sysProperty("os.name").ifPresent(buildScan::tag);
     }
 
-    private enum IdeaFlavour {
-        INTELLIJ("JetBrains", "IntelliJ IDEA"),
-        ANDROID_STUDIO("Google", "Android Studio");
-
-        private final String vendor;
-        private final String label;
-
-        IdeaFlavour(String vendor, String label) {
-            this.vendor = vendor;
-            this.label = label;
-        }
-
-        static Optional<IdeaFlavour> getByVendor(String str) {
-            return EnumSet.allOf(IdeaFlavour.class).stream()
-                    .filter(ide -> ide.vendor.equalsIgnoreCase(str))
-                    .findFirst();
-        }
-    }
-
     private void captureIde() {
         if (!isCi()) {
             // Wait for projects to load to ensure Gradle project properties are initialized
@@ -91,33 +71,32 @@ final class CustomBuildScanEnhancements {
                     buildScan.tag("IDE sync");
                 }
                 if (ideaVendorName.isPresent()) {
-                    IdeaFlavour.getByVendor(ideaVendorName.get()).ifPresent(ideaFlavour -> {
-                        buildScan.tag(ideaFlavour.label);
-                        switch(ideaFlavour) {
-                            case INTELLIJ:
-                                ideaVersion.ifPresent(v -> buildScan.value("IntelliJ IDEA version", v));
-                                break;
-                            case ANDROID_STUDIO:
-                                // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (ie. 2020.3.1 Patch 3 instead of 2020.3)
-                                androidStudioVersion.ifPresent(v -> buildScan.value("Android Studio version", v));
-                                break;
-                        }
-                    });
+                    String ideaVendorNameValue = ideaVendorName.get();
+                    if(ideaVendorNameValue.equals("Google")) {
+                        // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (ie. 2020.3.1 Patch 3 instead of 2020.3)
+                        tagIde("Android Studio", androidStudioVersion.orElse(""));
+                    } else if(ideaVendorNameValue.equals("JetBrains")) {
+                        tagIde("IntelliJ IDEA", ideaVersion.orElse(""));
+                    }
                 } else if (invokedFromAndroidStudio.isPresent()) {
                     // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
-                    buildScan.tag("Android Studio");
-                    androidStudioVersion.ifPresent(v -> buildScan.value("Android Studio version", v));
+                    tagIde("Android Studio", androidStudioVersion.orElse(""));
                 } else if (ideaVersion.isPresent()) {
                     // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
-                    buildScan.tag("IntelliJ IDEA");
-                    buildScan.value("IntelliJ IDEA version", ideaVersion.get());
+                    tagIde("IntelliJ IDEA", ideaVersion.get());
                 } else if (eclipseVersion.isPresent()) {
-                    buildScan.tag("Eclipse");
-                    buildScan.value("Eclipse version", eclipseVersion.get());
+                    tagIde("Eclipse", eclipseVersion.get());
                 } else {
                     buildScan.tag("Cmd Line");
                 }
             });
+        }
+    }
+
+    private void tagIde(String ideLabel, String version) {
+        buildScan.tag(ideLabel);
+        if(!version.isEmpty()) {
+            buildScan.value(ideLabel + " version", version);
         }
     }
 
