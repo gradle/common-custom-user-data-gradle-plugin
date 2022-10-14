@@ -61,27 +61,42 @@ final class CustomBuildScanEnhancements {
         if (!isCi()) {
             // Wait for projects to load to ensure Gradle project properties are initialized
             gradle.projectsEvaluated(g -> {
+                Optional<String> ideaVendorName = sysProperty("idea.vendor.name");
+                Optional<String> ideaVersion = sysProperty("idea.version");
                 Optional<String> invokedFromAndroidStudio = projectProperty("android.injected.invoked.from.ide");
                 Optional<String> androidStudioVersion = projectProperty("android.injected.studio.version");
-                Optional<String> ideaVersion = sysProperty("idea.version");
                 Optional<String> eclipseVersion = sysProperty("eclipse.buildId");
                 Optional<String> ideaSync = sysProperty("idea.sync.active");
                 if (ideaSync.isPresent()) {
                     buildScan.tag("IDE sync");
                 }
-                if (invokedFromAndroidStudio.isPresent()) {
-                    buildScan.tag("Android Studio");
-                    androidStudioVersion.ifPresent(v -> buildScan.value("Android Studio version", v));
+                if (ideaVendorName.isPresent()) {
+                    String ideaVendorNameValue = ideaVendorName.get();
+                    if(ideaVendorNameValue.equals("Google")) {
+                        // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (ie. 2020.3.1 Patch 3 instead of 2020.3)
+                        tagIde("Android Studio", androidStudioVersion.orElse(""));
+                    } else if(ideaVendorNameValue.equals("JetBrains")) {
+                        tagIde("IntelliJ IDEA", ideaVersion.orElse(""));
+                    }
+                } else if (invokedFromAndroidStudio.isPresent()) {
+                    // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
+                    tagIde("Android Studio", androidStudioVersion.orElse(""));
                 } else if (ideaVersion.isPresent()) {
-                    buildScan.tag("IntelliJ IDEA");
-                    buildScan.value("IntelliJ IDEA version", ideaVersion.get());
+                    // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
+                    tagIde("IntelliJ IDEA", ideaVersion.get());
                 } else if (eclipseVersion.isPresent()) {
-                    buildScan.tag("Eclipse");
-                    buildScan.value("Eclipse version", eclipseVersion.get());
+                    tagIde("Eclipse", eclipseVersion.get());
                 } else {
                     buildScan.tag("Cmd Line");
                 }
             });
+        }
+    }
+
+    private void tagIde(String ideLabel, String version) {
+        buildScan.tag(ideLabel);
+        if(!version.isEmpty()) {
+            buildScan.value(ideLabel + " version", version);
         }
     }
 
