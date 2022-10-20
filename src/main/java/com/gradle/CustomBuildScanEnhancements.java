@@ -10,6 +10,7 @@ import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.util.GradleVersion;
 
+import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -106,16 +107,29 @@ final class CustomBuildScanEnhancements {
 
     private void captureCiMetadata() {
         if (isJenkins() || isHudson()) {
-            envVariable("BUILD_URL").ifPresent(url ->
+            Optional<String> buildUrl = envVariable("BUILD_URL");
+            Optional<String> buildNumber = envVariable("BUILD_NUMBER");
+            Optional<String> nodeName = envVariable("NODE_NAME");
+            Optional<String> jobName = envVariable("JOB_NAME");
+            Optional<String> stageName = envVariable("STAGE_NAME");
+
+            buildUrl.ifPresent(url ->
                 buildScan.link(isJenkins() ? "Jenkins build" : "Hudson build", url));
-            envVariable("BUILD_NUMBER").ifPresent(value ->
+            buildNumber.ifPresent(value ->
                 buildScan.value("CI build number", value));
-            envVariable("NODE_NAME").ifPresent(value ->
+            nodeName.ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI node", value));
-            envVariable("JOB_NAME").ifPresent(value ->
+            jobName.ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
-            envVariable("STAGE_NAME").ifPresent(value ->
+            stageName.ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
+
+            jobName.ifPresent(j -> buildNumber.ifPresent(b -> {
+                Map<String, String> params = new LinkedHashMap<>();
+                params.put("CI job", j);
+                params.put("CI build number", b);
+                customValueSearchLinker.registerLink("CI build", params);
+            }));
         }
 
         if (isTeamCity()) {
@@ -433,6 +447,13 @@ final class CustomBuildScanEnhancements {
         public void addCustomValueAndSearchLink(String linkLabel, String name, String value) {
             buildScan.value(name, value);
             registerLink(linkLabel, name, value);
+        }
+
+        private void registerLink(String linkLabel, Map<String, String> values) {
+            values.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey()) // results in a deterministic order of link parameters
+                .reduce((a, b) -> new AbstractMap.SimpleEntry<>(a.getKey() + "," + b.getKey(), a.getValue() + "," + b.getValue()))
+                .ifPresent(x -> registerLink(linkLabel, x.getKey(), x.getValue()));
         }
 
         private synchronized void registerLink(String linkLabel, String name, String value) {
