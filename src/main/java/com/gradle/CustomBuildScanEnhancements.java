@@ -450,6 +450,9 @@ final class CustomBuildScanEnhancements {
         }
 
         private void registerLink(String linkLabel, Map<String, String> values) {
+            // the parameters for a link querying multiple custom values look like:
+            // search.names=name1,name2&search.values=value1,value2
+            // this reduction groups all names and all values together in order to properly generate the query
             values.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey()) // results in a deterministic order of link parameters
                 .reduce((a, b) -> new AbstractMap.SimpleEntry<>(a.getKey() + "," + b.getKey(), a.getValue() + "," + b.getValue()))
