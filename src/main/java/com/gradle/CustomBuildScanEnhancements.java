@@ -128,7 +128,7 @@ final class CustomBuildScanEnhancements {
                 Map<String, String> params = new LinkedHashMap<>();
                 params.put("CI job", j);
                 params.put("CI build number", b);
-                customValueSearchLinker.registerLink("CI build", params);
+                customValueSearchLinker.registerLink("CI pipeline", params);
             }));
         }
 
