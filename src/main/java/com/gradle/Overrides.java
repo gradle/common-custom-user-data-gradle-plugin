@@ -1,5 +1,6 @@
 package com.gradle;
 
+import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.provider.ProviderFactory;
@@ -57,12 +58,22 @@ final class Overrides {
             booleanSysPropertyOrEnvVariable(LOCAL_CACHE_PUSH, providers).ifPresent(local::setPush);
         });
 
-        // Only touch remote build cache configuration if it is already present and of type HttpBuildCache
+        // Only touch remote build cache configuration if it is already present and of type HttpBuildCache or GradleEnterpriseBuildCache
         // Do nothing in case of another build cache type like AWS S3 being used
         if (buildCache.getRemote() instanceof HttpBuildCache) {
             buildCache.remote(HttpBuildCache.class, remote -> {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).ifPresent(shard -> remote.setUrl(appendPathAndTrailingSlash(remote.getUrl(), shard)));
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setUrl);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
+            });
+        }
+
+        if (buildCache.getRemote() instanceof GradleEnterpriseBuildCache) {
+            buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> "cache/" + shard).ifPresent(remote::setPath);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
