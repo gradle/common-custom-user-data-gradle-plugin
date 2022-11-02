@@ -1,1 +1,2 @@
 - [NEW] Add a link to all build scans with same Jenkins build number and job name #95
+- [FIX] - Support overrides to GradleEnterpriseBuildCache connector
