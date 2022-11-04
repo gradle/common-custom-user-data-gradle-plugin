@@ -61,6 +61,8 @@ final class Overrides {
         // Do nothing in case of another build cache type like AWS S3 being used
         if (buildCache.getRemote() instanceof HttpBuildCache) {
             buildCache.remote(HttpBuildCache.class, remote -> {
+                // By overriding the URL after appending the shard, the URL override will overwrite the shard value
+                // This is an intentional design decision - it is assumed that the user will provide the full URL, including the shard, if they override URL
                 sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).ifPresent(shard -> remote.setUrl(appendPathAndTrailingSlash(remote.getUrl(), shard)));
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setUrl);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
