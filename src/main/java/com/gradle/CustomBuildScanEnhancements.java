@@ -65,15 +65,13 @@ final class CustomBuildScanEnhancements {
                 Optional<String> androidStudioVersion = projectProperty("android.injected.studio.version");
                 Optional<String> eclipseVersion = sysProperty("eclipse.buildId");
                 Optional<String> ideaSync = sysProperty("idea.sync.active");
-                if (ideaSync.isPresent()) {
-                    buildScan.tag("IDE sync");
-                }
+
                 if (ideaVendorName.isPresent()) {
                     String ideaVendorNameValue = ideaVendorName.get();
-                    if(ideaVendorNameValue.equals("Google")) {
-                        // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (ie. 2020.3.1 Patch 3 instead of 2020.3)
+                    if (ideaVendorNameValue.equals("Google")) {
+                        // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (e.g. 2020.3.1 Patch 3 instead of 2020.3)
                         tagIde("Android Studio", androidStudioVersion.orElse(""));
-                    } else if(ideaVendorNameValue.equals("JetBrains")) {
+                    } else if (ideaVendorNameValue.equals("JetBrains")) {
                         tagIde("IntelliJ IDEA", ideaVersion.orElse(""));
                     }
                 } else if (invokedFromAndroidStudio.isPresent()) {
@@ -87,13 +85,17 @@ final class CustomBuildScanEnhancements {
                 } else {
                     buildScan.tag("Cmd Line");
                 }
+
+                if (ideaSync.isPresent()) {
+                    buildScan.tag("IDE sync");
+                }
             });
         }
     }
 
     private void tagIde(String ideLabel, String version) {
         buildScan.tag(ideLabel);
-        if(!version.isEmpty()) {
+        if (!version.isEmpty()) {
             buildScan.value(ideLabel + " version", version);
         }
     }
@@ -134,8 +136,7 @@ final class CustomBuildScanEnhancements {
             gradle.projectsEvaluated(g -> {
                 Optional<String> teamCityConfigFile = projectProperty("teamcity.configuration.properties.file");
                 Optional<String> buildId = projectProperty("teamcity.build.id");
-                if (teamCityConfigFile.isPresent()
-                    && buildId.isPresent()) {
+                if (teamCityConfigFile.isPresent() && buildId.isPresent()) {
                     Properties properties = readPropertiesFile(teamCityConfigFile.get());
                     String teamCityServerUrl = properties.getProperty("teamcity.serverUrl");
                     if (teamCityServerUrl != null) {

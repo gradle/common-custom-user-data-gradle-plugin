@@ -67,7 +67,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
         // configuration changes applied in this block will override earlier configuration settings,
         // including those set in the settings.gradle(.kts)
-        Action<Settings> settingsAction = ___ -> {
+        Action<Settings> settingsAction = __ -> {
             Overrides overrides = new Overrides(providers);
             overrides.configureGradleEnterprise(gradleEnterprise);
             overrides.configureBuildCache(buildCache);
