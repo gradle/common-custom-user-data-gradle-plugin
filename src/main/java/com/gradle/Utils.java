@@ -105,6 +105,18 @@ final class Utils {
         return baseUri;
     }
 
+    static String concatenatePaths(String basePath, String path) {
+        if (isNotEmpty(basePath)) {
+            if (isNotEmpty(path)) {
+                String normalizedBasePath = appendIfMissing(basePath, "/");
+                String normalizedPath = stripPrefix("/", path);
+                return normalizedBasePath + normalizedPath;
+            }
+            return basePath;
+        }
+        return path;
+    }
+
     static String urlEncode(String str) {
         try {
             return URLEncoder.encode(str, StandardCharsets.UTF_8.name());
