@@ -2,6 +2,7 @@
 > - _[Gradle Enterprise Build Configuration Samples][ge-build-config-samples]_
 > - _[Gradle Enterprise Build Optimization Experiments][ge-build-optimization-experiments]_
 > - _[Gradle Enterprise Build Validation Scripts][ge-build-validation-scripts]_
+> - _[Gradle Enterprise Open Source Projects][ge-oss-projects]_
 > - _[Common Custom User Data Maven Extension][ccud-maven-extension]_
 > - _[Common Custom User Data Gradle Plugin][ccud-gradle-plugin] (this repository)_
 > - _[Android Cache Fix Gradle Plugin][android-cache-fix-plugin]_
@@ -69,19 +70,44 @@ to modify the build scripts. For example, to disable the local build cache when 
 <details>
   <summary>Click to see the complete set of available system properties and environment variables in the table below. </summary>
 
-| Gradle Enterprise / Build Cache API | System property | Environment variable |
-| :-------------- | :-------------  | :------------------- |
-|gradleEnterprise.server|gradle.enterprise.url|GRADLE_ENTERPRISE_URL|
-|gradleEnterprise.allowUntrustedServer|gradle.enterprise.allowUntrustedServer|GRADLE_ENTERPRISE_ALLOWUNTRUSTEDSERVER|
-|buildCache.local.setEnabled|gradle.cache.local.enabled|GRADLE_CACHE_LOCAL_ENABLED|
-|buildCache.local.setPush|gradle.cache.local.push|GRADLE_CACHE_LOCAL_PUSH|
-|buildCache.local.setDirectory|gradle.cache.local.directory|GRADLE_CACHE_LOCAL_DIRECTORY|
-|buildCache.local.setRemoveUnusedEntriesAfterDays|gradle.cache.local.removeUnusedEntriesAfterDays|GRADLE_CACHE_LOCAL_REMOVEUNUSEDENTRIESAFTERDAYS|
-|buildCache.remote.setEnabled|gradle.cache.remote.enabled|GRADLE_CACHE_REMOTE_ENABLED|
-|buildCache.remote.setPush|gradle.cache.remote.push|GRADLE_CACHE_REMOTE_PUSH|
-|buildCache.remote.setUrl|gradle.cache.remote.url|GRADLE_CACHE_REMOTE_URL|
-|buildCache.remote.setAllowUntrustedServer|gradle.cache.remote.allowUntrustedServer|GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER|
-|---|gradle.cache.remote.shard|GRADLE_CACHE_REMOTE_SHARD|
+### Gradle Enterprise settings
+
+| Gradle Enterprise API                 | System property                        | Environment variable                   |
+|:--------------------------------------|:---------------------------------------|:---------------------------------------|
+| gradleEnterprise.server               | gradle.enterprise.url                  | GRADLE_ENTERPRISE_URL                  |
+| gradleEnterprise.allowUntrustedServer | gradle.enterprise.allowUntrustedServer | GRADLE_ENTERPRISE_ALLOWUNTRUSTEDSERVER |
+
+### Local Build Cache settings
+
+| Local Build Cache API                            | System property                                 | Environment variable                            |
+|:-------------------------------------------------|:------------------------------------------------|:------------------------------------------------|
+| buildCache.local.setEnabled                      | gradle.cache.local.enabled                      | GRADLE_CACHE_LOCAL_ENABLED                      |
+| buildCache.local.setPush                         | gradle.cache.local.push                         | GRADLE_CACHE_LOCAL_PUSH                         |
+| buildCache.local.setDirectory                    | gradle.cache.local.directory                    | GRADLE_CACHE_LOCAL_DIRECTORY                    |
+| buildCache.local.setRemoveUnusedEntriesAfterDays | gradle.cache.local.removeUnusedEntriesAfterDays | GRADLE_CACHE_LOCAL_REMOVEUNUSEDENTRIESAFTERDAYS |
+
+### HTTP Build Cache settings
+
+| HTTP Build Cache API                      | System property                          | Environment variable                     |
+|:------------------------------------------|:-----------------------------------------|:-----------------------------------------|
+| buildCache.remote.setEnabled              | gradle.cache.remote.enabled              | GRADLE_CACHE_REMOTE_ENABLED              |
+| buildCache.remote.setPush                 | gradle.cache.remote.push                 | GRADLE_CACHE_REMOTE_PUSH                 |
+| buildCache.remote.setAllowUntrustedServer | gradle.cache.remote.allowUntrustedServer | GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER |
+| buildCache.remote.setUrl                  | gradle.cache.remote.url                  | GRADLE_CACHE_REMOTE_URL                  |
+| buildCache.remote.setUrl                  | gradle.cache.remote.path                 | GRADLE_CACHE_REMOTE_PATH                 |
+| buildCache.remote.setUrl                  | gradle.cache.remote.shard                | GRADLE_CACHE_REMOTE_SHARD                |
+
+### Gradle Enterprise Build Cache settings
+
+| Gradle Enterprise Build Cache API         | System property                          | Environment variable                     |
+|:------------------------------------------|:-----------------------------------------|:-----------------------------------------|
+| buildCache.remote.setEnabled              | gradle.cache.remote.enabled              | GRADLE_CACHE_REMOTE_ENABLED              |
+| buildCache.remote.setPush                 | gradle.cache.remote.push                 | GRADLE_CACHE_REMOTE_PUSH                 |
+| buildCache.remote.setAllowUntrustedServer | gradle.cache.remote.allowUntrustedServer | GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER |
+| buildCache.remote.setServer               | gradle.cache.remote.url                  | GRADLE_CACHE_REMOTE_URL                  |
+| buildCache.remote.setPath                 | gradle.cache.remote.path                 | GRADLE_CACHE_REMOTE_PATH                 |
+| buildCache.remote.setPath                 | gradle.cache.remote.shard                | GRADLE_CACHE_REMOTE_SHARD                |
+
 </details>
 
 ## Developing a customized version of the plugin
@@ -114,6 +140,7 @@ The Gradle Enterprise Common Custom User Data Gradle plugin is open-source softw
 [ge-build-config-samples]: https://github.com/gradle/gradle-enterprise-build-config-samples
 [ge-build-optimization-experiments]: https://github.com/gradle/gradle-enterprise-build-optimization-experiments
 [ge-build-validation-scripts]: https://github.com/gradle/gradle-enterprise-build-validation-scripts
+[ge-oss-projects]: https://github.com/gradle/gradle-enterprise-oss-projects
 [ccud-gradle-plugin]: https://github.com/gradle/common-custom-user-data-gradle-plugin
 [ccud-maven-extension]: https://github.com/gradle/common-custom-user-data-maven-extension
 [android-cache-fix-plugin]: https://github.com/gradle/android-cache-fix-gradle-plugin

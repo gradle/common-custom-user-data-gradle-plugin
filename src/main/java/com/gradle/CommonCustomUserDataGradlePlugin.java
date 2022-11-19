@@ -43,38 +43,47 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         }
     }
 
+    public static void apply(Object gradleEnterprise, ProviderFactory providers, Settings settings) {
+        applySettingsPlugin(
+                gradleEnterprise,
+                providers,
+                settings
+        );
+    }
+
+    private static void applySettingsPlugin(Object gradleEnterpriseExtension, ProviderFactory providers, Settings settings) {
+        GradleEnterpriseExtension gradleEnterprise = ProxyFactory.createProxy(gradleEnterpriseExtension, GradleEnterpriseExtension.class);
+        CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
+
+        customGradleEnterpriseConfig.configureGradleEnterprise(gradleEnterprise);
+
+        BuildScanExtension buildScan = gradleEnterprise.getBuildScan();
+        customGradleEnterpriseConfig.configureBuildScanPublishing(buildScan);
+        CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, settings.getGradle());
+        buildScanEnhancements.apply();
+
+        BuildCacheConfiguration buildCache = settings.getBuildCache();
+        customGradleEnterpriseConfig.configureBuildCache(buildCache);
+
+        // configuration changes applied in this block will override earlier configuration settings,
+        // including those set in the settings.gradle(.kts)
+        Action<Settings> settingsAction = ___ -> {
+            Overrides overrides = new Overrides(providers);
+            overrides.configureGradleEnterprise(gradleEnterprise);
+            overrides.configureBuildCache(buildCache);
+        };
+
+        // it is possible that the settings have already been evaluated by now, in which case
+        // a settingsEvaluated callback would not fire anymore
+        if (settingsHaveBeenEvaluated()) {
+            settingsAction.execute(settings);
+        } else {
+            settings.getGradle().settingsEvaluated(settingsAction);
+        }
+    }
+
     private void applySettingsPlugin(Settings settings) {
-        settings.getPluginManager().withPlugin("com.gradle.enterprise", __ -> {
-            CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
-
-            Object extension = settings.getExtensions().getByName("gradleEnterprise");
-            GradleEnterpriseExtension gradleEnterprise = ProxyFactory.createProxy(extension, GradleEnterpriseExtension.class);
-            customGradleEnterpriseConfig.configureGradleEnterprise(gradleEnterprise);
-
-            BuildScanExtension buildScan = gradleEnterprise.getBuildScan();
-            customGradleEnterpriseConfig.configureBuildScanPublishing(buildScan);
-            CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, settings.getGradle());
-            buildScanEnhancements.apply();
-
-            BuildCacheConfiguration buildCache = settings.getBuildCache();
-            customGradleEnterpriseConfig.configureBuildCache(buildCache);
-
-            // configuration changes applied in this block will override earlier configuration settings,
-            // including those set in the settings.gradle(.kts)
-            Action<Settings> settingsAction = ___ -> {
-                Overrides overrides = new Overrides(providers);
-                overrides.configureGradleEnterprise(gradleEnterprise);
-                overrides.configureBuildCache(buildCache);
-            };
-
-            // it is possible that the settings have already been evaluated by now, in which case
-            // a settingsEvaluated callback would not fire anymore
-            if (settingsHaveBeenEvaluated()) {
-                settingsAction.execute(settings);
-            } else {
-                settings.getGradle().settingsEvaluated(settingsAction);
-            }
-        });
+        settings.getPluginManager().withPlugin("com.gradle.enterprise", __ -> applySettingsPlugin(settings.getExtensions().getByName("gradleEnterprise"), providers, settings));
     }
 
     private void applyProjectPluginGradle5(Project project) {
@@ -144,7 +153,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         }
     }
 
-    private boolean settingsHaveBeenEvaluated() {
+    private static boolean settingsHaveBeenEvaluated() {
         return Arrays.stream(Thread.currentThread().getStackTrace())
             .map(StackTraceElement::getMethodName)
             .anyMatch(s -> s.contains("settingsEvaluated"));

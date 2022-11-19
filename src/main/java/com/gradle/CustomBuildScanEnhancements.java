@@ -10,6 +10,7 @@ import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.util.GradleVersion;
 
+import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -58,27 +59,42 @@ final class CustomBuildScanEnhancements {
         if (!isCi()) {
             // Wait for projects to load to ensure Gradle project properties are initialized
             gradle.projectsEvaluated(g -> {
+                Optional<String> ideaVendorName = sysProperty("idea.vendor.name");
+                Optional<String> ideaVersion = sysProperty("idea.version");
                 Optional<String> invokedFromAndroidStudio = projectProperty("android.injected.invoked.from.ide");
                 Optional<String> androidStudioVersion = projectProperty("android.injected.studio.version");
-                Optional<String> ideaVersion = sysProperty("idea.version");
                 Optional<String> eclipseVersion = sysProperty("eclipse.buildId");
                 Optional<String> ideaSync = sysProperty("idea.sync.active");
                 if (ideaSync.isPresent()) {
                     buildScan.tag("IDE sync");
                 }
-                if (invokedFromAndroidStudio.isPresent()) {
-                    buildScan.tag("Android Studio");
-                    androidStudioVersion.ifPresent(v -> buildScan.value("Android Studio version", v));
+                if (ideaVendorName.isPresent()) {
+                    String ideaVendorNameValue = ideaVendorName.get();
+                    if(ideaVendorNameValue.equals("Google")) {
+                        // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (ie. 2020.3.1 Patch 3 instead of 2020.3)
+                        tagIde("Android Studio", androidStudioVersion.orElse(""));
+                    } else if(ideaVendorNameValue.equals("JetBrains")) {
+                        tagIde("IntelliJ IDEA", ideaVersion.orElse(""));
+                    }
+                } else if (invokedFromAndroidStudio.isPresent()) {
+                    // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
+                    tagIde("Android Studio", androidStudioVersion.orElse(""));
                 } else if (ideaVersion.isPresent()) {
-                    buildScan.tag("IntelliJ IDEA");
-                    buildScan.value("IntelliJ IDEA version", ideaVersion.get());
+                    // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
+                    tagIde("IntelliJ IDEA", ideaVersion.get());
                 } else if (eclipseVersion.isPresent()) {
-                    buildScan.tag("Eclipse");
-                    buildScan.value("Eclipse version", eclipseVersion.get());
+                    tagIde("Eclipse", eclipseVersion.get());
                 } else {
                     buildScan.tag("Cmd Line");
                 }
             });
+        }
+    }
+
+    private void tagIde(String ideLabel, String version) {
+        buildScan.tag(ideLabel);
+        if(!version.isEmpty()) {
+            buildScan.value(ideLabel + " version", version);
         }
     }
 
@@ -88,37 +104,48 @@ final class CustomBuildScanEnhancements {
 
     private void captureCiMetadata() {
         if (isJenkins() || isHudson()) {
-            envVariable("BUILD_URL").ifPresent(url ->
+            Optional<String> buildUrl = envVariable("BUILD_URL");
+            Optional<String> buildNumber = envVariable("BUILD_NUMBER");
+            Optional<String> nodeName = envVariable("NODE_NAME");
+            Optional<String> jobName = envVariable("JOB_NAME");
+            Optional<String> stageName = envVariable("STAGE_NAME");
+
+            buildUrl.ifPresent(url ->
                 buildScan.link(isJenkins() ? "Jenkins build" : "Hudson build", url));
-            envVariable("BUILD_NUMBER").ifPresent(value ->
+            buildNumber.ifPresent(value ->
                 buildScan.value("CI build number", value));
-            envVariable("NODE_NAME").ifPresent(value ->
+            nodeName.ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI node", value));
-            envVariable("JOB_NAME").ifPresent(value ->
+            jobName.ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
-            envVariable("STAGE_NAME").ifPresent(value ->
+            stageName.ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
+
+            jobName.ifPresent(j -> buildNumber.ifPresent(b -> {
+                Map<String, String> params = new LinkedHashMap<>();
+                params.put("CI job", j);
+                params.put("CI build number", b);
+                customValueSearchLinker.registerLink("CI pipeline", params);
+            }));
         }
 
         if (isTeamCity()) {
             // Wait for projects to load to ensure Gradle project properties are initialized
             gradle.projectsEvaluated(g -> {
                 Optional<String> teamCityConfigFile = projectProperty("teamcity.configuration.properties.file");
-                Optional<String> buildNumber = projectProperty("build.number");
-                Optional<String> buildTypeId = projectProperty("teamcity.buildType.id");
+                Optional<String> buildId = projectProperty("teamcity.build.id");
                 if (teamCityConfigFile.isPresent()
-                    && buildNumber.isPresent()
-                    && buildTypeId.isPresent()) {
+                    && buildId.isPresent()) {
                     Properties properties = readPropertiesFile(teamCityConfigFile.get());
                     String teamCityServerUrl = properties.getProperty("teamcity.serverUrl");
                     if (teamCityServerUrl != null) {
-                        String buildUrl = appendIfMissing(teamCityServerUrl, "/") + "viewLog.html?buildNumber=" + urlEncode(buildNumber.get()) + "&buildTypeId=" + urlEncode(buildTypeId.get());
+                        String buildUrl = appendIfMissing(teamCityServerUrl, "/") + "viewLog.html?buildId=" + urlEncode(buildId.get());
                         buildScan.link("TeamCity build", buildUrl);
                     }
                 }
-                buildNumber.ifPresent(value ->
+                projectProperty("build.number").ifPresent(value ->
                     buildScan.value("CI build number", value));
-                buildTypeId.ifPresent(value ->
+                projectProperty("teamcity.buildType.id").ifPresent(value ->
                     customValueSearchLinker.addCustomValueAndSearchLink("CI build config", value));
                 projectProperty("agent.name").ifPresent(value ->
                     customValueSearchLinker.addCustomValueAndSearchLink("CI agent", value));
@@ -399,6 +426,16 @@ final class CustomBuildScanEnhancements {
         public void addCustomValueAndSearchLink(String linkLabel, String name, String value) {
             buildScan.value(name, value);
             registerLink(linkLabel, name, value);
+        }
+
+        private void registerLink(String linkLabel, Map<String, String> values) {
+            // the parameters for a link querying multiple custom values look like:
+            // search.names=name1,name2&search.values=value1,value2
+            // this reduction groups all names and all values together in order to properly generate the query
+            values.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey()) // results in a deterministic order of link parameters
+                .reduce((a, b) -> new AbstractMap.SimpleEntry<>(a.getKey() + "," + b.getKey(), a.getValue() + "," + b.getValue()))
+                .ifPresent(x -> registerLink(linkLabel, x.getKey(), x.getValue()));
         }
 
         private synchronized void registerLink(String linkLabel, String name, String value) {

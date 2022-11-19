@@ -3,9 +3,9 @@ plugins {
     id 'groovy'
     id 'maven-publish'
     id 'signing'
-    id 'com.gradle.plugin-publish' version '1.0.0'
+    id 'com.gradle.plugin-publish' version '1.1.0'
     id 'com.github.breadmoirai.github-release' version '2.4.1'
-    id 'org.gradle.wrapper-upgrade' version '0.10.2'
+    id 'org.gradle.wrapper-upgrade' version '0.11.1'
 }
 
 group = 'com.gradle'
@@ -16,8 +16,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.10.3'
-    testImplementation platform("org.spockframework:spock-bom:2.1-groovy-3.0")
+    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.11.4'
+    testImplementation platform("org.spockframework:spock-bom:2.3-groovy-3.0")
     testImplementation "org.spockframework:spock-core"
 }
 
