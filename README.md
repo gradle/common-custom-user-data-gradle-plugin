@@ -69,14 +69,14 @@ to modify the build scripts. For example, to disable the local build cache when 
 <details>
   <summary>Click to see the complete set of available system properties and environment variables in the table below. </summary>
 
-### Gradle Enterprise Settings
+### Gradle Enterprise settings
 
 | Gradle Enterprise API                 | System property                        | Environment variable                   |
 |:--------------------------------------|:---------------------------------------|:---------------------------------------|
 | gradleEnterprise.server               | gradle.enterprise.url                  | GRADLE_ENTERPRISE_URL                  |
 | gradleEnterprise.allowUntrustedServer | gradle.enterprise.allowUntrustedServer | GRADLE_ENTERPRISE_ALLOWUNTRUSTEDSERVER |
 
-### Local Build Cache Settings
+### Local Build Cache settings
 
 | Local Build Cache API                            | System property                                 | Environment variable                            |
 |:-------------------------------------------------|:------------------------------------------------|:------------------------------------------------|
@@ -85,25 +85,27 @@ to modify the build scripts. For example, to disable the local build cache when 
 | buildCache.local.setDirectory                    | gradle.cache.local.directory                    | GRADLE_CACHE_LOCAL_DIRECTORY                    |
 | buildCache.local.setRemoveUnusedEntriesAfterDays | gradle.cache.local.removeUnusedEntriesAfterDays | GRADLE_CACHE_LOCAL_REMOVEUNUSEDENTRIESAFTERDAYS |
 
-### Gradle Enterprise Build Cache Settings
+### HTTP Build Cache settings
+
+| HTTP Build Cache API                      | System property                          | Environment variable                     |
+|:------------------------------------------|:-----------------------------------------|:-----------------------------------------|
+| buildCache.remote.setEnabled              | gradle.cache.remote.enabled              | GRADLE_CACHE_REMOTE_ENABLED              |
+| buildCache.remote.setPush                 | gradle.cache.remote.push                 | GRADLE_CACHE_REMOTE_PUSH                 |
+| buildCache.remote.setAllowUntrustedServer | gradle.cache.remote.allowUntrustedServer | GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER |
+| buildCache.remote.setUrl                  | gradle.cache.remote.url                  | GRADLE_CACHE_REMOTE_URL                  |
+| buildCache.remote.setUrl                  | gradle.cache.remote.path                 | GRADLE_CACHE_REMOTE_PATH                 |
+| buildCache.remote.setUrl                  | gradle.cache.remote.shard                | GRADLE_CACHE_REMOTE_SHARD                |
+
+### Gradle Enterprise Build Cache settings
 
 | Gradle Enterprise Build Cache API         | System property                          | Environment variable                     |
 |:------------------------------------------|:-----------------------------------------|:-----------------------------------------|
 | buildCache.remote.setEnabled              | gradle.cache.remote.enabled              | GRADLE_CACHE_REMOTE_ENABLED              |
 | buildCache.remote.setPush                 | gradle.cache.remote.push                 | GRADLE_CACHE_REMOTE_PUSH                 |
+| buildCache.remote.setAllowUntrustedServer | gradle.cache.remote.allowUntrustedServer | GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER |
 | buildCache.remote.setServer               | gradle.cache.remote.url                  | GRADLE_CACHE_REMOTE_URL                  |
-| buildCache.remote.setAllowUntrustedServer | gradle.cache.remote.allowUntrustedServer | GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER |
+| buildCache.remote.setPath                 | gradle.cache.remote.path                 | GRADLE_CACHE_REMOTE_PATH                 |
 | buildCache.remote.setPath                 | gradle.cache.remote.shard                | GRADLE_CACHE_REMOTE_SHARD                |
-
-### HTTP Build Cache Settings
-
-| HTTP Build Cache API                      | System property                          | Environment variable                    |
-|:------------------------------------------|:-----------------------------------------|:-----------------------------------------|
-| buildCache.remote.setEnabled              | gradle.cache.remote.enabled              | GRADLE_CACHE_REMOTE_ENABLED              |
-| buildCache.remote.setPush                 | gradle.cache.remote.push                 | GRADLE_CACHE_REMOTE_PUSH                 |
-| buildCache.remote.setUrl                  | gradle.cache.remote.url                  | GRADLE_CACHE_REMOTE_URL                  |
-| buildCache.remote.setAllowUntrustedServer | gradle.cache.remote.allowUntrustedServer | GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER |
-| ---                                       | gradle.cache.remote.shard                | GRADLE_CACHE_REMOTE_SHARD                |
 
 </details>
 
