@@ -98,7 +98,7 @@ final class CustomBuildScanEnhancements {
 
     private void tagIde(String ideLabel, String version) {
         buildScan.tag(ideLabel);
-        if(!version.isEmpty()) {
+        if (!version.isEmpty()) {
             buildScan.value(ideLabel + " version", version);
         }
     }
