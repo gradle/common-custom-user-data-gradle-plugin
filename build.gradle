@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.11.4'
+    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.12.1'
     testImplementation platform("org.spockframework:spock-bom:2.3-groovy-3.0")
     testImplementation "org.spockframework:spock-core"
 }
