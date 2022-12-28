@@ -269,49 +269,92 @@ final class CustomBuildScanEnhancements {
     private boolean isGenericCI() {
         return envVariable("CI").isPresent() || sysProperty("CI").isPresent();
     }
-
     private boolean isJenkins() {
-        return envVariable("JENKINS_URL").isPresent();
+        return isJenkins(providers);
+    }
+
+    private static boolean isJenkins(ProviderFactory providers) {
+        return Utils.envVariable("JENKINS_URL", providers).isPresent();
     }
 
     private boolean isHudson() {
-        return envVariable("HUDSON_URL").isPresent();
+        return isHudson(providers);
+    }
+
+    private static boolean isHudson(ProviderFactory providers) {
+        return Utils.envVariable("HUDSON_URL", providers).isPresent();
     }
 
     private boolean isTeamCity() {
-        return envVariable("TEAMCITY_VERSION").isPresent();
+        return isTeamCity(providers);
+    }
+
+    private static boolean isTeamCity(ProviderFactory providers) {
+        return Utils.envVariable("TEAMCITY_VERSION", providers).isPresent();
     }
 
     private boolean isCircleCI() {
-        return envVariable("CIRCLE_BUILD_URL").isPresent();
+        return isCircleCI(providers);
+    }
+
+    private static boolean isCircleCI(ProviderFactory providers) {
+        return Utils.envVariable("CIRCLE_BUILD_URL", providers).isPresent();
     }
 
     private boolean isBamboo() {
-        return envVariable("bamboo_resultsUrl").isPresent();
+        return isBamboo(providers);
+    }
+
+    private static boolean isBamboo(ProviderFactory providers) {
+        return Utils.envVariable("bamboo_resultsUrl", providers).isPresent();
     }
 
     private boolean isGitHubActions() {
-        return envVariable("GITHUB_ACTIONS").isPresent();
+        return isGitHubActions(providers);
+    }
+
+    private static boolean isGitHubActions(ProviderFactory providers) {
+        return Utils.envVariable("GITHUB_ACTIONS", providers).isPresent();
     }
 
     private boolean isGitLab() {
-        return envVariable("GITLAB_CI").isPresent();
+        return isGitLab(providers);
+    }
+
+    private static boolean isGitLab(ProviderFactory providers) {
+        return Utils.envVariable("GITLAB_CI", providers).isPresent();
     }
 
     private boolean isTravis() {
-        return envVariable("TRAVIS_JOB_ID").isPresent();
+        return isTravis(providers);
+    }
+
+    private static boolean isTravis(ProviderFactory providers) {
+        return Utils.envVariable("TRAVIS_JOB_ID", providers).isPresent();
     }
 
     private boolean isBitrise() {
-        return envVariable("BITRISE_BUILD_URL").isPresent();
+        return isBitrise(providers);
+    }
+
+    private static boolean isBitrise(ProviderFactory providers) {
+        return Utils.envVariable("BITRISE_BUILD_URL", providers).isPresent();
     }
 
     private boolean isGoCD() {
-        return envVariable("GO_SERVER_URL").isPresent();
+        return isGoCD(providers);
+    }
+
+    private static boolean isGoCD(ProviderFactory providers) {
+        return Utils.envVariable("GO_SERVER_URL", providers).isPresent();
     }
 
     private boolean isAzurePipelines() {
-        return envVariable("TF_BUILD").isPresent();
+        return isAzurePipelines(providers);
+    }
+
+    private static boolean isAzurePipelines(ProviderFactory providers) {
+        return Utils.envVariable("TF_BUILD", providers).isPresent();
     }
 
     private void captureGitMetadata() {
@@ -382,17 +425,17 @@ final class CustomBuildScanEnhancements {
         }
 
         private String getGitBranchName(Supplier<String> gitCommand) {
-            if (isJenkins() || isHudson()) {
+            if (isJenkins(providers) || isHudson(providers)) {
                 Optional<String> branch = Utils.envVariable("BRANCH_NAME", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
-            } else if (isGitLab()) {
+            } else if (isGitLab(providers)) {
                 Optional<String> branch = Utils.envVariable("CI_COMMIT_REF_NAME", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
-            } else if (isAzurePipelines()) {
+            } else if (isAzurePipelines(providers)) {
                 Optional<String> branch = Utils.envVariable("BUILD_SOURCEBRANCH", providers);
                 if (branch.isPresent()) {
                     return branch.get();
@@ -400,23 +443,6 @@ final class CustomBuildScanEnhancements {
             }
             return gitCommand.get();
         }
-
-        private boolean isJenkins() {
-            return Utils.envVariable("JENKINS_URL", providers).isPresent();
-        }
-
-        private boolean isHudson() {
-            return Utils.envVariable("HUDSON_URL", providers).isPresent();
-        }
-
-        private boolean isGitLab() {
-            return Utils.envVariable("GITLAB_CI", providers).isPresent();
-        }
-
-        private boolean isAzurePipelines() {
-            return Utils.envVariable("TF_BUILD", providers).isPresent();
-        }
-
     }
 
     /**
