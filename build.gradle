@@ -85,12 +85,14 @@ githubRelease {
    body = layout.projectDirectory.file('release/changes.md').asFile.text.trim()
 }
 
-tasks.register('createReleaseTag', CreateGitTag) {
+def createReleaseTag = tasks.register('createReleaseTag', CreateGitTag) {
+    // Ensure the tag is created if building and publishing the plugin succeeds.
+    mustRunAfter('publishPlugins')
     tagName = gitReleaseTag()
 }
 
 tasks.named('githubRelease').configure {
-    dependsOn('createReleaseTag')
+    dependsOn(createReleaseTag)
 }
 
 tasks.withType(Sign).configureEach {
