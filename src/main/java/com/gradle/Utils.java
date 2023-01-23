@@ -1,5 +1,6 @@
 package com.gradle;
 
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.Provider;
@@ -136,8 +137,8 @@ final class Utils {
         }
     }
 
-    static Properties readPropertiesFile(String name, ProviderFactory providers, Gradle gradle) {
-        try (InputStream input = readFile(name, providers, gradle)) {
+    static Properties readPropertiesFile(String name, ProviderFactory providers, Directory projectDirectory) {
+        try (InputStream input = readFile(name, providers, projectDirectory)) {
             Properties properties = new Properties();
             properties.load(input);
             return properties;
@@ -146,9 +147,9 @@ final class Utils {
         }
     }
 
-    static InputStream readFile(String name, ProviderFactory providers, Gradle gradle) throws FileNotFoundException {
+    static InputStream readFile(String name, ProviderFactory providers, Directory projectDirectory) throws FileNotFoundException {
         if (isGradle65OrNewer()) {
-            RegularFile file = gradle.getRootProject().getLayout().getProjectDirectory().file(name);
+            RegularFile file = projectDirectory.file(name);
             Provider<byte[]> fileContent = providers.fileContents(file).getAsBytes();
             if (!isGradle74OrNewer()) {
                 fileContent = fileContent.forUseAtConfigurationTime();
