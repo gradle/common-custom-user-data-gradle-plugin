@@ -4,6 +4,9 @@ import org.gradle.api.provider.ProviderFactory;
 
 final class CiUtils {
 
+    private CiUtils() {
+    }
+
     static boolean isCi(ProviderFactory providers) {
         return isGenericCI(providers)
                 || isJenkins(providers)
