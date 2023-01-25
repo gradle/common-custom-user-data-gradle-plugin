@@ -9,7 +9,6 @@ import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
-import org.gradle.util.GradleVersion;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -25,17 +24,17 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
     public void apply(Object target) {
         if (target instanceof Settings) {
-            if (!isGradle6OrNewer()) {
+            if (!Utils.isGradle6OrNewer()) {
                 throw new GradleException("For Gradle versions prior to 6.0, common-custom-user-data-gradle-plugin must be applied to the Root project");
             } else {
                 applySettingsPlugin((Settings) target);
             }
         } else if (target instanceof Project) {
-            if (isGradle6OrNewer()) {
+            if (Utils.isGradle6OrNewer()) {
                 throw new GradleException("For Gradle versions 6.0 and newer, common-custom-user-data-gradle-plugin must be applied to Settings");
-            } else if (isGradle5OrNewer()) {
+            } else if (Utils.isGradle5OrNewer()) {
                 applyProjectPluginGradle5((Project) target);
-            } else if (isGradle4OrNewer()) {
+            } else if (Utils.isGradle4OrNewer()) {
                 applyProjectPluginGradle4((Project) target);
             } else {
                 throw new GradleException("For Gradle versions prior to 4.0, common-custom-user-data-gradle-plugin is not supported");
@@ -133,18 +132,6 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
                 overrides.configureGradleEnterpriseOnGradle4(buildScan);
             });
         });
-    }
-
-    private static boolean isGradle6OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("6.0")) >= 0;
-    }
-
-    private static boolean isGradle5OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0;
-    }
-
-    private static boolean isGradle4OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("4.0")) >= 0;
     }
 
     private static void ensureRootProject(Project project) {
