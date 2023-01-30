@@ -115,13 +115,13 @@ final class CustomBuildScanEnhancements {
                 String ideaVendorNameValue = props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).get();
                 if (ideaVendorNameValue.equals("Google")) {
                     // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (e.g. 2020.3.1 Patch 3 instead of 2020.3)
-                    tagIde("Android Studio", props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION).getOrElse(""));
+                    tagIde("Android Studio", getOrEmpty(props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION)));
                 } else if (ideaVendorNameValue.equals("JetBrains")) {
-                    tagIde("IntelliJ IDEA", props.get(SYSTEM_PROP_IDEA_VERSION).getOrElse(""));
+                    tagIde("IntelliJ IDEA", getOrEmpty(props.get(SYSTEM_PROP_IDEA_VERSION)));
                 }
             } else if (props.get(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE).isPresent()) {
                 // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
-                tagIde("Android Studio", props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION).getOrElse(""));
+                tagIde("Android Studio", getOrEmpty(props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION)));
             } else if (props.get(SYSTEM_PROP_IDEA_VERSION).isPresent()) {
                 // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
                 tagIde("IntelliJ IDEA", props.get(SYSTEM_PROP_IDEA_VERSION).get());
@@ -133,6 +133,15 @@ final class CustomBuildScanEnhancements {
 
             if (props.get(SYSTEM_PROP_IDEA_SYNC_ACTIVE).isPresent()) {
                 buildScan.tag("IDE sync");
+            }
+        }
+
+        private String getOrEmpty(Provider<String> p) {
+            if (Utils.isGradle43rNewer()) {
+                return p.getOrElse("");
+            } else {
+                String value = p.getOrNull();
+                return value != null ? value : "";
             }
         }
 

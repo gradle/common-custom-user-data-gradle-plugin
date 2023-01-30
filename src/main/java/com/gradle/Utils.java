@@ -203,6 +203,10 @@ final class Utils {
         return isGradleNewerThan("4.0");
     }
 
+    public static boolean isGradle43rNewer() {
+        return isGradleNewerThan("4.3");
+    }
+
     static boolean isGradle5OrNewer() {
         return isGradleNewerThan("5.0");
     }
