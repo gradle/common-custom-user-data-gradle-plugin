@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.12.2'
+    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.12.3'
 }
 
 wrapperUpgrade {
