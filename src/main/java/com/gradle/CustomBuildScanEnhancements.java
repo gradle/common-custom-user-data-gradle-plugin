@@ -224,11 +224,11 @@ final class CustomBuildScanEnhancements {
                     }
                     String teamCityBuildTypeId = buildProperties.getProperty("teamcity.buildType.id");
                     if (Utils.isNotEmpty(teamCityBuildTypeId)) {
-                        buildScan.value("CI build config", teamCityBuildTypeId);
+                        customValueSearchLinker.addCustomValueAndSearchLink("CI build config", teamCityBuildTypeId);
                     }
                     String teamCityAgentName = buildProperties.getProperty("agent.name");
                     if (Utils.isNotEmpty(teamCityAgentName)) {
-                        buildScan.value("CI agent", teamCityAgentName);
+                        customValueSearchLinker.addCustomValueAndSearchLink("CI agent", teamCityAgentName);
                     }
                 }
             }
