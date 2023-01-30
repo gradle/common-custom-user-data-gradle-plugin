@@ -84,7 +84,7 @@ final class CustomBuildScanEnhancements {
     }
 
     private Provider<String> systemPropertyProvider(String name, ProviderFactory providers) {
-        if(Utils.isGradle61OrNewer()) {
+        if (Utils.isGradle61OrNewer()) {
             return providers.systemProperty(name);
         } else {
             return providers.provider(() -> System.getProperty(name));
@@ -92,7 +92,7 @@ final class CustomBuildScanEnhancements {
     }
 
     private Provider<String> gradlePropertyProvider(String name, ProviderFactory providers) {
-        if(Utils.isGradle62OrNewer()) {
+        if (Utils.isGradle62OrNewer()) {
             return providers.gradleProperty(name);
         } else {
             return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
@@ -201,13 +201,13 @@ final class CustomBuildScanEnhancements {
                 }));
             }
 
-            if(CiUtils.isTeamCity(providers)) {
+            if (CiUtils.isTeamCity(providers)) {
                 Optional<String> teamcityBuildPropertiesFile = Utils.envVariable("TEAMCITY_BUILD_PROPERTIES_FILE", providers);
-                if(teamcityBuildPropertiesFile.isPresent()){
+                if (teamcityBuildPropertiesFile.isPresent()) {
                     Properties buildProperties = Utils.readPropertiesFile(teamcityBuildPropertiesFile.get(), providers, projectDirectory.get());
 
                     String teamcityConfigFile = buildProperties.getProperty("teamcity.configuration.properties.file");
-                    if(Utils.isNotEmpty(teamcityConfigFile)) {
+                    if (Utils.isNotEmpty(teamcityConfigFile)) {
                         Properties configProperties = Utils.readPropertiesFile(teamcityConfigFile, providers, projectDirectory.get());
 
                         String teamCityServerUrl = configProperties.getProperty("teamcity.serverUrl");
@@ -321,7 +321,7 @@ final class CustomBuildScanEnhancements {
                         customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
             }
 
-            if(CiUtils.isAzurePipelines(providers)) {
+            if (CiUtils.isAzurePipelines(providers)) {
                 Optional<String> azureServerUrl = Utils.envVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI", providers);
                 Optional<String> azureProject = Utils.envVariable("SYSTEM_TEAMPROJECT", providers);
                 Optional<String> buildId = Utils.envVariable("BUILD_BUILDID", providers);
@@ -467,9 +467,9 @@ final class CustomBuildScanEnhancements {
             // search.names=name1,name2&search.values=value1,value2
             // this reduction groups all names and all values together in order to properly generate the query
             values.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey()) // results in a deterministic order of link parameters
-                .reduce((a, b) -> new AbstractMap.SimpleEntry<>(a.getKey() + "," + b.getKey(), a.getValue() + "," + b.getValue()))
-                .ifPresent(x -> registerLink(linkLabel, x.getKey(), x.getValue()));
+                    .sorted(Map.Entry.comparingByKey()) // results in a deterministic order of link parameters
+                    .reduce((a, b) -> new AbstractMap.SimpleEntry<>(a.getKey() + "," + b.getKey(), a.getValue() + "," + b.getValue()))
+                    .ifPresent(x -> registerLink(linkLabel, x.getKey(), x.getValue()));
         }
 
         private synchronized void registerLink(String linkLabel, String name, String value) {
