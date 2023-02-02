@@ -22,6 +22,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static com.gradle.CiUtils.isAzurePipelines;
+import static com.gradle.CiUtils.isBamboo;
+import static com.gradle.CiUtils.isBitrise;
+import static com.gradle.CiUtils.isCi;
+import static com.gradle.CiUtils.isCircleCI;
+import static com.gradle.CiUtils.isGitHubActions;
+import static com.gradle.CiUtils.isGitLab;
+import static com.gradle.CiUtils.isGoCD;
+import static com.gradle.CiUtils.isHudson;
+import static com.gradle.CiUtils.isJenkins;
+import static com.gradle.CiUtils.isTeamCity;
+import static com.gradle.CiUtils.isTravis;
 import static com.gradle.Utils.appendIfMissing;
 import static com.gradle.Utils.envVariable;
 import static com.gradle.Utils.execAndCheckSuccess;
@@ -75,7 +87,7 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureIde() {
-        if (!CiUtils.isCi(providers)) {
+        if (!isCi(providers)) {
             // Prepare relevant properties for use at execution time
             Map<String, Provider<String>> ideProperties = new HashMap<>();
             ideProperties.put(SYSTEM_PROP_IDEA_VENDOR_NAME, systemPropertyProvider(SYSTEM_PROP_IDEA_VENDOR_NAME, providers));
@@ -162,11 +174,11 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureCiOrLocal() {
-        buildScan.tag(CiUtils.isCi(providers) ? "CI" : "LOCAL");
+        buildScan.tag(isCi(providers) ? "CI" : "LOCAL");
     }
 
     private void captureCiMetadata() {
-        if (CiUtils.isCi(providers)) {
+        if (isCi(providers)) {
             // Prepare project directory for use at execution time
             Provider<Directory> projectDirectory = providers.provider(() -> gradle.getRootProject().getLayout().getProjectDirectory());
 
@@ -191,7 +203,7 @@ final class CustomBuildScanEnhancements {
 
         @Override
         public void execute(BuildResult buildResult) {
-            if (CiUtils.isJenkins(providers) || CiUtils.isHudson(providers)) {
+            if (isJenkins(providers) || isHudson(providers)) {
                 Optional<String> buildUrl = envVariable("BUILD_URL", providers);
                 Optional<String> buildNumber = envVariable("BUILD_NUMBER", providers);
                 Optional<String> nodeName = envVariable("NODE_NAME", providers);
@@ -199,7 +211,7 @@ final class CustomBuildScanEnhancements {
                 Optional<String> stageName = envVariable("STAGE_NAME", providers);
 
                 buildUrl.ifPresent(url ->
-                        buildScan.link(CiUtils.isJenkins(providers) ? "Jenkins build" : "Hudson build", url));
+                        buildScan.link(isJenkins(providers) ? "Jenkins build" : "Hudson build", url));
                 buildNumber.ifPresent(value ->
                         buildScan.value("CI build number", value));
                 nodeName.ifPresent(value ->
@@ -217,7 +229,7 @@ final class CustomBuildScanEnhancements {
                 }));
             }
 
-            if (CiUtils.isTeamCity(providers)) {
+            if (isTeamCity(providers)) {
                 Optional<String> teamcityBuildPropertiesFile = envVariable("TEAMCITY_BUILD_PROPERTIES_FILE", providers);
                 if (teamcityBuildPropertiesFile.isPresent()) {
                     Properties buildProperties = readPropertiesFile(teamcityBuildPropertiesFile.get(), providers, projectDirectory.get());
@@ -249,7 +261,7 @@ final class CustomBuildScanEnhancements {
                 }
             }
 
-            if (CiUtils.isCircleCI(providers)) {
+            if (isCircleCI(providers)) {
                 envVariable("CIRCLE_BUILD_URL", providers).ifPresent(url ->
                         buildScan.link("CircleCI build", url));
                 envVariable("CIRCLE_BUILD_NUM", providers).ifPresent(value ->
@@ -260,7 +272,7 @@ final class CustomBuildScanEnhancements {
                         customValueSearchLinker.addCustomValueAndSearchLink("CI workflow", value));
             }
 
-            if (CiUtils.isBamboo(providers)) {
+            if (isBamboo(providers)) {
                 envVariable("bamboo_resultsUrl", providers).ifPresent(url ->
                         buildScan.link("Bamboo build", url));
                 envVariable("bamboo_buildNumber", providers).ifPresent(value ->
@@ -273,7 +285,7 @@ final class CustomBuildScanEnhancements {
                         customValueSearchLinker.addCustomValueAndSearchLink("CI agent", value));
             }
 
-            if (CiUtils.isGitHubActions(providers)) {
+            if (isGitHubActions(providers)) {
                 Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
                 Optional<String> gitHubRunId = envVariable("GITHUB_RUN_ID", providers);
                 if (gitHubRepository.isPresent() && gitHubRunId.isPresent()) {
@@ -285,7 +297,7 @@ final class CustomBuildScanEnhancements {
                         customValueSearchLinker.addCustomValueAndSearchLink("CI run", value));
             }
 
-            if (CiUtils.isGitLab(providers)) {
+            if (isGitLab(providers)) {
                 envVariable("CI_JOB_URL", providers).ifPresent(url ->
                         buildScan.link("GitLab build", url));
                 envVariable("CI_PIPELINE_URL", providers).ifPresent(url ->
@@ -296,7 +308,7 @@ final class CustomBuildScanEnhancements {
                         customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
             }
 
-            if (CiUtils.isTravis(providers)) {
+            if (isTravis(providers)) {
                 envVariable("TRAVIS_BUILD_WEB_URL", providers).ifPresent(url ->
                         buildScan.link("Travis build", url));
                 envVariable("TRAVIS_BUILD_NUMBER", providers).ifPresent(value ->
@@ -306,14 +318,14 @@ final class CustomBuildScanEnhancements {
                 envVariable("TRAVIS_EVENT_TYPE", providers).ifPresent(buildScan::tag);
             }
 
-            if (CiUtils.isBitrise(providers)) {
+            if (isBitrise(providers)) {
                 envVariable("BITRISE_BUILD_URL", providers).ifPresent(url ->
                         buildScan.link("Bitrise build", url));
                 envVariable("BITRISE_BUILD_NUMBER", providers).ifPresent(value ->
                         buildScan.value("CI build number", value));
             }
 
-            if (CiUtils.isGoCD(providers)) {
+            if (isGoCD(providers)) {
                 Optional<String> pipelineName = envVariable("GO_PIPELINE_NAME", providers);
                 Optional<String> pipelineNumber = envVariable("GO_PIPELINE_COUNTER", providers);
                 Optional<String> stageName = envVariable("GO_STAGE_NAME", providers);
@@ -337,7 +349,7 @@ final class CustomBuildScanEnhancements {
                         customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
             }
 
-            if (CiUtils.isAzurePipelines(providers)) {
+            if (isAzurePipelines(providers)) {
                 Optional<String> azureServerUrl = envVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI", providers);
                 Optional<String> azureProject = envVariable("SYSTEM_TEAMPROJECT", providers);
                 Optional<String> buildId = envVariable("BUILD_BUILDID", providers);
@@ -426,17 +438,17 @@ final class CustomBuildScanEnhancements {
         }
 
         private String getGitBranchName(Supplier<String> gitCommand) {
-            if (CiUtils.isJenkins(providers) || CiUtils.isHudson(providers)) {
+            if (isJenkins(providers) || isHudson(providers)) {
                 Optional<String> branch = envVariable("BRANCH_NAME", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
-            } else if (CiUtils.isGitLab(providers)) {
+            } else if (isGitLab(providers)) {
                 Optional<String> branch = envVariable("CI_COMMIT_REF_NAME", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
-            } else if (CiUtils.isAzurePipelines(providers)) {
+            } else if (isAzurePipelines(providers)) {
                 Optional<String> branch = envVariable("BUILD_SOURCEBRANCH", providers);
                 if (branch.isPresent()) {
                     return branch.get();
