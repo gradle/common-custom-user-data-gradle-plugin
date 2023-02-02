@@ -234,15 +234,17 @@ final class CustomBuildScanEnhancements {
                 if (teamcityBuildPropertiesFile.isPresent()) {
                     Properties buildProperties = readPropertiesFile(teamcityBuildPropertiesFile.get(), providers, projectDirectory.get());
 
-                    String teamcityConfigFile = buildProperties.getProperty("teamcity.configuration.properties.file");
-                    if (isNotEmpty(teamcityConfigFile)) {
-                        Properties configProperties = readPropertiesFile(teamcityConfigFile, providers, projectDirectory.get());
+                    String teamCityBuildId = buildProperties.getProperty("teamcity.build.id");
+                    if(isNotEmpty(teamCityBuildId)) {
+                        String teamcityConfigFile = buildProperties.getProperty("teamcity.configuration.properties.file");
+                        if (isNotEmpty(teamcityConfigFile)) {
+                            Properties configProperties = readPropertiesFile(teamcityConfigFile, providers, projectDirectory.get());
 
-                        String teamCityServerUrl = configProperties.getProperty("teamcity.serverUrl");
-                        String teamCityBuildId = buildProperties.getProperty("teamcity.build.id");
-                        if (isNotEmpty(teamCityServerUrl) && isNotEmpty(teamCityBuildId)) {
-                            String buildUrl = appendIfMissing(teamCityServerUrl, "/") + "viewLog.html?buildId=" + urlEncode(teamCityBuildId);
-                            buildScan.link("TeamCity build", buildUrl);
+                            String teamCityServerUrl = configProperties.getProperty("teamcity.serverUrl");
+                            if (isNotEmpty(teamCityServerUrl)) {
+                                String buildUrl = appendIfMissing(teamCityServerUrl, "/") + "viewLog.html?buildId=" + urlEncode(teamCityBuildId);
+                                buildScan.link("TeamCity build", buildUrl);
+                            }
                         }
                     }
 
