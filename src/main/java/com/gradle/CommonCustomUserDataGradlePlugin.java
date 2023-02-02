@@ -13,6 +13,10 @@ import org.gradle.caching.configuration.BuildCacheConfiguration;
 import javax.inject.Inject;
 import java.util.Arrays;
 
+import static com.gradle.Utils.isGradle4OrNewer;
+import static com.gradle.Utils.isGradle5OrNewer;
+import static com.gradle.Utils.isGradle6OrNewer;
+
 public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
     private final ProviderFactory providers;
@@ -24,17 +28,17 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
     public void apply(Object target) {
         if (target instanceof Settings) {
-            if (!Utils.isGradle6OrNewer()) {
+            if (!isGradle6OrNewer()) {
                 throw new GradleException("For Gradle versions prior to 6.0, common-custom-user-data-gradle-plugin must be applied to the Root project");
             } else {
                 applySettingsPlugin((Settings) target);
             }
         } else if (target instanceof Project) {
-            if (Utils.isGradle6OrNewer()) {
+            if (isGradle6OrNewer()) {
                 throw new GradleException("For Gradle versions 6.0 and newer, common-custom-user-data-gradle-plugin must be applied to Settings");
-            } else if (Utils.isGradle5OrNewer()) {
+            } else if (isGradle5OrNewer()) {
                 applyProjectPluginGradle5((Project) target);
-            } else if (Utils.isGradle4OrNewer()) {
+            } else if (isGradle4OrNewer()) {
                 applyProjectPluginGradle4((Project) target);
             } else {
                 throw new GradleException("For Gradle versions prior to 4.0, common-custom-user-data-gradle-plugin is not supported");
