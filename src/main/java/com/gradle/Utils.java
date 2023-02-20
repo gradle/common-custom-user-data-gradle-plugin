@@ -212,12 +212,28 @@ final class Utils {
         return ('x' + str).trim().substring(1);
     }
 
-    private static boolean isGradle65OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("6.5")) >= 0;
+    static boolean isGradle4OrNewer() {
+        return isGradleNewerThan("4.0");
     }
 
-    private static boolean isGradle74OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("7.4")) >= 0;
+    static boolean isGradle5OrNewer() {
+        return isGradleNewerThan("5.0");
+    }
+
+    static boolean isGradle6OrNewer() {
+        return isGradleNewerThan("6.0");
+    }
+
+    static boolean isGradle65OrNewer() {
+        return isGradleNewerThan("6.5");
+    }
+
+    static boolean isGradle74OrNewer() {
+        return isGradleNewerThan("7.4");
+    }
+
+    private static boolean isGradleNewerThan(String version) {
+        return GradleVersion.current().compareTo(GradleVersion.version(version)) >= 0;
     }
 
     private Utils() {

@@ -9,10 +9,13 @@ import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
-import org.gradle.util.GradleVersion;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+
+import static com.gradle.Utils.isGradle4OrNewer;
+import static com.gradle.Utils.isGradle5OrNewer;
+import static com.gradle.Utils.isGradle6OrNewer;
 
 public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
@@ -133,18 +136,6 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
                 overrides.configureGradleEnterpriseOnGradle4(buildScan);
             });
         });
-    }
-
-    private static boolean isGradle6OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("6.0")) >= 0;
-    }
-
-    private static boolean isGradle5OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0;
-    }
-
-    private static boolean isGradle4OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("4.0")) >= 0;
     }
 
     private static void ensureRootProject(Project project) {

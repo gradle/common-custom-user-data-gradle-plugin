@@ -8,7 +8,6 @@ import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
-import org.gradle.util.GradleVersion;
 
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
@@ -20,17 +19,41 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static com.gradle.CiUtils.isAzurePipelines;
+import static com.gradle.CiUtils.isBamboo;
+import static com.gradle.CiUtils.isBitrise;
+import static com.gradle.CiUtils.isCi;
+import static com.gradle.CiUtils.isCircleCI;
+import static com.gradle.CiUtils.isGitHubActions;
+import static com.gradle.CiUtils.isGitLab;
+import static com.gradle.CiUtils.isGoCD;
+import static com.gradle.CiUtils.isHudson;
+import static com.gradle.CiUtils.isJenkins;
+import static com.gradle.CiUtils.isTeamCity;
+import static com.gradle.CiUtils.isTravis;
 import static com.gradle.Utils.appendIfMissing;
+import static com.gradle.Utils.envVariable;
 import static com.gradle.Utils.execAndCheckSuccess;
 import static com.gradle.Utils.execAndGetStdOut;
+import static com.gradle.Utils.isGradle5OrNewer;
 import static com.gradle.Utils.isNotEmpty;
+import static com.gradle.Utils.projectProperty;
+import static com.gradle.Utils.readPropertiesFile;
 import static com.gradle.Utils.redactUserInfo;
+import static com.gradle.Utils.sysProperty;
 import static com.gradle.Utils.urlEncode;
 
 /**
  * Adds a standard set of useful tags, links and custom values to all build scans published.
  */
 final class CustomBuildScanEnhancements {
+
+    private static final String SYSTEM_PROP_IDEA_VENDOR_NAME = "idea.vendor.name";
+    private static final String SYSTEM_PROP_IDEA_VERSION = "idea.version";
+    private static final String PROJECT_PROP_ANDROID_INVOKED_FROM_IDE = "android.injected.invoked.from.ide";
+    private static final String PROJECT_PROP_ANDROID_STUDIO_VERSION = "android.injected.studio.version";
+    private static final String SYSTEM_PROP_ECLIPSE_BUILD_ID = "eclipse.buildId";
+    private static final String SYSTEM_PROP_IDEA_SYNC_ACTIVE = "idea.sync.active";
 
     private final BuildScanExtension buildScan;
     private final ProviderFactory providers;
@@ -55,19 +78,19 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureOs() {
-        Utils.sysProperty("os.name", providers).ifPresent(buildScan::tag);
+        sysProperty("os.name", providers).ifPresent(buildScan::tag);
     }
 
     private void captureIde() {
-        if (!CiUtils.isCi(providers)) {
+        if (!isCi(providers)) {
             // Wait for projects to load to ensure Gradle project properties are initialized
             gradle.projectsEvaluated(g -> {
-                Optional<String> ideaVendorName = Utils.sysProperty("idea.vendor.name", providers);
-                Optional<String> ideaVersion = Utils.sysProperty("idea.version", providers);
-                Optional<String> invokedFromAndroidStudio = Utils.projectProperty("android.injected.invoked.from.ide", providers, gradle);
-                Optional<String> androidStudioVersion = Utils.projectProperty("android.injected.studio.version", providers, gradle);
-                Optional<String> eclipseVersion = Utils.sysProperty("eclipse.buildId", providers);
-                Optional<String> ideaSync = Utils.sysProperty("idea.sync.active", providers);
+                Optional<String> ideaVendorName = sysProperty(SYSTEM_PROP_IDEA_VENDOR_NAME, providers);
+                Optional<String> ideaVersion = sysProperty(SYSTEM_PROP_IDEA_VERSION, providers);
+                Optional<String> invokedFromAndroidStudio = projectProperty(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, providers, gradle);
+                Optional<String> androidStudioVersion = projectProperty(PROJECT_PROP_ANDROID_STUDIO_VERSION, providers, gradle);
+                Optional<String> eclipseVersion = sysProperty(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers);
+                Optional<String> ideaSync = sysProperty(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers);
 
                 if (ideaVendorName.isPresent()) {
                     String ideaVendorNameValue = ideaVendorName.get();
@@ -104,19 +127,19 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureCiOrLocal() {
-        buildScan.tag(CiUtils.isCi(providers) ? "CI" : "LOCAL");
+        buildScan.tag(isCi(providers) ? "CI" : "LOCAL");
     }
 
     private void captureCiMetadata() {
-        if (CiUtils.isJenkins(providers) || CiUtils.isHudson(providers)) {
-            Optional<String> buildUrl = Utils.envVariable("BUILD_URL", providers);
-            Optional<String> buildNumber = Utils.envVariable("BUILD_NUMBER", providers);
-            Optional<String> nodeName = Utils.envVariable("NODE_NAME", providers);
-            Optional<String> jobName = Utils.envVariable("JOB_NAME", providers);
-            Optional<String> stageName = Utils.envVariable("STAGE_NAME", providers);
+        if (isJenkins(providers) || isHudson(providers)) {
+            Optional<String> buildUrl = envVariable("BUILD_URL", providers);
+            Optional<String> buildNumber = envVariable("BUILD_NUMBER", providers);
+            Optional<String> nodeName = envVariable("NODE_NAME", providers);
+            Optional<String> jobName = envVariable("JOB_NAME", providers);
+            Optional<String> stageName = envVariable("STAGE_NAME", providers);
 
             buildUrl.ifPresent(url ->
-                buildScan.link(CiUtils.isJenkins(providers) ? "Jenkins build" : "Hudson build", url));
+                buildScan.link(isJenkins(providers) ? "Jenkins build" : "Hudson build", url));
             buildNumber.ifPresent(value ->
                 buildScan.value("CI build number", value));
             nodeName.ifPresent(value ->
@@ -134,99 +157,99 @@ final class CustomBuildScanEnhancements {
             }));
         }
 
-        if (CiUtils.isTeamCity(providers)) {
+        if (isTeamCity(providers)) {
             // Wait for projects to load to ensure Gradle project properties are initialized
             gradle.projectsEvaluated(g -> {
-                Optional<String> teamCityConfigFile = Utils.projectProperty("teamcity.configuration.properties.file", providers, gradle);
-                Optional<String> buildId = Utils.projectProperty("teamcity.build.id", providers, gradle);
+                Optional<String> teamCityConfigFile = projectProperty("teamcity.configuration.properties.file", providers, gradle);
+                Optional<String> buildId = projectProperty("teamcity.build.id", providers, gradle);
                 if (teamCityConfigFile.isPresent() && buildId.isPresent()) {
-                    Properties properties = Utils.readPropertiesFile(teamCityConfigFile.get(), providers, gradle);
+                    Properties properties = readPropertiesFile(teamCityConfigFile.get(), providers, gradle);
                     String teamCityServerUrl = properties.getProperty("teamcity.serverUrl");
                     if (teamCityServerUrl != null) {
                         String buildUrl = appendIfMissing(teamCityServerUrl, "/") + "viewLog.html?buildId=" + urlEncode(buildId.get());
                         buildScan.link("TeamCity build", buildUrl);
                     }
                 }
-                Utils.projectProperty("build.number", providers, gradle).ifPresent(value ->
+                projectProperty("build.number", providers, gradle).ifPresent(value ->
                     buildScan.value("CI build number", value));
-                Utils.projectProperty("teamcity.buildType.id", providers, gradle).ifPresent(value ->
+                projectProperty("teamcity.buildType.id", providers, gradle).ifPresent(value ->
                     customValueSearchLinker.addCustomValueAndSearchLink("CI build config", value));
-                Utils.projectProperty("agent.name", providers, gradle).ifPresent(value ->
+                projectProperty("agent.name", providers, gradle).ifPresent(value ->
                     customValueSearchLinker.addCustomValueAndSearchLink("CI agent", value));
             });
         }
 
-        if (CiUtils.isCircleCI(providers)) {
-            Utils.envVariable("CIRCLE_BUILD_URL", providers).ifPresent(url ->
+        if (isCircleCI(providers)) {
+            envVariable("CIRCLE_BUILD_URL", providers).ifPresent(url ->
                 buildScan.link("CircleCI build", url));
-            Utils.envVariable("CIRCLE_BUILD_NUM", providers).ifPresent(value ->
+            envVariable("CIRCLE_BUILD_NUM", providers).ifPresent(value ->
                 buildScan.value("CI build number", value));
-            Utils.envVariable("CIRCLE_JOB", providers).ifPresent(value ->
+            envVariable("CIRCLE_JOB", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
-            Utils.envVariable("CIRCLE_WORKFLOW_ID", providers).ifPresent(value ->
+            envVariable("CIRCLE_WORKFLOW_ID", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI workflow", value));
         }
 
-        if (CiUtils.isBamboo(providers)) {
-            Utils.envVariable("bamboo_resultsUrl", providers).ifPresent(url ->
+        if (isBamboo(providers)) {
+            envVariable("bamboo_resultsUrl", providers).ifPresent(url ->
                 buildScan.link("Bamboo build", url));
-            Utils.envVariable("bamboo_buildNumber", providers).ifPresent(value ->
+            envVariable("bamboo_buildNumber", providers).ifPresent(value ->
                 buildScan.value("CI build number", value));
-            Utils.envVariable("bamboo_planName", providers).ifPresent(value ->
+            envVariable("bamboo_planName", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI plan", value));
-            Utils.envVariable("bamboo_buildPlanName", providers).ifPresent(value ->
+            envVariable("bamboo_buildPlanName", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI build plan", value));
-            Utils.envVariable("bamboo_agentId", providers).ifPresent(value ->
+            envVariable("bamboo_agentId", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI agent", value));
         }
 
-        if (CiUtils.isGitHubActions(providers)) {
-            Optional<String> gitHubRepository = Utils.envVariable("GITHUB_REPOSITORY", providers);
-            Optional<String> gitHubRunId = Utils.envVariable("GITHUB_RUN_ID", providers);
+        if (isGitHubActions(providers)) {
+            Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
+            Optional<String> gitHubRunId = envVariable("GITHUB_RUN_ID", providers);
             if (gitHubRepository.isPresent() && gitHubRunId.isPresent()) {
                 buildScan.link("GitHub Actions build", "https://github.com/" + gitHubRepository.get() + "/actions/runs/" + gitHubRunId.get());
             }
-            Utils.envVariable("GITHUB_WORKFLOW", providers).ifPresent(value ->
+            envVariable("GITHUB_WORKFLOW", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI workflow", value));
-            Utils.envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
+            envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI run", value));
         }
 
-        if (CiUtils.isGitLab(providers)) {
-            Utils.envVariable("CI_JOB_URL", providers).ifPresent(url ->
+        if (isGitLab(providers)) {
+            envVariable("CI_JOB_URL", providers).ifPresent(url ->
                 buildScan.link("GitLab build", url));
-            Utils.envVariable("CI_PIPELINE_URL", providers).ifPresent(url ->
+            envVariable("CI_PIPELINE_URL", providers).ifPresent(url ->
                 buildScan.link("GitLab pipeline", url));
-            Utils.envVariable("CI_JOB_NAME", providers).ifPresent(value ->
+            envVariable("CI_JOB_NAME", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
-            Utils.envVariable("CI_JOB_STAGE", providers).ifPresent(value ->
+            envVariable("CI_JOB_STAGE", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
         }
 
-        if (CiUtils.isTravis(providers)) {
-            Utils.envVariable("TRAVIS_BUILD_WEB_URL", providers).ifPresent(url ->
+        if (isTravis(providers)) {
+            envVariable("TRAVIS_BUILD_WEB_URL", providers).ifPresent(url ->
                 buildScan.link("Travis build", url));
-            Utils.envVariable("TRAVIS_BUILD_NUMBER", providers).ifPresent(value ->
+            envVariable("TRAVIS_BUILD_NUMBER", providers).ifPresent(value ->
                 buildScan.value("CI build number", value));
-            Utils.envVariable("TRAVIS_JOB_NAME", providers).ifPresent(value ->
+            envVariable("TRAVIS_JOB_NAME", providers).ifPresent(value ->
                 customValueSearchLinker.addCustomValueAndSearchLink("CI job", value));
-            Utils.envVariable("TRAVIS_EVENT_TYPE", providers).ifPresent(buildScan::tag);
+            envVariable("TRAVIS_EVENT_TYPE", providers).ifPresent(buildScan::tag);
         }
 
-        if (CiUtils.isBitrise(providers)) {
-            Utils.envVariable("BITRISE_BUILD_URL", providers).ifPresent(url ->
+        if (isBitrise(providers)) {
+            envVariable("BITRISE_BUILD_URL", providers).ifPresent(url ->
                 buildScan.link("Bitrise build", url));
-            Utils.envVariable("BITRISE_BUILD_NUMBER", providers).ifPresent(value ->
+            envVariable("BITRISE_BUILD_NUMBER", providers).ifPresent(value ->
                 buildScan.value("CI build number", value));
         }
 
-        if (CiUtils.isGoCD(providers)) {
-            Optional<String> pipelineName = Utils.envVariable("GO_PIPELINE_NAME", providers);
-            Optional<String> pipelineNumber = Utils.envVariable("GO_PIPELINE_COUNTER", providers);
-            Optional<String> stageName = Utils.envVariable("GO_STAGE_NAME", providers);
-            Optional<String> stageNumber = Utils.envVariable("GO_STAGE_COUNTER", providers);
-            Optional<String> jobName = Utils.envVariable("GO_JOB_NAME", providers);
-            Optional<String> goServerUrl = Utils.envVariable("GO_SERVER_URL", providers);
+        if (isGoCD(providers)) {
+            Optional<String> pipelineName = envVariable("GO_PIPELINE_NAME", providers);
+            Optional<String> pipelineNumber = envVariable("GO_PIPELINE_COUNTER", providers);
+            Optional<String> stageName = envVariable("GO_STAGE_NAME", providers);
+            Optional<String> stageNumber = envVariable("GO_STAGE_COUNTER", providers);
+            Optional<String> jobName = envVariable("GO_JOB_NAME", providers);
+            Optional<String> goServerUrl = envVariable("GO_SERVER_URL", providers);
             if (Stream.of(pipelineName, pipelineNumber, stageName, stageNumber, jobName, goServerUrl).allMatch(Optional::isPresent)) {
                 //noinspection OptionalGetWithoutIsPresent
                 String buildUrl = String.format("%s/tab/build/detail/%s/%s/%s/%s/%s",
@@ -244,10 +267,10 @@ final class CustomBuildScanEnhancements {
                 customValueSearchLinker.addCustomValueAndSearchLink("CI stage", value));
         }
 
-        if(CiUtils.isAzurePipelines(providers)) {
-            Optional<String> azureServerUrl = Utils.envVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI", providers);
-            Optional<String> azureProject = Utils.envVariable("SYSTEM_TEAMPROJECT", providers);
-            Optional<String> buildId = Utils.envVariable("BUILD_BUILDID", providers);
+        if(isAzurePipelines(providers)) {
+            Optional<String> azureServerUrl = envVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI", providers);
+            Optional<String> azureProject = envVariable("SYSTEM_TEAMPROJECT", providers);
+            Optional<String> buildId = envVariable("BUILD_BUILDID", providers);
             if (Stream.of(azureServerUrl, azureProject, buildId).allMatch(Optional::isPresent)) {
                 //noinspection OptionalGetWithoutIsPresent
                 String buildUrl = String.format("%s%s/_build/results?buildId=%s",
@@ -331,18 +354,18 @@ final class CustomBuildScanEnhancements {
         }
 
         private String getGitBranchName(Supplier<String> gitCommand) {
-            if (CiUtils.isJenkins(providers) || CiUtils.isHudson(providers)) {
-                Optional<String> branch = Utils.envVariable("BRANCH_NAME", providers);
+            if (isJenkins(providers) || isHudson(providers)) {
+                Optional<String> branch = envVariable("BRANCH_NAME", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
-            } else if (CiUtils.isGitLab(providers)) {
-                Optional<String> branch = Utils.envVariable("CI_COMMIT_REF_NAME", providers);
+            } else if (isGitLab(providers)) {
+                Optional<String> branch = envVariable("CI_COMMIT_REF_NAME", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
-            } else if (CiUtils.isAzurePipelines(providers)) {
-                Optional<String> branch = Utils.envVariable("BUILD_SOURCEBRANCH", providers);
+            } else if (isAzurePipelines(providers)) {
+                Optional<String> branch = envVariable("BUILD_SOURCEBRANCH", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
@@ -443,10 +466,6 @@ final class CustomBuildScanEnhancements {
                 }
             });
         };
-    }
-
-    private static boolean isGradle5OrNewer() {
-        return GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0;
     }
 
 }

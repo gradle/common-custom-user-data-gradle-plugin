@@ -2,6 +2,9 @@ package com.gradle;
 
 import org.gradle.api.provider.ProviderFactory;
 
+import static com.gradle.Utils.envVariable;
+import static com.gradle.Utils.sysProperty;
+
 final class CiUtils {
 
     private CiUtils() {
@@ -23,52 +26,52 @@ final class CiUtils {
     }
 
     static boolean isGenericCI(ProviderFactory providers) {
-        return Utils.envVariable("CI", providers).isPresent()
-                || Utils.sysProperty("CI", providers).isPresent();
+        return envVariable("CI", providers).isPresent()
+                || sysProperty("CI", providers).isPresent();
     }
 
     static boolean isJenkins(ProviderFactory providers) {
-        return Utils.envVariable("JENKINS_URL", providers).isPresent();
+        return envVariable("JENKINS_URL", providers).isPresent();
     }
 
     static boolean isHudson(ProviderFactory providers) {
-        return Utils.envVariable("HUDSON_URL", providers).isPresent();
+        return envVariable("HUDSON_URL", providers).isPresent();
     }
 
     static boolean isTeamCity(ProviderFactory providers) {
-        return Utils.envVariable("TEAMCITY_VERSION", providers).isPresent();
+        return envVariable("TEAMCITY_VERSION", providers).isPresent();
     }
 
     static boolean isCircleCI(ProviderFactory providers) {
-        return Utils.envVariable("CIRCLE_BUILD_URL", providers).isPresent();
+        return envVariable("CIRCLE_BUILD_URL", providers).isPresent();
     }
 
     static boolean isBamboo(ProviderFactory providers) {
-        return Utils.envVariable("bamboo_resultsUrl", providers).isPresent();
+        return envVariable("bamboo_resultsUrl", providers).isPresent();
     }
 
     static boolean isGitHubActions(ProviderFactory providers) {
-        return Utils.envVariable("GITHUB_ACTIONS", providers).isPresent();
+        return envVariable("GITHUB_ACTIONS", providers).isPresent();
     }
 
     static boolean isGitLab(ProviderFactory providers) {
-        return Utils.envVariable("GITLAB_CI", providers).isPresent();
+        return envVariable("GITLAB_CI", providers).isPresent();
     }
 
     static boolean isTravis(ProviderFactory providers) {
-        return Utils.envVariable("TRAVIS_JOB_ID", providers).isPresent();
+        return envVariable("TRAVIS_JOB_ID", providers).isPresent();
     }
 
     static boolean isBitrise(ProviderFactory providers) {
-        return Utils.envVariable("BITRISE_BUILD_URL", providers).isPresent();
+        return envVariable("BITRISE_BUILD_URL", providers).isPresent();
     }
 
     static boolean isGoCD(ProviderFactory providers) {
-        return Utils.envVariable("GO_SERVER_URL", providers).isPresent();
+        return envVariable("GO_SERVER_URL", providers).isPresent();
     }
 
     static boolean isAzurePipelines(ProviderFactory providers) {
-        return Utils.envVariable("TF_BUILD", providers).isPresent();
+        return envVariable("TF_BUILD", providers).isPresent();
     }
 
 }
