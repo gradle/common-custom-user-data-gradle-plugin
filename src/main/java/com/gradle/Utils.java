@@ -216,12 +216,24 @@ final class Utils {
         return isGradleNewerThan("4.0");
     }
 
+    public static boolean isGradle43rNewer() {
+        return isGradleNewerThan("4.3");
+    }
+
     static boolean isGradle5OrNewer() {
         return isGradleNewerThan("5.0");
     }
 
     static boolean isGradle6OrNewer() {
         return isGradleNewerThan("6.0");
+    }
+
+    static boolean isGradle61OrNewer() {
+        return isGradleNewerThan("6.1");
+    }
+
+    static boolean isGradle62OrNewer() {
+        return isGradleNewerThan("6.2");
     }
 
     static boolean isGradle65OrNewer() {

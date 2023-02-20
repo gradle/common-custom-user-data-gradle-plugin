@@ -5,11 +5,13 @@ import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Action;
 import org.gradle.api.Task;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
 
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +37,10 @@ import static com.gradle.Utils.appendIfMissing;
 import static com.gradle.Utils.envVariable;
 import static com.gradle.Utils.execAndCheckSuccess;
 import static com.gradle.Utils.execAndGetStdOut;
+import static com.gradle.Utils.isGradle43rNewer;
 import static com.gradle.Utils.isGradle5OrNewer;
+import static com.gradle.Utils.isGradle61OrNewer;
+import static com.gradle.Utils.isGradle62OrNewer;
 import static com.gradle.Utils.isNotEmpty;
 import static com.gradle.Utils.projectProperty;
 import static com.gradle.Utils.readPropertiesFile;
@@ -83,47 +88,89 @@ final class CustomBuildScanEnhancements {
 
     private void captureIde() {
         if (!isCi(providers)) {
-            // Wait for projects to load to ensure Gradle project properties are initialized
-            gradle.projectsEvaluated(g -> {
-                Optional<String> ideaVendorName = sysProperty(SYSTEM_PROP_IDEA_VENDOR_NAME, providers);
-                Optional<String> ideaVersion = sysProperty(SYSTEM_PROP_IDEA_VERSION, providers);
-                Optional<String> invokedFromAndroidStudio = projectProperty(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, providers, gradle);
-                Optional<String> androidStudioVersion = projectProperty(PROJECT_PROP_ANDROID_STUDIO_VERSION, providers, gradle);
-                Optional<String> eclipseVersion = sysProperty(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers);
-                Optional<String> ideaSync = sysProperty(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers);
+            // Prepare relevant properties for use at execution time
+            Map<String, Provider<String>> ideProperties = new HashMap<>();
+            ideProperties.put(SYSTEM_PROP_IDEA_VENDOR_NAME, systemPropertyProvider(SYSTEM_PROP_IDEA_VENDOR_NAME, providers));
+            ideProperties.put(SYSTEM_PROP_IDEA_VERSION, systemPropertyProvider(SYSTEM_PROP_IDEA_VERSION, providers));
+            ideProperties.put(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradlePropertyProvider(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, providers));
+            ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, providers));
+            ideProperties.put(SYSTEM_PROP_ECLIPSE_BUILD_ID, systemPropertyProvider(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers));
+            ideProperties.put(SYSTEM_PROP_IDEA_SYNC_ACTIVE, systemPropertyProvider(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers));
 
-                if (ideaVendorName.isPresent()) {
-                    String ideaVendorNameValue = ideaVendorName.get();
-                    if (ideaVendorNameValue.equals("Google")) {
-                        // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (e.g. 2020.3.1 Patch 3 instead of 2020.3)
-                        tagIde("Android Studio", androidStudioVersion.orElse(""));
-                    } else if (ideaVendorNameValue.equals("JetBrains")) {
-                        tagIde("IntelliJ IDEA", ideaVersion.orElse(""));
-                    }
-                } else if (invokedFromAndroidStudio.isPresent()) {
-                    // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
-                    tagIde("Android Studio", androidStudioVersion.orElse(""));
-                } else if (ideaVersion.isPresent()) {
-                    // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
-                    tagIde("IntelliJ IDEA", ideaVersion.get());
-                } else if (eclipseVersion.isPresent()) {
-                    tagIde("Eclipse", eclipseVersion.get());
-                } else {
-                    buildScan.tag("Cmd Line");
-                }
-
-                if (ideaSync.isPresent()) {
-                    buildScan.tag("IDE sync");
-                }
-            });
+            // Process data at execution time to ensure property initialization
+            buildScan.buildFinished(new CaptureIdeMetadataAction(buildScan, ideProperties));
         }
     }
 
-    private void tagIde(String ideLabel, String version) {
-        buildScan.tag(ideLabel);
-        if (!version.isEmpty()) {
-            buildScan.value(ideLabel + " version", version);
+    private Provider<String> systemPropertyProvider(String name, ProviderFactory providers) {
+        if (isGradle61OrNewer()) {
+            return providers.systemProperty(name);
+        } else {
+            return providers.provider(() -> System.getProperty(name));
         }
+    }
+
+    private Provider<String> gradlePropertyProvider(String name, ProviderFactory providers) {
+        if (isGradle62OrNewer()) {
+            return providers.gradleProperty(name);
+        } else {
+            return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
+        }
+    }
+
+    private static final class CaptureIdeMetadataAction implements Action<BuildResult> {
+
+        private final BuildScanExtension buildScan;
+        private final Map<String, Provider<String>> props;
+
+        private CaptureIdeMetadataAction(BuildScanExtension buildScan, Map<String, Provider<String>> props) {
+            this.buildScan = buildScan;
+            this.props = props;
+        }
+
+        @Override
+        public void execute(BuildResult buildResult) {
+            if (props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).isPresent()) {
+                String ideaVendorNameValue = props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).get();
+                if (ideaVendorNameValue.equals("Google")) {
+                    // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (e.g. 2020.3.1 Patch 3 instead of 2020.3)
+                    tagIde("Android Studio", getOrEmpty(props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION)));
+                } else if (ideaVendorNameValue.equals("JetBrains")) {
+                    tagIde("IntelliJ IDEA", getOrEmpty(props.get(SYSTEM_PROP_IDEA_VERSION)));
+                }
+            } else if (props.get(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE).isPresent()) {
+                // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
+                tagIde("Android Studio", getOrEmpty(props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION)));
+            } else if (props.get(SYSTEM_PROP_IDEA_VERSION).isPresent()) {
+                // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
+                tagIde("IntelliJ IDEA", props.get(SYSTEM_PROP_IDEA_VERSION).get());
+            } else if (props.get(SYSTEM_PROP_ECLIPSE_BUILD_ID).isPresent()) {
+                tagIde("Eclipse", props.get(SYSTEM_PROP_ECLIPSE_BUILD_ID).get());
+            } else {
+                buildScan.tag("Cmd Line");
+            }
+
+            if (props.get(SYSTEM_PROP_IDEA_SYNC_ACTIVE).isPresent()) {
+                buildScan.tag("IDE sync");
+            }
+        }
+
+        private String getOrEmpty(Provider<String> p) {
+            if (isGradle43rNewer()) {
+                return p.getOrElse("");
+            } else {
+                String value = p.getOrNull();
+                return value != null ? value : "";
+            }
+        }
+
+        private void tagIde(String ideLabel, String version) {
+            buildScan.tag(ideLabel);
+            if (!version.isEmpty()) {
+                buildScan.value(ideLabel + " version", version);
+            }
+        }
+
     }
 
     private void captureCiOrLocal() {
