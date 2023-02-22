@@ -1,7 +1,7 @@
 package com.gradle;
 
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.RegularFile;
-import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.util.GradleVersion;
@@ -26,16 +26,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 final class Utils {
-
-    static Optional<String> projectProperty(String name, ProviderFactory providers, Gradle gradle) {
-        if (isGradle65OrNewer() && !isGradle74OrNewer()) {
-            // invalidate configuration cache if different Gradle property value is set on the cmd line,
-            // but in any case access Gradle property directly since project properties set in a build script or
-            // init script are not fetched by ProviderFactory.gradleProperty
-            providers.gradleProperty(name).forUseAtConfigurationTime();
-        }
-        return Optional.ofNullable((String) gradle.getRootProject().findProperty(name));
-    }
 
     static Optional<String> sysPropertyOrEnvVariable(String sysPropertyName, String envVarName, ProviderFactory providers) {
         Optional<String> sysProperty = sysProperty(sysPropertyName, providers);
@@ -136,8 +126,8 @@ final class Utils {
         }
     }
 
-    static Properties readPropertiesFile(String name, ProviderFactory providers, Gradle gradle) {
-        try (InputStream input = readFile(name, providers, gradle)) {
+    static Properties readPropertiesFile(String name, ProviderFactory providers, Directory projectDirectory) {
+        try (InputStream input = readFile(name, providers, projectDirectory)) {
             Properties properties = new Properties();
             properties.load(input);
             return properties;
@@ -146,13 +136,10 @@ final class Utils {
         }
     }
 
-    static InputStream readFile(String name, ProviderFactory providers, Gradle gradle) throws FileNotFoundException {
+    static InputStream readFile(String name, ProviderFactory providers, Directory projectDirectory) throws FileNotFoundException {
         if (isGradle65OrNewer()) {
-            RegularFile file = gradle.getRootProject().getLayout().getProjectDirectory().file(name);
+            RegularFile file = projectDirectory.file(name);
             Provider<byte[]> fileContent = providers.fileContents(file).getAsBytes();
-            if (!isGradle74OrNewer()) {
-                fileContent = fileContent.forUseAtConfigurationTime();
-            }
             return new ByteArrayInputStream(fileContent.getOrElse(new byte[0]));
         }
         return new FileInputStream(name);
@@ -216,12 +203,24 @@ final class Utils {
         return isGradleNewerThan("4.0");
     }
 
+    public static boolean isGradle43rNewer() {
+        return isGradleNewerThan("4.3");
+    }
+
     static boolean isGradle5OrNewer() {
         return isGradleNewerThan("5.0");
     }
 
     static boolean isGradle6OrNewer() {
         return isGradleNewerThan("6.0");
+    }
+
+    static boolean isGradle61OrNewer() {
+        return isGradleNewerThan("6.1");
+    }
+
+    static boolean isGradle62OrNewer() {
+        return isGradleNewerThan("6.2");
     }
 
     static boolean isGradle65OrNewer() {
