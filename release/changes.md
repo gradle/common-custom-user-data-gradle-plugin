@@ -1,2 +1,3 @@
 - [NEW] Add a link to all build scans with same Jenkins build number and job name #95
-- [FIX] - Support overrides to GradleEnterpriseBuildCache connector
+- [FIX] Support overrides to GradleEnterpriseBuildCache connector
+- [FIX] Move CI and IDE metadata processing at execution time (https://github.com/gradle/common-custom-user-data-gradle-plugin/issues/80) 
