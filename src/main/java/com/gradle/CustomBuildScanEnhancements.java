@@ -90,29 +90,13 @@ final class CustomBuildScanEnhancements {
             Map<String, Provider<String>> ideProperties = new HashMap<>();
             ideProperties.put(SYSTEM_PROP_IDEA_VENDOR_NAME, systemPropertyProvider(SYSTEM_PROP_IDEA_VENDOR_NAME, providers));
             ideProperties.put(SYSTEM_PROP_IDEA_VERSION, systemPropertyProvider(SYSTEM_PROP_IDEA_VERSION, providers));
-            ideProperties.put(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradlePropertyProvider(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, providers));
-            ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, providers));
+            ideProperties.put(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradlePropertyProvider(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradle, providers));
+            ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers));
             ideProperties.put(SYSTEM_PROP_ECLIPSE_BUILD_ID, systemPropertyProvider(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers));
             ideProperties.put(SYSTEM_PROP_IDEA_SYNC_ACTIVE, systemPropertyProvider(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers));
 
             // Process data at execution time to ensure property initialization
             buildScan.buildFinished(new CaptureIdeMetadataAction(buildScan, ideProperties));
-        }
-    }
-
-    private Provider<String> systemPropertyProvider(String name, ProviderFactory providers) {
-        if (isGradle61OrNewer()) {
-            return providers.systemProperty(name);
-        } else {
-            return providers.provider(() -> System.getProperty(name));
-        }
-    }
-
-    private Provider<String> gradlePropertyProvider(String name, ProviderFactory providers) {
-        if (isGradle62OrNewer()) {
-            return providers.gradleProperty(name);
-        } else {
-            return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
         }
     }
 
@@ -519,5 +503,20 @@ final class CustomBuildScanEnhancements {
         }
     }
 
+    private static Provider<String> systemPropertyProvider(String name, ProviderFactory providers) {
+        if (isGradle61OrNewer()) {
+            return providers.systemProperty(name);
+        } else {
+            return providers.provider(() -> System.getProperty(name));
+        }
+    }
+
+    private static Provider<String> gradlePropertyProvider(String name, Gradle gradle, ProviderFactory providers) {
+        if (isGradle62OrNewer()) {
+            return providers.gradleProperty(name);
+        } else {
+            return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
+        }
+    }
 
 }
