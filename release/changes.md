@@ -1,3 +1,0 @@
-- [NEW] Add a link to all build scans with same Jenkins build number and job name #95
-- [FIX] Support overrides to GradleEnterpriseBuildCache connector
-- [FIX] Capture CI and IDE metadata at execution time to allow more configuration cache hits #80 
