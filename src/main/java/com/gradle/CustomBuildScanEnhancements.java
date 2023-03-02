@@ -100,22 +100,6 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private Provider<String> systemPropertyProvider(String name, ProviderFactory providers) {
-        if (isGradle61OrNewer()) {
-            return providers.systemProperty(name);
-        } else {
-            return providers.provider(() -> System.getProperty(name));
-        }
-    }
-
-    private Provider<String> gradlePropertyProvider(String name, ProviderFactory providers) {
-        if (isGradle62OrNewer()) {
-            return providers.gradleProperty(name);
-        } else {
-            return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
-        }
-    }
-
     private static final class CaptureIdeMetadataAction implements Action<BuildResult> {
 
         private final BuildScanExtension buildScan;
@@ -519,5 +503,20 @@ final class CustomBuildScanEnhancements {
         }
     }
 
+    private Provider<String> systemPropertyProvider(String name, ProviderFactory providers) {
+        if (isGradle61OrNewer()) {
+            return providers.systemProperty(name);
+        } else {
+            return providers.provider(() -> System.getProperty(name));
+        }
+    }
+
+    private Provider<String> gradlePropertyProvider(String name, ProviderFactory providers) {
+        if (isGradle62OrNewer()) {
+            return providers.gradleProperty(name);
+        } else {
+            return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
+        }
+    }
 
 }
