@@ -82,6 +82,10 @@ final class Utils {
         return string.startsWith(prefix) ? string.substring(prefix.length()) : string;
     }
 
+    static String prependIfMissing(String suffix, String str) {
+        return str.startsWith(suffix) ? str : suffix + str;
+    }
+
     static String appendIfMissing(String str, String suffix) {
         return str.endsWith(suffix) ? str : str + suffix;
     }

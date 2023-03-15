@@ -14,8 +14,10 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.Optional;
 
+import static com.gradle.Utils.appendIfMissing;
 import static com.gradle.Utils.appendPathAndTrailingSlash;
 import static com.gradle.Utils.concatenatePaths;
+import static com.gradle.Utils.prependIfMissing;
 
 /**
  * Provide standardized Gradle Enterprise configuration. By applying the plugin, these settings will automatically be applied.
@@ -107,7 +109,8 @@ final class Overrides {
 
     private static URI replacePath(URI uri, String path) {
         try {
-            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), path, uri.getQuery(), uri.getFragment());
+            String pathWithSlashes = appendIfMissing(prependIfMissing("/", path), "/");
+            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), pathWithSlashes, uri.getQuery(), uri.getFragment());
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
         }
