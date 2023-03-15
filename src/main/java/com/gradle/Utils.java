@@ -90,6 +90,10 @@ final class Utils {
         return str.endsWith(suffix) ? str : str + suffix;
     }
 
+    static String prependAndAppendIfMissing(String path, String segment) {
+        return appendIfMissing(prependIfMissing(segment, path), segment);
+    }
+
     static String urlEncode(String str) {
         try {
             return URLEncoder.encode(str, StandardCharsets.UTF_8.name());

@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import static com.gradle.Utils.appendIfMissing;
-import static com.gradle.Utils.prependIfMissing;
+import static com.gradle.Utils.prependAndAppendIfMissing;
 import static com.gradle.Utils.stripPrefix;
 
 /**
@@ -106,7 +106,7 @@ final class Overrides {
 
     private static URI replacePath(URI uri, String path) {
         try {
-            String finalPath = appendIfMissing(prependIfMissing("/", path), "/");
+            String finalPath = prependAndAppendIfMissing(path, "/");
             return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), finalPath, uri.getQuery(), uri.getFragment());
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
@@ -115,7 +115,7 @@ final class Overrides {
 
     private static URI appendPath(URI uri, String path) {
         try {
-            String currentPath = appendIfMissing(prependIfMissing("/", uri.getPath()), "/");
+            String currentPath = prependAndAppendIfMissing(uri.getPath(), "/");
             String additionalPath = appendIfMissing(stripPrefix("/", path), "/");
             String finalPath = currentPath + additionalPath;
             return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), finalPath, uri.getQuery(), uri.getFragment());
@@ -139,7 +139,7 @@ final class Overrides {
     }
 
     private static String joinPaths(String basePath, String path) {
-        String currentPath = appendIfMissing(prependIfMissing("/", basePath), "/");
+        String currentPath = prependAndAppendIfMissing(basePath, "/");
         String additionalPath = stripPrefix("/", path); // do not slashify the path when using the GE cache connector
         return currentPath + additionalPath;
     }
