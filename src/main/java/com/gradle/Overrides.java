@@ -78,7 +78,7 @@ final class Overrides {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::serverOnly).ifPresent(remote::setServer);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).ifPresent(shard -> remote.setPath(concatenatePaths(remote.getPath(), shard)));
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> concatenatePaths(remote.getPath(), shard)).ifPresent(remote::setPath);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
