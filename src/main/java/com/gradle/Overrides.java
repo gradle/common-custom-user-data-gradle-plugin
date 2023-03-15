@@ -80,7 +80,7 @@ final class Overrides {
         } else if (buildCache.getRemote() instanceof GradleEnterpriseBuildCache) {
             buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::serverOnly).ifPresent(remote::setServer);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).ifPresent(remote::setPath);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).filter(path -> !path.isEmpty()).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> joinPaths(remote.getPath(), shard)).ifPresent(remote::setPath);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
