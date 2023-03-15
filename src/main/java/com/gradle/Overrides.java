@@ -9,7 +9,6 @@ import org.gradle.caching.http.HttpBuildCache;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -136,8 +135,8 @@ final class Overrides {
     }
 
     private static String pathOnly(String urlString) {
-        URL url = Utils.toUrl(urlString);
-        return url.getPath();
+        URI uri = URI.create(urlString);
+        return uri.getPath();
     }
 
     public static void main(String[] args) throws URISyntaxException {
