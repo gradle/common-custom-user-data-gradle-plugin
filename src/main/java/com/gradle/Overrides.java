@@ -7,11 +7,14 @@ import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.gradle.Utils.appendPathAndTrailingSlash;
-import static com.gradle.Utils.concatenatePaths;
+import static com.gradle.Utils.appendIfMissing;
+import static com.gradle.Utils.prependAndAppendIfMissing;
+import static com.gradle.Utils.stripPrefix;
 
 /**
  * Provide standardized Gradle Enterprise configuration. By applying the plugin, these settings will automatically be applied.
@@ -52,6 +55,7 @@ final class Overrides {
         booleanSysPropertyOrEnvVariable(GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(buildScan::setAllowUntrustedServer);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     void configureBuildCache(BuildCacheConfiguration buildCache) {
         buildCache.local(local -> {
             sysPropertyOrEnvVariable(LOCAL_CACHE_DIRECTORY, providers).ifPresent(local::setDirectory);
@@ -65,17 +69,18 @@ final class Overrides {
         if (buildCache.getRemote() instanceof HttpBuildCache) {
             buildCache.remote(HttpBuildCache.class, remote -> {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setUrl);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(path -> remote.setUrl(appendPathAndTrailingSlash(remote.getUrl(), path)));
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).ifPresent(shard -> remote.setUrl(appendPathAndTrailingSlash(remote.getUrl(), shard)));
+                sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).map(path -> replacePath(remote.getUrl(), path)).ifPresent(remote::setUrl);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> appendPath(remote.getUrl(), shard)).ifPresent(remote::setUrl);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
             });
         } else if (buildCache.getRemote() instanceof GradleEnterpriseBuildCache) {
             buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
-                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setServer);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::serverOnly).ifPresent(remote::setServer);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).ifPresent(shard -> remote.setPath(concatenatePaths(remote.getPath(), shard)));
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> joinPaths(remote.getPath(), shard)).ifPresent(remote::setPath);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
@@ -97,6 +102,46 @@ final class Overrides {
 
     private static String toEnvVarName(String sysPropertyName) {
         return sysPropertyName.toUpperCase().replace('.', '_');
+    }
+
+    private static URI replacePath(URI uri, String path) {
+        try {
+            String finalPath = prependAndAppendIfMissing(path, '/');
+            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), finalPath, uri.getQuery(), uri.getFragment());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
+        }
+    }
+
+    private static URI appendPath(URI uri, String path) {
+        try {
+            String currentPath = prependAndAppendIfMissing(uri.getPath(), '/');
+            String additionalPath = appendIfMissing(stripPrefix(path, '/'), '/');
+            String finalPath = currentPath + additionalPath;
+            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), finalPath, uri.getQuery(), uri.getFragment());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
+        }
+    }
+
+    private static String serverOnly(String urlString) {
+        URI uri = URI.create(urlString);
+        try {
+            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), null, null, null).toString();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
+        }
+    }
+
+    private static String pathOnly(String urlString) {
+        URI uri = URI.create(urlString);
+        return uri.getPath();
+    }
+
+    private static String joinPaths(String basePath, String path) {
+        String currentPath = prependAndAppendIfMissing(basePath, '/');
+        String additionalPath = stripPrefix(path, '/'); // do not slashify the path when using the GE cache connector
+        return currentPath + additionalPath;
     }
 
 }

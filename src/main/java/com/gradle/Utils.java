@@ -78,33 +78,20 @@ final class Utils {
         return value != null && !value.isEmpty();
     }
 
-    static String stripPrefix(String prefix, String string) {
-        return string.startsWith(prefix) ? string.substring(prefix.length()) : string;
+    static String stripPrefix(String string, char prefix) {
+        return string.length() > 0 && string.charAt(0) == prefix ? string.substring(1) : string;
     }
 
-    static String appendIfMissing(String str, String suffix) {
-        return str.endsWith(suffix) ? str : str + suffix;
+    static String prependIfMissing(String string, char prefix) {
+        return string.length() > 0 && string.charAt(0) == prefix ? string : prefix + string;
     }
 
-    static URI appendPathAndTrailingSlash(URI baseUri, String path) {
-        if (isNotEmpty(path)) {
-            String normalizedBasePath = appendIfMissing(baseUri.getPath(), "/");
-            String normalizedPath = appendIfMissing(stripPrefix("/", path), "/");
-            return baseUri.resolve(normalizedBasePath).resolve(normalizedPath);
-        }
-        return baseUri;
+    static String appendIfMissing(String string, char suffix) {
+        return string.length() > 0 && string.charAt(string.length() - 1) == suffix ? string : string + suffix;
     }
 
-    static String concatenatePaths(String basePath, String path) {
-        if (isNotEmpty(basePath)) {
-            if (isNotEmpty(path)) {
-                String normalizedBasePath = appendIfMissing(basePath, "/");
-                String normalizedPath = stripPrefix("/", path);
-                return normalizedBasePath + normalizedPath;
-            }
-            return basePath;
-        }
-        return path;
+    static String prependAndAppendIfMissing(String string, char part) {
+        return appendIfMissing(prependIfMissing(string, part), part);
     }
 
     static String urlEncode(String str) {
