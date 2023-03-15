@@ -138,7 +138,7 @@ final class Overrides {
 
     private static String pathOnly(String urlString) {
         URI uri = URI.create(urlString);
-        return uri.getPath();
+        return uri.getPath().replaceAll("^/|/$", "");
     }
 
     private static String joinPaths(String basePath, String path) {
