@@ -80,7 +80,7 @@ final class Overrides {
         } else if (buildCache.getRemote() instanceof GradleEnterpriseBuildCache) {
             buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::serverOnly).ifPresent(remote::setServer);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).ifPresent(remote::setPath);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).filter(Overrides::isNonEmptyPath).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> joinPaths(remote.getPath(), shard)).ifPresent(remote::setPath);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
@@ -145,6 +145,10 @@ final class Overrides {
         String currentPath = prependAndAppendIfMissing(basePath, '/');
         String additionalPath = stripPrefix(path, '/'); // do not slashify the path when using the GE cache connector
         return currentPath + additionalPath;
+    }
+
+    private static boolean isNonEmptyPath(String path) {
+        return !path.isEmpty() && !path.equals("/");
     }
 
 }
