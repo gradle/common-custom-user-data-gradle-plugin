@@ -90,18 +90,6 @@ final class Utils {
         return str.endsWith(suffix) ? str : str + suffix;
     }
 
-    static String concatenatePaths(String basePath, String path) {
-        if (isNotEmpty(basePath)) {
-            if (isNotEmpty(path)) {
-                String normalizedBasePath = appendIfMissing(basePath, "/");
-                String normalizedPath = stripPrefix("/", path);
-                return normalizedBasePath + normalizedPath;
-            }
-            return basePath;
-        }
-        return path;
-    }
-
     static String urlEncode(String str) {
         try {
             return URLEncoder.encode(str, StandardCharsets.UTF_8.name());

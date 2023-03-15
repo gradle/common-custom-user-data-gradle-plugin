@@ -13,7 +13,6 @@ import java.time.Duration;
 import java.util.Optional;
 
 import static com.gradle.Utils.appendIfMissing;
-import static com.gradle.Utils.concatenatePaths;
 import static com.gradle.Utils.prependIfMissing;
 import static com.gradle.Utils.stripPrefix;
 
@@ -81,7 +80,7 @@ final class Overrides {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::serverOnly).ifPresent(remote::setServer);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> concatenatePaths(remote.getPath(), shard)).ifPresent(remote::setPath);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> joinPaths(remote.getPath(), shard)).ifPresent(remote::setPath);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
@@ -139,20 +138,10 @@ final class Overrides {
         return uri.getPath();
     }
 
-    public static void main(String[] args) throws URISyntaxException {
-        URI uri = replacePath(new URI("https://eti:stu@ge.gradle.org/cache?foo=bar#abc"), "caches");
-        System.out.println("replacePath = " + uri);
-
-        URI caches = appendPath(new URI("https://eti:stu@ge.gradle.org/cache?foo=bar#abc"), "caches");
-        System.out.println("appendPath = " + caches);
-
-        String s = serverOnly("https://eti:stu@ge.gradle.org/cache/foo=bar#abc");
-        System.out.println("serverOnly = " + s);
-
-        String path = pathOnly("https://ge.gradle.org/cache/?foo=bar#er");
-        System.out.println("pathOnly = " + path);
-
-
+    private static String joinPaths(String basePath, String path) {
+        String currentPath = appendIfMissing(prependIfMissing("/", basePath), "/");
+        String additionalPath = stripPrefix("/", path); // do not slashify the path when using the GE cache connector
+        return currentPath + additionalPath;
     }
 
 }
