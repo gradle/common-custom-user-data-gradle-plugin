@@ -15,8 +15,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -90,15 +92,6 @@ final class Utils {
         return str.endsWith(suffix) ? str : str + suffix;
     }
 
-    static URI appendPathAndTrailingSlash(URI baseUri, String path) {
-        if (isNotEmpty(path)) {
-            String normalizedBasePath = appendIfMissing(baseUri.getPath(), "/");
-            String normalizedPath = appendIfMissing(stripPrefix("/", path), "/");
-            return baseUri.resolve(normalizedBasePath).resolve(normalizedPath);
-        }
-        return baseUri;
-    }
-
     static String concatenatePaths(String basePath, String path) {
         if (isNotEmpty(basePath)) {
             if (isNotEmpty(path)) {
@@ -109,6 +102,14 @@ final class Utils {
             return basePath;
         }
         return path;
+    }
+
+    static URL toUrl(String urlString) {
+        try {
+            return new URL(urlString);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Cannot parse URL: " + urlString, e);
+        }
     }
 
     static String urlEncode(String str) {

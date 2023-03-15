@@ -128,7 +128,7 @@ final class Overrides {
     }
 
     private static String serverOnly(String urlString) {
-        URL url = toUrl(urlString);
+        URL url = Utils.toUrl(urlString);
         try {
             return new URL(url.getProtocol(), url.getHost(), url.getPort(), "").toExternalForm();
         } catch (MalformedURLException e) {
@@ -137,32 +137,8 @@ final class Overrides {
     }
 
     private static String pathOnly(String urlString) {
-        URL url = toUrl(urlString);
+        URL url = Utils.toUrl(urlString);
         return url.getPath();
-    }
-
-    private static URL toUrl(String urlString) {
-        try {
-            return new URL(urlString);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Cannot parse URL: " + urlString, e);
-        }
-    }
-
-    public static void main(String[] args) throws URISyntaxException {
-        URI uri = replacePath(new URI("https://eti:stu@ge.gradle.org/cache?foo=bar#abc"), "caches");
-        System.out.println("replacePath = " + uri);
-
-        URI caches = appendPath(new URI("https://eti:stu@ge.gradle.org/cache?foo=bar#abc"), "caches");
-        System.out.println("appendPath = " + caches);
-
-        String s = serverOnly("https://eti:stu@ge.gradle.org/cache/foo=bar#abc");
-        System.out.println("serverOnly = " + s);
-
-        String path = pathOnly("https://ge.gradle.org/cache/?foo=bar#er");
-        System.out.println("pathOnly = " + path);
-
-
     }
 
 }
