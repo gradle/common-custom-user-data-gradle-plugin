@@ -7,7 +7,6 @@ import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -128,17 +127,33 @@ final class Overrides {
     }
 
     private static String serverOnly(String urlString) {
-        URL url = Utils.toUrl(urlString);
+        URI uri = URI.create(urlString);
         try {
-            return new URL(url.getProtocol(), url.getHost(), url.getPort(), "").toExternalForm();
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Cannot construct URL: " + url, e);
+            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), null, null, null).toString();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
         }
     }
 
     private static String pathOnly(String urlString) {
         URL url = Utils.toUrl(urlString);
         return url.getPath();
+    }
+
+    public static void main(String[] args) throws URISyntaxException {
+        URI uri = replacePath(new URI("https://eti:stu@ge.gradle.org/cache?foo=bar#abc"), "caches");
+        System.out.println("replacePath = " + uri);
+
+        URI caches = appendPath(new URI("https://eti:stu@ge.gradle.org/cache?foo=bar#abc"), "caches");
+        System.out.println("appendPath = " + caches);
+
+        String s = serverOnly("https://eti:stu@ge.gradle.org/cache/foo=bar#abc");
+        System.out.println("serverOnly = " + s);
+
+        String path = pathOnly("https://ge.gradle.org/cache/?foo=bar#er");
+        System.out.println("pathOnly = " + path);
+
+
     }
 
 }
