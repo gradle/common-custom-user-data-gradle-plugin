@@ -107,8 +107,8 @@ final class Overrides {
 
     private static URI replacePath(URI uri, String path) {
         try {
-            String pathWithSlashes = appendIfMissing(prependIfMissing("/", path), "/");
-            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), pathWithSlashes, uri.getQuery(), uri.getFragment());
+            String finalPath = appendIfMissing(prependIfMissing("/", path), "/");
+            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), finalPath, uri.getQuery(), uri.getFragment());
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
         }
