@@ -78,19 +78,19 @@ final class Utils {
         return value != null && !value.isEmpty();
     }
 
-    static String stripPrefix(String string, String prefix) {
-        return string.startsWith(prefix) ? string.substring(prefix.length()) : string;
+    static String stripPrefix(String string, char prefix) {
+        return string.startsWith(Character.toString(prefix)) ? string.substring(1) : string;
     }
 
-    static String prependIfMissing(String str, String prefix) {
-        return str.startsWith(prefix) ? str : prefix + str;
+    static String prependIfMissing(String str, char prefix) {
+        return str.startsWith(Character.toString(prefix)) ? str : prefix + str;
     }
 
-    static String appendIfMissing(String str, String suffix) {
-        return str.endsWith(suffix) ? str : str + suffix;
+    static String appendIfMissing(String str, char suffix) {
+        return str.endsWith(Character.toString(suffix)) ? str : str + suffix;
     }
 
-    static String prependAndAppendIfMissing(String path, String part) {
+    static String prependAndAppendIfMissing(String path, char part) {
         return appendIfMissing(prependIfMissing(path, part), part);
     }
 

@@ -222,7 +222,7 @@ final class CustomBuildScanEnhancements {
 
                             String teamCityServerUrl = configProperties.getProperty("teamcity.serverUrl");
                             if (isNotEmpty(teamCityServerUrl)) {
-                                String buildUrl = appendIfMissing(teamCityServerUrl, "/") + "viewLog.html?buildId=" + urlEncode(teamCityBuildId);
+                                String buildUrl = appendIfMissing(teamCityServerUrl, '/') + "viewLog.html?buildId=" + urlEncode(teamCityBuildId);
                                 buildScan.link("TeamCity build", buildUrl);
                             }
                         }
@@ -488,7 +488,7 @@ final class CustomBuildScanEnhancements {
         String searchParams = "search.names=" + urlEncode(name) + "&search.values=" + urlEncode(value);
         String server = getServer(buildScan);
         if (server != null) {
-            String url = appendIfMissing(server, "/") + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
+            String url = appendIfMissing(server, '/') + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
             buildScan.link(linkLabel + " build scans", url);
         }
     }
