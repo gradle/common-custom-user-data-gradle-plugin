@@ -15,9 +15,9 @@ import java.time.Duration;
 import java.util.Optional;
 
 import static com.gradle.Utils.appendIfMissing;
-import static com.gradle.Utils.appendPathAndTrailingSlash;
 import static com.gradle.Utils.concatenatePaths;
 import static com.gradle.Utils.prependIfMissing;
+import static com.gradle.Utils.stripPrefix;
 
 /**
  * Provide standardized Gradle Enterprise configuration. By applying the plugin, these settings will automatically be applied.
@@ -73,7 +73,7 @@ final class Overrides {
             buildCache.remote(HttpBuildCache.class, remote -> {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setUrl);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).map(path -> replacePath(remote.getUrl(), path)).ifPresent(remote::setUrl);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> appendPathAndTrailingSlash(remote.getUrl(), shard)).ifPresent(remote::setUrl);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> appendPath(remote.getUrl(), shard)).ifPresent(remote::setUrl);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
@@ -116,6 +116,17 @@ final class Overrides {
         }
     }
 
+    private static URI appendPath(URI uri, String path) {
+        try {
+            String currentPath = appendIfMissing(prependIfMissing("/", uri.getPath()), "/");
+            String additionalPath = appendIfMissing(stripPrefix("/", path), "/");
+            String finalPath = currentPath + additionalPath;
+            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), finalPath, uri.getQuery(), uri.getFragment());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
+        }
+    }
+
     private static String serverOnly(String urlString) {
         URL url = toUrl(urlString);
         try {
@@ -136,6 +147,22 @@ final class Overrides {
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("Cannot parse URL: " + urlString, e);
         }
+    }
+
+    public static void main(String[] args) throws URISyntaxException {
+        URI uri = replacePath(new URI("https://eti:stu@ge.gradle.org/cache?foo=bar#abc"), "caches");
+        System.out.println("replacePath = " + uri);
+
+        URI caches = appendPath(new URI("https://eti:stu@ge.gradle.org/cache?foo=bar#abc"), "caches");
+        System.out.println("appendPath = " + caches);
+
+        String s = serverOnly("https://eti:stu@ge.gradle.org/cache/foo=bar#abc");
+        System.out.println("serverOnly = " + s);
+
+        String path = pathOnly("https://ge.gradle.org/cache/?foo=bar#er");
+        System.out.println("pathOnly = " + path);
+
+
     }
 
 }
