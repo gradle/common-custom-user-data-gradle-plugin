@@ -7,6 +7,8 @@ import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -73,7 +75,8 @@ final class Overrides {
             });
         } else if (buildCache.getRemote() instanceof GradleEnterpriseBuildCache) {
             buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
-                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setServer);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::serverOnly).ifPresent(remote::setServer);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).ifPresent(shard -> remote.setPath(concatenatePaths(remote.getPath(), shard)));
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
@@ -97,6 +100,28 @@ final class Overrides {
 
     private static String toEnvVarName(String sysPropertyName) {
         return sysPropertyName.toUpperCase().replace('.', '_');
+    }
+
+    private static String serverOnly(String urlString) {
+        URL url = toUrl(urlString);
+        try {
+            return new URL(url.getProtocol(), url.getHost(), url.getPort(), "").toExternalForm();
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Cannot construct URL: " + url, e);
+        }
+    }
+
+    private static String pathOnly(String urlString) {
+        URL url = toUrl(urlString);
+        return url.getPath();
+    }
+
+    private static URL toUrl(String urlString) {
+        try {
+            return new URL(urlString);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Cannot parse URL: " + urlString, e);
+        }
     }
 
 }
