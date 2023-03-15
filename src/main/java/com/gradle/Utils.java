@@ -79,19 +79,19 @@ final class Utils {
     }
 
     static String stripPrefix(String string, char prefix) {
-        return string.startsWith(Character.toString(prefix)) ? string.substring(1) : string;
+        return string.length() > 0 && string.charAt(0) == prefix ? string.substring(1) : string;
     }
 
-    static String prependIfMissing(String str, char prefix) {
-        return str.startsWith(Character.toString(prefix)) ? str : prefix + str;
+    static String prependIfMissing(String string, char prefix) {
+        return string.length() > 0 && string.charAt(0) == prefix ? string : prefix + string;
     }
 
-    static String appendIfMissing(String str, char suffix) {
-        return str.endsWith(Character.toString(suffix)) ? str : str + suffix;
+    static String appendIfMissing(String string, char suffix) {
+        return string.length() > 0 && string.charAt(string.length() - 1) == suffix ? string : string + suffix;
     }
 
-    static String prependAndAppendIfMissing(String path, char part) {
-        return appendIfMissing(prependIfMissing(path, part), part);
+    static String prependAndAppendIfMissing(String string, char part) {
+        return appendIfMissing(prependIfMissing(string, part), part);
     }
 
     static String urlEncode(String str) {
