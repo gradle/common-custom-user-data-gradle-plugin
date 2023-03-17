@@ -1,5 +1,6 @@
 package com.gradle;
 
+import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
@@ -34,7 +35,7 @@ final class CustomGradleEnterpriseConfig {
         boolean isCiServer = System.getenv().containsKey("CI");
 
         buildScan.publishAlways();
-        buildScan.setCaptureTaskInputFiles(true);
+        buildScan.capture(capture -> capture.setTaskInputFiles(true));
         buildScan.setUploadInBackground(!isCiServer);
 
         */
@@ -63,8 +64,7 @@ final class CustomGradleEnterpriseConfig {
 
         // Only permit store operations to the remote build cache for CI builds
         // Local builds will only read from the remote build cache
-        buildCache.remote(HttpBuildCache.class, remote -> {
-            remote.setUrl("https://enterprise-samples.gradle.com/cache/");
+        buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
             remote.setEnabled(true);
             remote.setPush(isCiServer);
         });
