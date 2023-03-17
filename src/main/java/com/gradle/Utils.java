@@ -78,10 +78,6 @@ final class Utils {
         return value != null && !value.isEmpty();
     }
 
-    static String stripPrefix(String string, char prefix) {
-        return string.length() > 0 && string.charAt(0) == prefix ? string.substring(1) : string;
-    }
-
     static String prependIfMissing(String string, char prefix) {
         return string.length() > 0 && string.charAt(0) == prefix ? string : prefix + string;
     }

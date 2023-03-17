@@ -12,9 +12,7 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.gradle.Utils.appendIfMissing;
 import static com.gradle.Utils.prependAndAppendIfMissing;
-import static com.gradle.Utils.stripPrefix;
 
 /**
  * Provide standardized Gradle Enterprise configuration. By applying the plugin, these settings will automatically be applied.
@@ -34,7 +32,6 @@ final class Overrides {
     // system properties to override remote build cache configuration
     static final String REMOTE_CACHE_URL = "gradle.cache.remote.url";
     static final String REMOTE_CACHE_PATH = "gradle.cache.remote.path";
-    static final String REMOTE_CACHE_SHARD = "gradle.cache.remote.shard";
     static final String REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER = "gradle.cache.remote.allowUntrustedServer";
     static final String REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL = "gradle.cache.remote.allowInsecureProtocol";
     static final String REMOTE_CACHE_ENABLED = "gradle.cache.remote.enabled";
@@ -71,7 +68,6 @@ final class Overrides {
             buildCache.remote(HttpBuildCache.class, remote -> {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setUrl);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).map(path -> replacePath(remote.getUrl(), path)).ifPresent(remote::setUrl);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> appendPath(remote.getUrl(), shard)).ifPresent(remote::setUrl);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(remote::setAllowInsecureProtocol);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
@@ -82,7 +78,6 @@ final class Overrides {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::serverOnly).ifPresent(remote::setServer);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).ifPresent(remote::setPath);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SHARD, providers).map(shard -> joinPaths(remote.getPath(), shard)).ifPresent(remote::setPath);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(remote::setAllowInsecureProtocol);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
@@ -116,17 +111,6 @@ final class Overrides {
         }
     }
 
-    private static URI appendPath(URI uri, String path) {
-        try {
-            String currentPath = prependAndAppendIfMissing(uri.getPath(), '/');
-            String additionalPath = appendIfMissing(stripPrefix(path, '/'), '/');
-            String finalPath = currentPath + additionalPath;
-            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), finalPath, uri.getQuery(), uri.getFragment());
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Cannot construct URI: " + uri, e);
-        }
-    }
-
     private static String serverOnly(String urlString) {
         URI uri = URI.create(urlString);
         try {
@@ -139,12 +123,6 @@ final class Overrides {
     private static String pathOnly(String urlString) {
         URI uri = URI.create(urlString);
         return uri.getPath();
-    }
-
-    private static String joinPaths(String basePath, String path) {
-        String currentPath = prependAndAppendIfMissing(basePath, '/');
-        String additionalPath = stripPrefix(path, '/'); // do not slashify the path when using the GE cache connector
-        return currentPath + additionalPath;
     }
 
 }
