@@ -29,6 +29,7 @@ final class Overrides {
 
     // system properties to override remote build cache configuration
     static final String REMOTE_CACHE_URL = "gradle.cache.remote.url";
+    static final String REMOTE_CACHE_SERVER = "gradle.cache.remote.server";
     static final String REMOTE_CACHE_PATH = "gradle.cache.remote.path";
     static final String REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER = "gradle.cache.remote.allowUntrustedServer";
     static final String REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL = "gradle.cache.remote.allowInsecureProtocol";
@@ -73,6 +74,7 @@ final class Overrides {
             buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::serverOnly).ifPresent(remote::setServer);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).map(Overrides::pathOnly).ifPresent(remote::setPath);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SERVER, providers).ifPresent(remote::setServer);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(remote::setAllowInsecureProtocol);
