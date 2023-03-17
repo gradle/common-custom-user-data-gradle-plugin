@@ -34,7 +34,7 @@ final class CustomGradleEnterpriseConfig {
         boolean isCiServer = System.getenv().containsKey("CI");
 
         buildScan.publishAlways();
-        buildScan.setCaptureTaskInputFiles(true);
+        buildScan.capture(capture -> capture.setTaskInputFiles(true));
         buildScan.setUploadInBackground(!isCiServer);
 
         */
