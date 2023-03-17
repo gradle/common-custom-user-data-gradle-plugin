@@ -44,7 +44,7 @@ final class Utils {
 
     static Optional<String> envVariable(String name, ProviderFactory providers) {
         if (isGradle65OrNewer() && !isGradle74OrNewer()) {
-            Provider<String> variable = providers.environmentVariable(name).forUseAtConfigurationTime();
+            @SuppressWarnings("deprecation") Provider<String> variable = providers.environmentVariable(name).forUseAtConfigurationTime();
             return Optional.ofNullable(variable.getOrNull());
         }
         return Optional.ofNullable(System.getenv(name));
@@ -60,7 +60,7 @@ final class Utils {
 
     static Optional<String> sysProperty(String name, ProviderFactory providers) {
         if (isGradle65OrNewer() && !isGradle74OrNewer()) {
-            Provider<String> property = providers.systemProperty(name).forUseAtConfigurationTime();
+            @SuppressWarnings("deprecation") Provider<String> property = providers.systemProperty(name).forUseAtConfigurationTime();
             return Optional.ofNullable(property.getOrNull());
         }
         return Optional.ofNullable(System.getProperty(name));
