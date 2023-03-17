@@ -1,2 +1,0 @@
-- [NEW] Remote build cache server can be configured with `allowInsecureProtocol` via sys property and env variable
-- [NEW] Overrides via system properties and environment variables are consolidated #146
