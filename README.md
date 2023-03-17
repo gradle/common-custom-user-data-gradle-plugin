@@ -104,7 +104,6 @@ to modify the build scripts. For example, to disable the local build cache when 
 | buildCache.remote.setPush                  | gradle.cache.remote.push                     | GRADLE_CACHE_REMOTE_PUSH                  |
 | buildCache.remote.setAllowUntrustedServer  | gradle.cache.remote.allowUntrustedServer     | GRADLE_CACHE_REMOTE_ALLOWUNTRUSTEDSERVER  |
 | buildCache.remote.setAllowInsecureProtocol | gradle.cache.remote.setAllowInsecureProtocol | GRADLE_CACHE_REMOTE_ALLOWINSECUREPROTOCOL |
-| buildCache.remote.setServer/setPath        | gradle.cache.remote.url                      | GRADLE_CACHE_REMOTE_URL                   |
 | buildCache.remote.setServer                | gradle.cache.remote.server                   | GRADLE_CACHE_REMOTE_SERVER                |
 | buildCache.remote.setPath                  | gradle.cache.remote.path                     | GRADLE_CACHE_REMOTE_PATH                  |
 
