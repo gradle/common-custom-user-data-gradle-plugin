@@ -1,2 +1,2 @@
 - [NEW] Remote build cache server can be configured with `allowInsecureProtocol` via sys property and env variable
-- [FIX] Remote build cache server URL is split into server and path when configuring the GradleEnterpriseBuildCache
+- [NEW] Overrides via system properties and environment variables are consolidated #146
