@@ -78,20 +78,8 @@ final class Utils {
         return value != null && !value.isEmpty();
     }
 
-    static String stripPrefix(String string, char prefix) {
-        return string.length() > 0 && string.charAt(0) == prefix ? string.substring(1) : string;
-    }
-
-    static String prependIfMissing(String string, char prefix) {
-        return string.length() > 0 && string.charAt(0) == prefix ? string : prefix + string;
-    }
-
     static String appendIfMissing(String string, char suffix) {
         return string.length() > 0 && string.charAt(string.length() - 1) == suffix ? string : string + suffix;
-    }
-
-    static String prependAndAppendIfMissing(String string, char part) {
-        return appendIfMissing(prependIfMissing(string, part), part);
     }
 
     static String urlEncode(String str) {
