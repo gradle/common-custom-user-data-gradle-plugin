@@ -1,0 +1,1 @@
+[FIX] Support build scan links to alternate GitHub URLs (such as GitHub Enterprise servers)
