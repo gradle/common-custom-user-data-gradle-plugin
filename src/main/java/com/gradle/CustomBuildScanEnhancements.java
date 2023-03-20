@@ -397,19 +397,15 @@ final class CustomBuildScanEnhancements {
             }
 
             if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
-                if (gitRepo.contains("github.com/") || gitRepo.contains("github.com:")) {
-                    Matcher matcher = Pattern.compile("(.*)github\\.com[/|:](.*)").matcher(gitRepo);
-                    if (matcher.matches()) {
-                        String rawRepoPath = matcher.group(2);
-                        String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
-                        buildScan.link("Github source", "https://github.com/" + repoPath + "/tree/" + gitCommitId);
-                    }
-                } else if (gitRepo.contains("gitlab.com/") || gitRepo.contains("gitlab.com:")) {
-                    Matcher matcher = Pattern.compile("(.*)gitlab\\.com[/|:](.*)").matcher(gitRepo);
-                    if (matcher.matches()) {
-                        String rawRepoPath = matcher.group(2);
-                        String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
-                        buildScan.link("GitLab Source", "https://gitlab.com/" + repoPath + "/-/commit/" + gitCommitId);
+                Matcher matcher = Pattern.compile("(https://|git@)(.+?)[:|/](.*)").matcher(gitRepo);
+                if (matcher.matches()) {
+                    String repoUrl = "https://" + matcher.group(2) + "/";
+                    String rawRepoPath = matcher.group(3);
+                    String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
+                    if (gitRepo.contains("github")) {
+                        buildScan.link("Github source", repoUrl + repoPath + "/tree/" + gitCommitId);
+                    } else if (gitRepo.contains("gitlab")) {
+                        buildScan.link("GitLab Source", repoUrl + repoPath + "/-/commit/" + gitCommitId);
                     }
                 }
             }
