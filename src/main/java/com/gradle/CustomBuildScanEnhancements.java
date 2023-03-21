@@ -397,10 +397,10 @@ final class CustomBuildScanEnhancements {
             }
 
             if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
-                Matcher matcher = Pattern.compile("(https://|git@)(.+?)[:|/](.*)").matcher(gitRepo);
+                Matcher matcher = Pattern.compile("(https?://|git@)(.*?(github|gitlab).*?)[:|/](.*)").matcher(gitRepo);
                 if (matcher.matches()) {
                     String repoUrl = "https://" + matcher.group(2) + "/";
-                    String rawRepoPath = matcher.group(3);
+                    String rawRepoPath = matcher.group(4);
                     String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
                     if (gitRepo.contains("github")) {
                         buildScan.link("Github source", repoUrl + repoPath + "/tree/" + gitCommitId);
