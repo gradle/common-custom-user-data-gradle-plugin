@@ -1,1 +1,1 @@
-[FIX] Support build scan links to alternate GitHub URLs (such as GitHub Enterprise servers)
+[FIX] Generating incorrect "GitHub Actions Build" and "GitHub/GitLab Source" links to repositories not hosted at github.com or gitlab.com
