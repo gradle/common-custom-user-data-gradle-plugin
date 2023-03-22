@@ -268,11 +268,11 @@ final class CustomBuildScanEnhancements {
             }
 
             if (isGitHubActions(providers)) {
-                Optional<String> gitHubUrl = envVariable("GITHUB_SERVER_URL", providers);
+                String gitHubUrl = envVariable("GITHUB_SERVER_URL", providers).orElse("https://github.com");
                 Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
                 Optional<String> gitHubRunId = envVariable("GITHUB_RUN_ID", providers);
                 if (gitHubRepository.isPresent() && gitHubRunId.isPresent()) {
-                    buildScan.link("GitHub Actions build", gitHubUrl.orElse("https://github.com") + "/" + gitHubRepository.get() + "/actions/runs/" + gitHubRunId.get());
+                    buildScan.link("GitHub Actions build", gitHubUrl + "/" + gitHubRepository.get() + "/actions/runs/" + gitHubRunId.get());
                 }
                 envVariable("GITHUB_WORKFLOW", providers).ifPresent(value ->
                         addCustomValueAndSearchLink(buildScan, "CI workflow", value));
