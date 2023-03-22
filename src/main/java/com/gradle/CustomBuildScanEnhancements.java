@@ -403,9 +403,9 @@ final class CustomBuildScanEnhancements {
                     String rawRepoPath = matcher.group(4);
                     String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
                     if (gitRepo.contains("github")) {
-                        buildScan.link("Github source", repoUrl + repoPath + "/tree/" + gitCommitId);
+                        buildScan.link("GitHub source", repoUrl + repoPath + "/tree/" + gitCommitId);
                     } else if (gitRepo.contains("gitlab")) {
-                        buildScan.link("GitLab Source", repoUrl + repoPath + "/-/commit/" + gitCommitId);
+                        buildScan.link("GitLab source", repoUrl + repoPath + "/-/commit/" + gitCommitId);
                     }
                 }
             }
