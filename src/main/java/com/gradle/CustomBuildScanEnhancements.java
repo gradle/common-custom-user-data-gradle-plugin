@@ -397,15 +397,21 @@ final class CustomBuildScanEnhancements {
             }
 
             if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
-                Matcher matcher = Pattern.compile("(https://|git@)(.*?(github|gitlab).*?)[:|/](.*)").matcher(gitRepo);
-                if (matcher.matches()) {
-                    String repoUrl = "https://" + matcher.group(2) + "/";
-                    String rawRepoPath = matcher.group(4);
-                    String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
-                    if (gitRepo.contains("github")) {
-                        buildScan.link("GitHub source", repoUrl + repoPath + "/tree/" + gitCommitId);
-                    } else if (gitRepo.contains("gitlab")) {
-                        buildScan.link("GitLab source", repoUrl + repoPath + "/-/commit/" + gitCommitId);
+                Optional<String> gitHubUrl = envVariable("GITHUB_SERVER_URL", providers);
+                Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
+                if (gitHubUrl.isPresent() && gitHubRepository.isPresent()) {
+                    buildScan.link("GitHub source", gitHubUrl + "/" + gitHubRepository + "/tree/" + gitCommitId);
+                } else {
+                    Matcher matcher = Pattern.compile("(https://|git@)(.*?(github|gitlab).*?)[:|/](.*)").matcher(gitRepo);
+                    if (matcher.matches()) {
+                        String repoUrl = "https://" + matcher.group(2) + "/";
+                        String rawRepoPath = matcher.group(4);
+                        String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
+                        if (gitRepo.contains("github")) {
+                            buildScan.link("GitHub source", repoUrl + repoPath + "/tree/" + gitCommitId);
+                        } else if (gitRepo.contains("gitlab")) {
+                            buildScan.link("GitLab source", repoUrl + repoPath + "/-/commit/" + gitCommitId);
+                        }
                     }
                 }
             }
