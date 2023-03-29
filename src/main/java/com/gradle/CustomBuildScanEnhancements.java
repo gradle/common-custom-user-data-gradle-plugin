@@ -402,11 +402,10 @@ final class CustomBuildScanEnhancements {
                 if (gitHubUrl.isPresent() && gitHubRepository.isPresent()) {
                     buildScan.link("GitHub source", gitHubUrl + "/" + gitHubRepository + "/tree/" + gitCommitId);
                 } else {
-                    Matcher matcher = Pattern.compile("(?:https://|.*?@)(.*?(?:github|gitlab).*?)[:/](.*)").matcher(gitRepo);
+                    Matcher matcher = Pattern.compile("(?:https://|.*?@)(.*?(?:github|gitlab).*?)[:/](.*)\\.git").matcher(gitRepo);
                     if (matcher.matches()) {
                         String repoUrl = "https://" + matcher.group(1) + "/";
-                        String rawRepoPath = matcher.group(2);
-                        String repoPath = rawRepoPath.endsWith(".git") ? rawRepoPath.substring(0, rawRepoPath.length() - 4) : rawRepoPath;
+                        String repoPath = matcher.group(2);
                         if (gitRepo.contains("github")) {
                             buildScan.link("GitHub source", repoUrl + repoPath + "/tree/" + gitCommitId);
                         } else if (gitRepo.contains("gitlab")) {
