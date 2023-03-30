@@ -6,11 +6,15 @@ import org.gradle.api.Action;
 import org.gradle.api.Task;
 import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -18,8 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.gradle.CiUtils.isAzurePipelines;
@@ -359,6 +361,8 @@ final class CustomBuildScanEnhancements {
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanExtension> {
 
+        private final Logger logger = Logging.getLogger(CustomBuildScanEnhancements.class);
+
         private final ProviderFactory providers;
 
         private CaptureGitMetadataAction(ProviderFactory providers) {
@@ -401,15 +405,17 @@ final class CustomBuildScanEnhancements {
             if (gitHubUrl.isPresent() && gitHubRepository.isPresent()) {
                 buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitHubRepository.get() + "/tree/" + gitCommitId);
             } else if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
-                Matcher matcher = Pattern.compile("(?:https://|.*?@)(.*?(?:github|gitlab).*?)[:/](.*)\\.git").matcher(gitRepo);
-                if (matcher.matches()) {
-                    String repoUrl = "https://" + matcher.group(1) + "/";
-                    String repoPath = matcher.group(2);
+                try {
+                    URI gitRepoUri = new URI(gitRepo);
+                    String gitRepoHost = gitRepoUri.getHost();
+                    String gitRepoPath = gitRepoUri.getPath().endsWith(".git") ? gitRepoUri.getPath().substring(0, gitRepoUri.getPath().length() - 4) : gitRepoUri.getPath();
                     if (gitRepo.contains("github")) {
-                        buildScan.link("GitHub source", repoUrl + repoPath + "/tree/" + gitCommitId);
+                        buildScan.link("GitHub source", "https://" + gitRepoHost + gitRepoPath + "/tree/" + gitCommitId);
                     } else if (gitRepo.contains("gitlab")) {
-                        buildScan.link("GitLab source", repoUrl + repoPath + "/-/commit/" + gitCommitId);
+                        buildScan.link("GitLab source", "https://" + gitRepoHost + gitRepoPath + "/-/commit/" + gitCommitId);
                     }
+                } catch (URISyntaxException e) {
+                    logger.warn("Remote git repository " + gitRepo + " is not a valid URI");
                 }
             }
         }
