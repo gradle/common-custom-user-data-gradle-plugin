@@ -400,7 +400,7 @@ final class CustomBuildScanEnhancements {
                 Optional<String> gitHubUrl = envVariable("GITHUB_SERVER_URL", providers);
                 Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
                 if (gitHubUrl.isPresent() && gitHubRepository.isPresent()) {
-                    buildScan.link("GitHub source", gitHubUrl + "/" + gitHubRepository + "/tree/" + gitCommitId);
+                    buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitHubRepository.get() + "/tree/" + gitCommitId);
                 } else {
                     Matcher matcher = Pattern.compile("(?:https://|.*?@)(.*?(?:github|gitlab).*?)[:/](.*)\\.git").matcher(gitRepo);
                     if (matcher.matches()) {
