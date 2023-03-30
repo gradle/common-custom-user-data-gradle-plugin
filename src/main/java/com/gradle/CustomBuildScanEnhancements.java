@@ -396,21 +396,19 @@ final class CustomBuildScanEnhancements {
                 buildScan.value("Git status", gitStatus);
             }
 
-            if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
-                Optional<String> gitHubUrl = envVariable("GITHUB_SERVER_URL", providers);
-                Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
-                if (gitHubUrl.isPresent() && gitHubRepository.isPresent()) {
-                    buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitHubRepository.get() + "/tree/" + gitCommitId);
-                } else {
-                    Matcher matcher = Pattern.compile("(?:https://|.*?@)(.*?(?:github|gitlab).*?)[:/](.*)\\.git").matcher(gitRepo);
-                    if (matcher.matches()) {
-                        String repoUrl = "https://" + matcher.group(1) + "/";
-                        String repoPath = matcher.group(2);
-                        if (gitRepo.contains("github")) {
-                            buildScan.link("GitHub source", repoUrl + repoPath + "/tree/" + gitCommitId);
-                        } else if (gitRepo.contains("gitlab")) {
-                            buildScan.link("GitLab source", repoUrl + repoPath + "/-/commit/" + gitCommitId);
-                        }
+            Optional<String> gitHubUrl = envVariable("GITHUB_SERVER_URL", providers);
+            Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
+            if (gitHubUrl.isPresent() && gitHubRepository.isPresent()) {
+                buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitHubRepository.get() + "/tree/" + gitCommitId);
+            } else if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
+                Matcher matcher = Pattern.compile("(?:https://|.*?@)(.*?(?:github|gitlab).*?)[:/](.*)\\.git").matcher(gitRepo);
+                if (matcher.matches()) {
+                    String repoUrl = "https://" + matcher.group(1) + "/";
+                    String repoPath = matcher.group(2);
+                    if (gitRepo.contains("github")) {
+                        buildScan.link("GitHub source", repoUrl + repoPath + "/tree/" + gitCommitId);
+                    } else if (gitRepo.contains("gitlab")) {
+                        buildScan.link("GitLab source", repoUrl + repoPath + "/-/commit/" + gitCommitId);
                     }
                 }
             }
