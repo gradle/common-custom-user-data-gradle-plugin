@@ -38,16 +38,12 @@ gradlePlugin {
 
     automatedPublishing = true
 
-    def releaseNotes = layout.projectDirectory.file('release/changes.md').asFile.text
+    def releaseNotesFile = layout.projectDirectory.file('release/changes.md')
     plugins {
         commonCustomUserData {
             id = 'com.gradle.common-custom-user-data-gradle-plugin'
             displayName = 'Gradle Enterprise Common Custom User Data Gradle Plugin'
-            description = """\
-                          |A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise
-                          |
-                          |$releaseNotes
-                          """.stripMargin().trim()
+            description = providers.fileContents(releaseNotesFile).asText.get().trim()
             implementationClass = 'com.gradle.CommonCustomUserDataGradlePlugin'
             tags.addAll('android', 'java', 'gradle enterprise')
         }
