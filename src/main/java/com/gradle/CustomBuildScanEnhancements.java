@@ -405,8 +405,13 @@ final class CustomBuildScanEnhancements {
             if (gitHubUrl.isPresent() && gitHubRepository.isPresent()) {
                 buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitHubRepository.get() + "/tree/" + gitCommitId);
             } else if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
+                Optional<URI> gitRepoUriOpt = Optional.empty();
                 try {
-                    URI gitRepoUri = new URI(gitRepo);
+                    gitRepoUriOpt = Optional.of(new URI(gitRepo));
+                } catch (URISyntaxException e) {
+                    logger.warn("Remote git repository " + gitRepo + " is not a valid URI");
+                }
+                gitRepoUriOpt.ifPresent(gitRepoUri -> {
                     String gitRepoHost = gitRepoUri.getHost();
                     String gitRepoPath = gitRepoUri.getPath().endsWith(".git") ? gitRepoUri.getPath().substring(0, gitRepoUri.getPath().length() - 4) : gitRepoUri.getPath();
                     if (gitRepo.contains("github")) {
@@ -414,9 +419,7 @@ final class CustomBuildScanEnhancements {
                     } else if (gitRepo.contains("gitlab")) {
                         buildScan.link("GitLab source", "https://" + gitRepoHost + gitRepoPath + "/-/commit/" + gitCommitId);
                     }
-                } catch (URISyntaxException e) {
-                    logger.warn("Remote git repository " + gitRepo + " is not a valid URI");
-                }
+                });
             }
         }
 
