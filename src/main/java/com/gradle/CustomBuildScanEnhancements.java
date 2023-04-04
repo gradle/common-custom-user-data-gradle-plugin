@@ -414,9 +414,9 @@ final class CustomBuildScanEnhancements {
                 gitRepoUriOpt.ifPresent(gitRepoUri -> {
                     String gitRepoHost = gitRepoUri.getHost();
                     String gitRepoPath = gitRepoUri.getPath().endsWith(".git") ? gitRepoUri.getPath().substring(0, gitRepoUri.getPath().length() - 4) : gitRepoUri.getPath();
-                    if (gitRepo.contains("github")) {
+                    if (gitRepoHost.contains("github")) {
                         buildScan.link("GitHub source", "https://" + gitRepoHost + gitRepoPath + "/tree/" + gitCommitId);
-                    } else if (gitRepo.contains("gitlab")) {
+                    } else if (gitRepoHost.contains("gitlab")) {
                         buildScan.link("GitLab source", "https://" + gitRepoHost + gitRepoPath + "/-/commit/" + gitCommitId);
                     }
                 });
