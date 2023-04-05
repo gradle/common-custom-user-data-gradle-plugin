@@ -269,10 +269,10 @@ final class CustomBuildScanEnhancements {
 
             if (isGitHubActions(providers)) {
                 Optional<String> gitHubUrl = envVariable("GITHUB_SERVER_URL", providers);
-                Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
+                Optional<String> gitRepository = envVariable("GITHUB_REPOSITORY", providers);
                 Optional<String> gitHubRunId = envVariable("GITHUB_RUN_ID", providers);
-                if (gitHubUrl.isPresent() && gitHubRepository.isPresent() && gitHubRunId.isPresent()) {
-                    buildScan.link("GitHub Actions build", gitHubUrl + "/" + gitHubRepository.get() + "/actions/runs/" + gitHubRunId.get());
+                if (gitHubUrl.isPresent() && gitRepository.isPresent() && gitHubRunId.isPresent()) {
+                    buildScan.link("GitHub Actions build", gitHubUrl + "/" + gitRepository.get() + "/actions/runs/" + gitHubRunId.get());
                 }
                 envVariable("GITHUB_WORKFLOW", providers).ifPresent(value ->
                         addCustomValueAndSearchLink(buildScan, "CI workflow", value));
@@ -397,9 +397,9 @@ final class CustomBuildScanEnhancements {
             }
 
             Optional<String> gitHubUrl = envVariable("GITHUB_SERVER_URL", providers);
-            Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
-            if (gitHubUrl.isPresent() && gitHubRepository.isPresent() && isNotEmpty(gitCommitId)) {
-                buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitHubRepository.get() + "/tree/" + gitCommitId);
+            Optional<String> gitRepository = envVariable("GITHUB_REPOSITORY", providers);
+            if (gitHubUrl.isPresent() && gitRepository.isPresent() && isNotEmpty(gitCommitId)) {
+                buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitRepository.get() + "/tree/" + gitCommitId);
             } else if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
                 Optional<URI> gitRepoUri = toUri(gitRepo);
                 gitRepoUri.ifPresent(r -> {
