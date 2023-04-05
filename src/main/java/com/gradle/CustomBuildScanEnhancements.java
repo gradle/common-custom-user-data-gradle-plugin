@@ -401,15 +401,12 @@ final class CustomBuildScanEnhancements {
             if (gitHubUrl.isPresent() && gitRepository.isPresent() && isNotEmpty(gitCommitId)) {
                 buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitRepository.get() + "/tree/" + gitCommitId);
             } else if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
-                Optional<URI> gitRepoUri = toUri(gitRepo);
-                gitRepoUri.ifPresent(r -> {
-                    String gitRepoPath = r.getPath().endsWith(".git") ? r.getPath().substring(0, r.getPath().length() - 4) : r.getPath();
+                Optional<URI> webRepoUri = toWebRepoUri(gitRepo);
+                webRepoUri.ifPresent(r -> {
                     if (r.getHost().contains("github")) {
-                        toHttpsUri(r.getHost(), gitRepoPath + "/tree/" + gitCommitId)
-                            .ifPresent(u ->  buildScan.link("GitHub source", u.toString()));
+                        buildScan.link("GitHub source", r + "/tree/" + gitCommitId);
                     } else if (r.getHost().contains("gitlab")) {
-                        toHttpsUri(r.getHost(), gitRepoPath + "/-/commit/" + gitCommitId)
-                            .ifPresent(u -> buildScan.link("GitLab source", u.toString()));
+                        buildScan.link("GitLab source", r + "/-/commit/" + gitCommitId);
                     }
                 });
             }
@@ -439,17 +436,21 @@ final class CustomBuildScanEnhancements {
             return gitCommand.get();
         }
 
-        private Optional<URI> toUri(String uri) {
+        private Optional<URI> toWebRepoUri(String gitRepoUri) {
             try {
-                return Optional.of(new URI(uri));
+                URI tempUri = new URI(gitRepoUri);
+                String gitRepoPath = tempUri.getPath().endsWith(".git") ? tempUri.getPath().substring(0, tempUri.getPath().length() - 4) : tempUri.getPath();
+                return Optional.of(new URI("https", tempUri.getHost(), gitRepoPath, null));
             } catch (URISyntaxException e) {
                 return Optional.empty();
             }
         }
 
-        private Optional<URI> toHttpsUri(String host, String path) {
+        private Optional<URI> stripDotGitExtension(URI uri) {
+            String path = uri.getPath();
             try {
-                return Optional.of(new URI("https", host, path));
+                return path.endsWith(".git") ? Optional.of(new URI(uri.getScheme(), uri.getHost(), path.substring(0, path.length() - 4)))
+                    : Optional.of(uri);
             } catch (URISyntaxException e) {
                 return Optional.empty();
             }
