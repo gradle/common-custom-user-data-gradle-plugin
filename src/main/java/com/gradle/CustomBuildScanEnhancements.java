@@ -6,8 +6,6 @@ import org.gradle.api.Action;
 import org.gradle.api.Task;
 import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
-import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.TaskCollection;
@@ -217,7 +215,7 @@ final class CustomBuildScanEnhancements {
                     Properties buildProperties = readPropertiesFile(teamcityBuildPropertiesFile.get(), providers, projectDirectory.get());
 
                     String teamCityBuildId = buildProperties.getProperty("teamcity.build.id");
-                    if(isNotEmpty(teamCityBuildId)) {
+                    if (isNotEmpty(teamCityBuildId)) {
                         String teamcityConfigFile = buildProperties.getProperty("teamcity.configuration.properties.file");
                         if (isNotEmpty(teamcityConfigFile)) {
                             Properties configProperties = readPropertiesFile(teamcityConfigFile, providers, projectDirectory.get());
@@ -361,8 +359,6 @@ final class CustomBuildScanEnhancements {
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanExtension> {
 
-        private final Logger logger = Logging.getLogger(CustomBuildScanEnhancements.class);
-
         private final ProviderFactory providers;
 
         private CaptureGitMetadataAction(ProviderFactory providers) {
@@ -402,18 +398,13 @@ final class CustomBuildScanEnhancements {
 
             Optional<String> gitHubUrl = envVariable("GITHUB_SERVER_URL", providers);
             Optional<String> gitHubRepository = envVariable("GITHUB_REPOSITORY", providers);
-            if (gitHubUrl.isPresent() && gitHubRepository.isPresent()) {
+            if (gitHubUrl.isPresent() && gitHubRepository.isPresent() && isNotEmpty(gitCommitId)) {
                 buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitHubRepository.get() + "/tree/" + gitCommitId);
             } else if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
-                Optional<URI> gitRepoUriOpt = Optional.empty();
-                try {
-                    gitRepoUriOpt = Optional.of(new URI(gitRepo));
-                } catch (URISyntaxException e) {
-                    logger.warn("Remote git repository " + gitRepo + " is not a valid URI");
-                }
-                gitRepoUriOpt.ifPresent(gitRepoUri -> {
-                    String gitRepoHost = gitRepoUri.getHost();
-                    String gitRepoPath = gitRepoUri.getPath().endsWith(".git") ? gitRepoUri.getPath().substring(0, gitRepoUri.getPath().length() - 4) : gitRepoUri.getPath();
+                Optional<URI> gitRepoUri = toUri(gitRepo);
+                gitRepoUri.ifPresent(r -> {
+                    String gitRepoHost = r.getHost();
+                    String gitRepoPath = r.getPath().endsWith(".git") ? r.getPath().substring(0, r.getPath().length() - 4) : r.getPath();
                     if (gitRepoHost.contains("github")) {
                         buildScan.link("GitHub source", "https://" + gitRepoHost + gitRepoPath + "/tree/" + gitCommitId);
                     } else if (gitRepoHost.contains("gitlab")) {
@@ -445,6 +436,14 @@ final class CustomBuildScanEnhancements {
                 }
             }
             return gitCommand.get();
+        }
+
+        private Optional<URI> toUri(String uri) {
+            try {
+                return Optional.of(new URI(uri));
+            } catch (URISyntaxException e) {
+                return Optional.empty();
+            }
         }
 
     }
