@@ -72,16 +72,16 @@ signing {
 }
 
 githubRelease {
-   token = System.getenv('CCUD_GIT_TOKEN') ?: ''
-   owner = 'gradle'
-   repo = 'common-custom-user-data-gradle-plugin'
-   targetCommitish = 'main'
-   releaseName = gitHubReleaseName()
-   tagName = gitReleaseTag()
-   prerelease = false
-   overwrite = false
-   generateReleaseNotes = false
-   body = releaseNotes()
+    token = System.getenv('CCUD_GIT_TOKEN') ?: ''
+    owner = 'gradle'
+    repo = 'common-custom-user-data-gradle-plugin'
+    targetCommitish = 'main'
+    releaseName = gitHubReleaseName()
+    tagName = gitReleaseTag()
+    prerelease = false
+    overwrite = false
+    generateReleaseNotes = false
+    body = releaseNotes()
 }
 
 def createReleaseTag = tasks.register('createReleaseTag', CreateGitTag) {
