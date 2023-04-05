@@ -403,12 +403,13 @@ final class CustomBuildScanEnhancements {
             } else if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
                 Optional<URI> gitRepoUri = toUri(gitRepo);
                 gitRepoUri.ifPresent(r -> {
-                    String gitRepoHost = r.getHost();
                     String gitRepoPath = r.getPath().endsWith(".git") ? r.getPath().substring(0, r.getPath().length() - 4) : r.getPath();
-                    if (gitRepoHost.contains("github")) {
-                        buildScan.link("GitHub source", "https://" + gitRepoHost + gitRepoPath + "/tree/" + gitCommitId);
-                    } else if (gitRepoHost.contains("gitlab")) {
-                        buildScan.link("GitLab source", "https://" + gitRepoHost + gitRepoPath + "/-/commit/" + gitCommitId);
+                    if (r.getHost().contains("github")) {
+                        toHttpsUri(r.getHost(), gitRepoPath + "/tree/" + gitCommitId)
+                            .ifPresent(u ->  buildScan.link("GitHub source", u.toString()));
+                    } else if (r.getHost().contains("gitlab")) {
+                        toHttpsUri(r.getHost(), gitRepoPath + "/-/commit/" + gitCommitId)
+                            .ifPresent(u -> buildScan.link("GitLab source", u.toString()));
                     }
                 });
             }
@@ -446,6 +447,13 @@ final class CustomBuildScanEnhancements {
             }
         }
 
+        private Optional<URI> toHttpsUri(String host, String path) {
+            try {
+                return Optional.of(new URI("https", host, path));
+            } catch (URISyntaxException e) {
+                return Optional.empty();
+            }
+        }
     }
 
     private void captureTestParallelization() {
