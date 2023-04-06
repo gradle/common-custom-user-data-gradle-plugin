@@ -438,7 +438,7 @@ final class CustomBuildScanEnhancements {
 
         private Optional<URI> toWebRepoUri(String gitRepoUri) {
             try {
-                URI tempUri = new URI(gitRepoUri);
+                URI tempUri = new URI(preprocessSshRepoUri(gitRepoUri));
                 String gitRepoPath = tempUri.getPath().endsWith(".git") ? tempUri.getPath().substring(0, tempUri.getPath().length() - 4) : tempUri.getPath();
                 return Optional.of(new URI("https", tempUri.getHost(), gitRepoPath, null));
             } catch (URISyntaxException e) {
@@ -446,14 +446,15 @@ final class CustomBuildScanEnhancements {
             }
         }
 
-        private Optional<URI> stripDotGitExtension(URI uri) {
-            String path = uri.getPath();
-            try {
-                return path.endsWith(".git") ? Optional.of(new URI(uri.getScheme(), uri.getHost(), path.substring(0, path.length() - 4)))
-                    : Optional.of(uri);
-            } catch (URISyntaxException e) {
-                return Optional.empty();
+        private String preprocessSshRepoUri(String gitRepoUri) {
+            if (!gitRepoUri.startsWith("ssh://")
+                && gitRepoUri.contains("@")
+                && gitRepoUri.indexOf(':', gitRepoUri.indexOf('@')) != -1) {
+                StringBuilder sshGitRepoUri = new StringBuilder("ssh://").append(gitRepoUri);
+                sshGitRepoUri.setCharAt(sshGitRepoUri.indexOf(":", sshGitRepoUri.indexOf("@")), '/');
+                return sshGitRepoUri.toString();
             }
+            return gitRepoUri;
         }
     }
 
@@ -535,5 +536,4 @@ final class CustomBuildScanEnhancements {
             return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
         }
     }
-
 }
