@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.gradle.CiUtils.isAzurePipelines;
@@ -437,22 +439,15 @@ final class CustomBuildScanEnhancements {
         }
 
         private Optional<URI> toWebRepoUri(String gitRepoUri) {
-            try {
-                URI tempUri = new URI(preprocessSshRepoUri(gitRepoUri));
-                String gitRepoPath = tempUri.getPath().endsWith(".git") ? tempUri.getPath().substring(0, tempUri.getPath().length() - 4) : tempUri.getPath();
-                return Optional.of(new URI("https", tempUri.getHost(), gitRepoPath, null));
-            } catch (URISyntaxException e) {
+            Matcher matcher = Pattern.compile("^(?:https://|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$").matcher(gitRepoUri);
+            if(!matcher.matches()) {
                 return Optional.empty();
             }
-        }
-
-        private String preprocessSshRepoUri(String gitRepoUri) {
-            if (gitRepoUri.startsWith("git@github.com:")) {
-                return gitRepoUri.replace("git@github.com:", "ssh://git@github.com/");
-            } else if (gitRepoUri.startsWith("git@gitlab.com:")) {
-                return gitRepoUri.replace("git@gitlab.com:", "ssh://git@gitlab.com/");
-            } else {
-                return gitRepoUri;
+            try {
+                String path = matcher.group(2).startsWith("/") ? matcher.group(2) : "/" + matcher.group(2);
+                return Optional.of(new URI("https", matcher.group(1), path, null));
+            } catch (URISyntaxException e) {
+                return Optional.empty();
             }
         }
     }
