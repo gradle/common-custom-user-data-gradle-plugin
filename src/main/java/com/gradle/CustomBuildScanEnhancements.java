@@ -447,14 +447,13 @@ final class CustomBuildScanEnhancements {
         }
 
         private String preprocessSshRepoUri(String gitRepoUri) {
-            if (!gitRepoUri.startsWith("ssh://")
-                && gitRepoUri.contains("@")
-                && gitRepoUri.indexOf(':', gitRepoUri.indexOf('@')) != -1) {
-                StringBuilder sshGitRepoUri = new StringBuilder("ssh://").append(gitRepoUri);
-                sshGitRepoUri.setCharAt(sshGitRepoUri.indexOf(":", sshGitRepoUri.indexOf("@")), '/');
-                return sshGitRepoUri.toString();
+            if (gitRepoUri.startsWith("git@github.com:")) {
+                return gitRepoUri.replace("git@github.com:", "ssh://git@github.com/");
+            } else if (gitRepoUri.startsWith("git@gitlab.com:")) {
+                return gitRepoUri.replace("git@gitlab.com:", "ssh://git@gitlab.com/");
+            } else {
+                return gitRepoUri;
             }
-            return gitRepoUri;
         }
     }
 
