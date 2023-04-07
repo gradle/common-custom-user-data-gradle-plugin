@@ -361,6 +361,8 @@ final class CustomBuildScanEnhancements {
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanExtension> {
 
+        private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile("^(?:https://|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$");
+
         private final ProviderFactory providers;
 
         private CaptureGitMetadataAction(ProviderFactory providers) {
@@ -404,11 +406,11 @@ final class CustomBuildScanEnhancements {
                 buildScan.link("GitHub source", gitHubUrl.get() + "/" + gitRepository.get() + "/tree/" + gitCommitId);
             } else if (isNotEmpty(gitRepo) && isNotEmpty(gitCommitId)) {
                 Optional<URI> webRepoUri = toWebRepoUri(gitRepo);
-                webRepoUri.ifPresent(r -> {
-                    if (r.getHost().contains("github")) {
-                        buildScan.link("GitHub source", r + "/tree/" + gitCommitId);
-                    } else if (r.getHost().contains("gitlab")) {
-                        buildScan.link("GitLab source", r + "/-/commit/" + gitCommitId);
+                webRepoUri.ifPresent(uri -> {
+                    if (uri.getHost().contains("github")) {
+                        buildScan.link("GitHub source", uri + "/tree/" + gitCommitId);
+                    } else if (uri.getHost().contains("gitlab")) {
+                        buildScan.link("GitLab source", uri + "/-/commit/" + gitCommitId);
                     }
                 });
             }
@@ -439,7 +441,7 @@ final class CustomBuildScanEnhancements {
         }
 
         private Optional<URI> toWebRepoUri(String gitRepoUri) {
-            Matcher matcher = Pattern.compile("^(?:https://|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$").matcher(gitRepoUri);
+            Matcher matcher = GIT_REPO_URI_PATTERN.matcher(gitRepoUri);
             if (matcher.matches()) {
                 String scheme = "https";
                 String host = matcher.group(1);
