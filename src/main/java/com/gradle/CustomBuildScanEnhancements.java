@@ -440,16 +440,24 @@ final class CustomBuildScanEnhancements {
 
         private Optional<URI> toWebRepoUri(String gitRepoUri) {
             Matcher matcher = Pattern.compile("^(?:https://|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$").matcher(gitRepoUri);
-            if(!matcher.matches()) {
+            if (matcher.matches()) {
+                String scheme = "https";
+                String host = matcher.group(1);
+                String path = matcher.group(2).startsWith("/") ? matcher.group(2) : "/" + matcher.group(2);
+                return toUri(scheme, host, path);
+            } else {
                 return Optional.empty();
             }
+        }
+
+        private Optional<URI> toUri(String scheme, String host, String path) {
             try {
-                String path = matcher.group(2).startsWith("/") ? matcher.group(2) : "/" + matcher.group(2);
-                return Optional.of(new URI("https", matcher.group(1), path, null));
+                return Optional.of(new URI(scheme, host, path, null));
             } catch (URISyntaxException e) {
                 return Optional.empty();
             }
         }
+
     }
 
     private void captureTestParallelization() {
@@ -530,4 +538,5 @@ final class CustomBuildScanEnhancements {
             return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
         }
     }
+
 }
