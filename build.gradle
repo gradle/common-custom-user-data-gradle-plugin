@@ -11,6 +11,8 @@ group = 'com.gradle'
 version = layout.projectDirectory.file('release/version.txt').asFile.text.trim()
 description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise'
 
+def releaseNotes = releaseNotes()
+
 repositories {
     gradlePluginPortal()
 }
@@ -43,7 +45,7 @@ gradlePlugin {
         commonCustomUserData {
             id = 'com.gradle.common-custom-user-data-gradle-plugin'
             displayName = 'Gradle Enterprise Common Custom User Data Gradle Plugin'
-            description = releaseNotes().get()
+            description = releaseNotes.get()
             implementationClass = 'com.gradle.CommonCustomUserDataGradlePlugin'
             tags.addAll('android', 'java', 'gradle enterprise')
         }
@@ -81,7 +83,7 @@ githubRelease {
     prerelease = false
     overwrite = false
     generateReleaseNotes = false
-    body = releaseNotes()
+    body = releaseNotes
 }
 
 def createReleaseTag = tasks.register('createReleaseTag', CreateGitTag) {
