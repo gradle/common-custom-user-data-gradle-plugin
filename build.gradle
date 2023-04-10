@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'com.gradle'
-version = layout.projectDirectory.file('release/version.txt').asFile.text.trim()
+version = version()
 description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise'
 
 def releaseNotes = releaseNotes()
@@ -78,7 +78,7 @@ githubRelease {
     owner = 'gradle'
     repo = 'common-custom-user-data-gradle-plugin'
     targetCommitish = 'main'
-    releaseName = gitHubReleaseName()
+    releaseName = version
     tagName = gitReleaseTag()
     prerelease = false
     overwrite = false
@@ -100,15 +100,16 @@ tasks.withType(Sign).configureEach {
     notCompatibleWithConfigurationCache("$name task does not support configuration caching")
 }
 
-def gitHubReleaseName() {
-    return version.toString()
-}
-
 def gitReleaseTag() {
-    return "v${version}"
+    return version.map { it -> "v$it" }
 }
 
 def releaseNotes() {
     def releaseNotesFile = layout.projectDirectory.file('release/changes.md')
     return providers.fileContents(releaseNotesFile).asText.map { it -> it.trim() }
+}
+
+def version() {
+    def versionFile = layout.projectDirectory.file('release/version.txt')
+    return providers.fileContents(versionFile).asText.map { it -> it.trim() }
 }
