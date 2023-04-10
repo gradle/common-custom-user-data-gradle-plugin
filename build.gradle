@@ -101,7 +101,7 @@ tasks.withType(Sign).configureEach {
 }
 
 def gitReleaseTag() {
-    return version.map { it -> "v$it" }
+    return version.map { "v$it" }
 }
 
 def releaseNotes() {
