@@ -85,7 +85,6 @@ githubRelease {
     overwrite = false
     generateReleaseNotes = false
     body = releaseNotes
-    dryRun = true
 }
 
 def createReleaseTag = tasks.register('createReleaseTag', CreateGitTag) {
