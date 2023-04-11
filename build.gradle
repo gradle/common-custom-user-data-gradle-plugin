@@ -7,13 +7,12 @@ plugins {
     id 'org.gradle.wrapper-upgrade' version '0.11.1'
 }
 
-def pluginVersion = version()
+def releaseVersion = releaseVersion()
+def releaseNotes = releaseNotes()
 
 group = 'com.gradle'
-version = pluginVersion
+version = releaseVersion
 description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise'
-
-def releaseNotes = releaseNotes()
 
 repositories {
     gradlePluginPortal()
@@ -80,8 +79,8 @@ githubRelease {
     owner = 'gradle'
     repo = 'common-custom-user-data-gradle-plugin'
     targetCommitish = 'main'
-    releaseName = pluginVersion
-    tagName = pluginVersion.map { "v$it" }
+    releaseName = releaseVersion
+    tagName = releaseVersion.map { "v$it" }
     prerelease = false
     overwrite = false
     generateReleaseNotes = false
@@ -103,12 +102,12 @@ tasks.withType(Sign).configureEach {
     notCompatibleWithConfigurationCache("$name task does not support configuration caching")
 }
 
+def releaseVersion() {
+    def releaseVersionFile = layout.projectDirectory.file('release/version.txt')
+    return providers.fileContents(releaseVersionFile).asText.map { it -> it.trim() }
+}
+
 def releaseNotes() {
     def releaseNotesFile = layout.projectDirectory.file('release/changes.md')
     return providers.fileContents(releaseNotesFile).asText.map { it -> it.trim() }
-}
-
-def version() {
-    def versionFile = layout.projectDirectory.file('release/version.txt')
-    return providers.fileContents(versionFile).asText.map { it -> it.trim() }
 }
