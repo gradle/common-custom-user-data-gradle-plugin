@@ -7,11 +7,12 @@ plugins {
     id 'org.gradle.wrapper-upgrade' version '0.11.1'
 }
 
-group = 'com.gradle'
-version = layout.projectDirectory.file('release/version.txt').asFile.text.trim()
-description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise'
-
+def releaseVersion = releaseVersion()
 def releaseNotes = releaseNotes()
+
+group = 'com.gradle'
+version = releaseVersion
+description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise'
 
 repositories {
     gradlePluginPortal()
@@ -78,8 +79,8 @@ githubRelease {
     owner = 'gradle'
     repo = 'common-custom-user-data-gradle-plugin'
     targetCommitish = 'main'
-    releaseName = gitHubReleaseName()
-    tagName = gitReleaseTag()
+    releaseName = releaseVersion
+    tagName = releaseVersion.map { "v$it" }
     prerelease = false
     overwrite = false
     generateReleaseNotes = false
@@ -89,7 +90,7 @@ githubRelease {
 def createReleaseTag = tasks.register('createReleaseTag', CreateGitTag) {
     // Ensure tag is created only after a successful publishing
     mustRunAfter('publishPlugins')
-    tagName = gitReleaseTag()
+    tagName = githubRelease.tagName.map { it.toString() }
 }
 
 tasks.named('githubRelease').configure {
@@ -100,12 +101,9 @@ tasks.withType(Sign).configureEach {
     notCompatibleWithConfigurationCache("$name task does not support configuration caching")
 }
 
-def gitHubReleaseName() {
-    return version.toString()
-}
-
-def gitReleaseTag() {
-    return "v${version}"
+def releaseVersion() {
+    def releaseVersionFile = layout.projectDirectory.file('release/version.txt')
+    return providers.fileContents(releaseVersionFile).asText.map { it -> it.trim() }
 }
 
 def releaseNotes() {
