@@ -7,8 +7,10 @@ plugins {
     id 'org.gradle.wrapper-upgrade' version '0.11.1'
 }
 
+def pluginVersion = version()
+
 group = 'com.gradle'
-version = version()
+version = pluginVersion
 description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise'
 
 def releaseNotes = releaseNotes()
@@ -78,18 +80,19 @@ githubRelease {
     owner = 'gradle'
     repo = 'common-custom-user-data-gradle-plugin'
     targetCommitish = 'main'
-    releaseName = version
-    tagName = gitReleaseTag()
+    releaseName = pluginVersion
+    tagName = pluginVersion.map { "v$it" }
     prerelease = false
     overwrite = false
     generateReleaseNotes = false
     body = releaseNotes
+    dryRun = true
 }
 
 def createReleaseTag = tasks.register('createReleaseTag', CreateGitTag) {
     // Ensure tag is created only after a successful publishing
     mustRunAfter('publishPlugins')
-    tagName = gitReleaseTag()
+    tagName = githubRelease.tagName.map { it.toString() }
 }
 
 tasks.named('githubRelease').configure {
@@ -98,10 +101,6 @@ tasks.named('githubRelease').configure {
 
 tasks.withType(Sign).configureEach {
     notCompatibleWithConfigurationCache("$name task does not support configuration caching")
-}
-
-def gitReleaseTag() {
-    return version.map { "v$it" }
 }
 
 def releaseNotes() {
