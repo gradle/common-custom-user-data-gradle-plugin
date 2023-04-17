@@ -11,7 +11,7 @@ def releaseVersion = releaseVersion()
 def releaseNotes = releaseNotes()
 
 group = 'com.gradle'
-version = releaseVersion
+version = releaseVersion.get()
 description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise'
 
 repositories {
