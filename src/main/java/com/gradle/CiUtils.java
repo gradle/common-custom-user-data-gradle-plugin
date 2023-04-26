@@ -22,7 +22,8 @@ final class CiUtils {
                 || isTravis(providers)
                 || isBitrise(providers)
                 || isGoCD(providers)
-                || isAzurePipelines(providers);
+                || isAzurePipelines(providers)
+                || isBuildkite(providers);
     }
 
     static boolean isGenericCI(ProviderFactory providers) {
