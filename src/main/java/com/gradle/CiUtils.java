@@ -74,4 +74,8 @@ final class CiUtils {
         return envVariable("TF_BUILD", providers).isPresent();
     }
 
+    static boolean isBuildkite(ProviderFactory providers) {
+        return envVariable("BUILDKITE", providers).isPresent();
+    }
+
 }

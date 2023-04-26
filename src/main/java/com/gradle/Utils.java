@@ -210,6 +210,26 @@ final class Utils {
         return GradleVersion.current().compareTo(GradleVersion.version(version)) >= 0;
     }
 
+    /**
+     * Construct a repo URL from a git URL in the format of <code>git://github.com/acme-inc/my-project.git</code>. If
+     * the URL cannot be parsed, {@link Optional#empty()} is returned.
+     */
+    static Optional<String> extractRepoUrl(String gitUrl) {
+        URI repoUri;
+        try {
+            repoUri = new URI(gitUrl);
+        } catch (URISyntaxException e) {
+            return Optional.empty();
+        }
+        // git://github.com/acme-inc/my-project.git -> [acme-inc, my-project.git]
+        String[] repoPathParts = repoUri.getPath().split("/");
+        String owner = repoPathParts[1];
+        String repoName = repoPathParts[2].replace(".git", "");
+        String baseUrl = repoUri.getHost();
+
+        return Optional.of(String.format("https://%s/%s/%s", baseUrl, owner, repoName));
+    }
+
     private Utils() {
     }
 

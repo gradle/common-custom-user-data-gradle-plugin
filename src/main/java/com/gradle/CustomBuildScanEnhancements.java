@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import static com.gradle.CiUtils.isAzurePipelines;
 import static com.gradle.CiUtils.isBamboo;
 import static com.gradle.CiUtils.isBitrise;
+import static com.gradle.CiUtils.isBuildkite;
 import static com.gradle.CiUtils.isCi;
 import static com.gradle.CiUtils.isCircleCI;
 import static com.gradle.CiUtils.isGitHubActions;
@@ -40,6 +41,7 @@ import static com.gradle.Utils.appendIfMissing;
 import static com.gradle.Utils.envVariable;
 import static com.gradle.Utils.execAndCheckSuccess;
 import static com.gradle.Utils.execAndGetStdOut;
+import static com.gradle.Utils.extractRepoUrl;
 import static com.gradle.Utils.isGradle43rNewer;
 import static com.gradle.Utils.isGradle5OrNewer;
 import static com.gradle.Utils.isGradle61OrNewer;
@@ -350,6 +352,44 @@ final class CustomBuildScanEnhancements {
                 buildId.ifPresent(value ->
                         buildScan.value("CI build number", value));
             }
+
+            if (isBuildkite(providers)) {
+                // https://buildkite.com/docs/pipelines/environment-variables#buildkite-environment-variables
+
+                // "https://buildkite.com/acme-inc/my-project/builds/1514"
+                envVariable("BUILDKITE_BUILD_URL", providers)
+                        .ifPresent(s -> buildScan.link("CI build", s));
+                envVariable("BUILDKITE_COMMAND", providers).ifPresent(value ->
+                        addCustomValueAndSearchLink(buildScan, "CI command", value));
+
+                // "4735ba57-80d0-46e2-8fa0-b28223a86586"
+                envVariable("BUILDKITE_BUILD_ID", providers).ifPresent(value ->
+                        buildScan.value("CI build ID", value));
+
+                // "git://github.com/acme-inc/my-project.git"
+                Optional<String> buildkitePrRepo = envVariable("BUILDKITE_PULL_REQUEST_REPO", providers);
+                // "123"
+                Optional<String> buildkitePrNumber = envVariable("BUILDKITE_PULL_REQUEST", providers);
+                if (buildkitePrRepo.isPresent() && buildkitePrNumber.isPresent()) {
+                    // Create a GitHub link with the pr number and full repo url
+                    String prNumber = buildkitePrNumber.get();
+                    extractRepoUrl(buildkitePrRepo.get())
+                            .ifPresent(s -> buildScan.link("#" + prNumber, s + "/pull/" + prNumber));
+                }
+
+                // "git://github.com/acme-inc/my-project.git"
+                Optional<String> buildkiteRepo = envVariable("BUILDKITE_REPO", providers);
+                // "83a20ec058e2fb00e7fa4558c4c6e81e2dcf253d"
+                Optional<String> buildkiteCommit = envVariable("BUILDKITE_COMMIT", providers);
+                if (buildkiteCommit.isPresent() && buildkiteRepo.isPresent()) {
+                    // Put a link to just the short sha
+                    // https://github.com/slackhq/slack-gradle-plugin/commit/bbcaef4960c45fa185f0a051ef8e5e65d2974987
+                    String sha = buildkiteCommit.get();
+                    String shortSha = sha.substring(0, 7);
+                    extractRepoUrl(buildkiteRepo.get())
+                            .ifPresent(s -> buildScan.link(shortSha, s + "/commit/" + sha));
+                }
+            }
         }
 
     }
@@ -433,6 +473,11 @@ final class CustomBuildScanEnhancements {
                 }
             } else if (isAzurePipelines(providers)) {
                 Optional<String> branch = envVariable("BUILD_SOURCEBRANCH", providers);
+                if (branch.isPresent()) {
+                    return branch.get();
+                }
+            } else if (isBuildkite(providers)) {
+                Optional<String> branch = envVariable("BUILDKITE_BRANCH", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
