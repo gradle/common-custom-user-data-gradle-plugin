@@ -373,19 +373,6 @@ final class CustomBuildScanEnhancements {
                     toWebRepoUri(buildkitePrRepo.get())
                             .ifPresent(s -> buildScan.link("#" + prNumber, s + "/pull/" + prNumber));
                 }
-
-                // "git://github.com/acme-inc/my-project.git"
-                Optional<String> buildkiteRepo = envVariable("BUILDKITE_REPO", providers);
-                // "83a20ec058e2fb00e7fa4558c4c6e81e2dcf253d"
-                Optional<String> buildkiteCommit = envVariable("BUILDKITE_COMMIT", providers);
-                if (buildkiteCommit.isPresent() && buildkiteRepo.isPresent()) {
-                    // Put a link to just the short sha
-                    // https://github.com/slackhq/slack-gradle-plugin/commit/bbcaef4960c45fa185f0a051ef8e5e65d2974987
-                    String sha = buildkiteCommit.get();
-                    String shortSha = sha.substring(0, 7);
-                    toWebRepoUri(buildkiteRepo.get())
-                            .ifPresent(s -> buildScan.link(shortSha, s + "/commit/" + sha));
-                }
             }
         }
 
