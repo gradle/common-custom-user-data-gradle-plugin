@@ -24,8 +24,12 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 final class Utils {
+
+    private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile("^(?:(?:https://|git://)|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$");
 
     static Optional<String> sysPropertyOrEnvVariable(String sysPropertyName, String envVarName, ProviderFactory providers) {
         Optional<String> sysProperty = sysProperty(sysPropertyName, providers);
@@ -211,23 +215,30 @@ final class Utils {
     }
 
     /**
-     * Construct a repo URL from a git URL in the format of <code>git://github.com/acme-inc/my-project.git</code>. If
-     * the URL cannot be parsed, {@link Optional#empty()} is returned.
+     * Construct a repo {@link URI} from a git URL in the format of
+     * <code>git://github.com/acme-inc/my-project.git</code>. If the URL cannot be parsed, {@link Optional#empty()} is
+     * returned.
+     * <p>
+     * The scheme can be any of <code>git://</code>, <code>https://</code>, or <code>ssh</code>.
      */
-    static Optional<String> extractRepoUrl(String gitUrl) {
-        URI repoUri;
+    static Optional<URI> toWebRepoUri(String gitRepoUri) {
+        Matcher matcher = GIT_REPO_URI_PATTERN.matcher(gitRepoUri);
+        if (matcher.matches()) {
+            String scheme = "https";
+            String host = matcher.group(1);
+            String path = matcher.group(2).startsWith("/") ? matcher.group(2) : "/" + matcher.group(2);
+            return toUri(scheme, host, path);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<URI> toUri(String scheme, String host, String path) {
         try {
-            repoUri = new URI(gitUrl);
+            return Optional.of(new URI(scheme, host, path, null));
         } catch (URISyntaxException e) {
             return Optional.empty();
         }
-        // git://github.com/acme-inc/my-project.git -> [acme-inc, my-project.git]
-        String[] repoPathParts = repoUri.getPath().split("/");
-        String owner = repoPathParts[1];
-        String repoName = repoPathParts[2].replace(".git", "");
-        String baseUrl = repoUri.getHost();
-
-        return Optional.of(String.format("https://%s/%s/%s", baseUrl, owner, repoName));
     }
 
     private Utils() {
