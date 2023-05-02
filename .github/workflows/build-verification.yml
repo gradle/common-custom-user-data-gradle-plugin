@@ -17,6 +17,6 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
       - name: Build with Gradle
-        run: ./gradlew build -x signPluginMavenPublication -i
+        run: ./gradlew build -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_SOLUTIONS_ACCESS_TOKEN }}
