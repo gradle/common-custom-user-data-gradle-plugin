@@ -20,7 +20,8 @@ repositories {
 
 dependencies {
     compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.13.1'
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation(platform('org.junit:junit-bom:5.9.3'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
 }
 
 wrapperUpgrade {
@@ -57,6 +58,10 @@ gradlePlugin {
 tasks.withType(ValidatePlugins).configureEach {
     failOnWarning = true
     enableStricterValidation = true
+}
+
+test {
+    useJUnitPlatform()
 }
 
 /*
