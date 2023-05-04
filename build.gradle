@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.13'
+    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.13.1'
     testImplementation 'junit:junit:4.13.2'
 }
 
