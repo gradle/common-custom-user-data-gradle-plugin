@@ -371,7 +371,7 @@ final class CustomBuildScanEnhancements {
                     // Create a GitHub link with the pr number and full repo url
                     String prNumber = buildkitePrNumber.get();
                     toWebRepoUri(buildkitePrRepo.get())
-                            .ifPresent(s -> buildScan.link("#" + prNumber, s + "/pull/" + prNumber));
+                            .ifPresent(s -> buildScan.link("PR source", s + "/pull/" + prNumber));
                 }
             }
         }
