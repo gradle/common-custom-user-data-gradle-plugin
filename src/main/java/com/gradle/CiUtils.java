@@ -22,7 +22,8 @@ final class CiUtils {
                 || isTravis(providers)
                 || isBitrise(providers)
                 || isGoCD(providers)
-                || isAzurePipelines(providers);
+                || isAzurePipelines(providers)
+                || isBuildkite(providers);
     }
 
     static boolean isGenericCI(ProviderFactory providers) {
@@ -72,6 +73,10 @@ final class CiUtils {
 
     static boolean isAzurePipelines(ProviderFactory providers) {
         return envVariable("TF_BUILD", providers).isPresent();
+    }
+
+    static boolean isBuildkite(ProviderFactory providers) {
+        return envVariable("BUILDKITE", providers).isPresent();
     }
 
 }

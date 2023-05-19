@@ -12,7 +12,6 @@ import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.testing.Test;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,13 +19,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.gradle.CiUtils.isAzurePipelines;
 import static com.gradle.CiUtils.isBamboo;
 import static com.gradle.CiUtils.isBitrise;
+import static com.gradle.CiUtils.isBuildkite;
 import static com.gradle.CiUtils.isCi;
 import static com.gradle.CiUtils.isCircleCI;
 import static com.gradle.CiUtils.isGitHubActions;
@@ -48,6 +46,7 @@ import static com.gradle.Utils.isNotEmpty;
 import static com.gradle.Utils.readPropertiesFile;
 import static com.gradle.Utils.redactUserInfo;
 import static com.gradle.Utils.sysProperty;
+import static com.gradle.Utils.toWebRepoUri;
 import static com.gradle.Utils.urlEncode;
 
 /**
@@ -350,6 +349,31 @@ final class CustomBuildScanEnhancements {
                 buildId.ifPresent(value ->
                         buildScan.value("CI build number", value));
             }
+
+            if (isBuildkite(providers)) {
+                // https://buildkite.com/docs/pipelines/environment-variables#buildkite-environment-variables
+
+                // "https://buildkite.com/acme-inc/my-project/builds/1514"
+                envVariable("BUILDKITE_BUILD_URL", providers)
+                        .ifPresent(s -> buildScan.link("CI build", s));
+                envVariable("BUILDKITE_COMMAND", providers).ifPresent(value ->
+                        addCustomValueAndSearchLink(buildScan, "CI command", value));
+
+                // "4735ba57-80d0-46e2-8fa0-b28223a86586"
+                envVariable("BUILDKITE_BUILD_ID", providers).ifPresent(value ->
+                        buildScan.value("CI build ID", value));
+
+                // "git://github.com/acme-inc/my-project.git"
+                Optional<String> buildkitePrRepo = envVariable("BUILDKITE_PULL_REQUEST_REPO", providers);
+                // "123"
+                Optional<String> buildkitePrNumber = envVariable("BUILDKITE_PULL_REQUEST", providers);
+                if (buildkitePrRepo.isPresent() && buildkitePrNumber.isPresent()) {
+                    // Create a GitHub link with the pr number and full repo url
+                    String prNumber = buildkitePrNumber.get();
+                    toWebRepoUri(buildkitePrRepo.get())
+                            .ifPresent(s -> buildScan.link("PR source", s + "/pull/" + prNumber));
+                }
+            }
         }
 
     }
@@ -360,8 +384,6 @@ final class CustomBuildScanEnhancements {
     }
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanExtension> {
-
-        private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile("^(?:https://|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$");
 
         private final ProviderFactory providers;
 
@@ -436,28 +458,13 @@ final class CustomBuildScanEnhancements {
                 if (branch.isPresent()) {
                     return branch.get();
                 }
+            } else if (isBuildkite(providers)) {
+                Optional<String> branch = envVariable("BUILDKITE_BRANCH", providers);
+                if (branch.isPresent()) {
+                    return branch.get();
+                }
             }
             return gitCommand.get();
-        }
-
-        private Optional<URI> toWebRepoUri(String gitRepoUri) {
-            Matcher matcher = GIT_REPO_URI_PATTERN.matcher(gitRepoUri);
-            if (matcher.matches()) {
-                String scheme = "https";
-                String host = matcher.group(1);
-                String path = matcher.group(2).startsWith("/") ? matcher.group(2) : "/" + matcher.group(2);
-                return toUri(scheme, host, path);
-            } else {
-                return Optional.empty();
-            }
-        }
-
-        private Optional<URI> toUri(String scheme, String host, String path) {
-            try {
-                return Optional.of(new URI(scheme, host, path, null));
-            } catch (URISyntaxException e) {
-                return Optional.empty();
-            }
         }
 
     }
