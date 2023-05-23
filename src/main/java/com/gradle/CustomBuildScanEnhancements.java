@@ -360,7 +360,7 @@ final class CustomBuildScanEnhancements {
 
                 Optional<String> buildkitePrRepo = envVariable("BUILDKITE_PULL_REQUEST_REPO", providers);
                 Optional<String> buildkitePrNumber = envVariable("BUILDKITE_PULL_REQUEST", providers);
-                if (Stream.of(buildkitePrRepo, buildkitePrNumber).allMatch(Optional::isPresent)) {
+                if (buildkitePrRepo.isPresent() && buildkitePrNumber.isPresent()) {
                     String prNumber = buildkitePrNumber.get();
                     toWebRepoUri(buildkitePrRepo.get())
                             .ifPresent(s -> buildScan.link("PR source", s + "/pull/" + prNumber));
