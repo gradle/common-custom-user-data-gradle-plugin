@@ -118,7 +118,7 @@ final class CustomBuildScanEnhancements {
                 if (ideaVendorNameValue.equals("Google")) {
                     // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (e.g. 2020.3.1 Patch 3 instead of 2020.3)
                     tagIde("Android Studio", getOrEmpty(props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION)));
-                } else if (ideaVendorNameValue.equals("JetBrains")) {
+                } else if ("Jetbrains".equals(ideaVendorNameValue)) {
                     tagIde("IntelliJ IDEA", getOrEmpty(props.get(SYSTEM_PROP_IDEA_VERSION)));
                 }
             } else if (props.get(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE).isPresent()) {
