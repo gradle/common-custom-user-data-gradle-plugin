@@ -351,24 +351,16 @@ final class CustomBuildScanEnhancements {
             }
 
             if (isBuildkite(providers)) {
-                // https://buildkite.com/docs/pipelines/environment-variables#buildkite-environment-variables
-
-                // "https://buildkite.com/acme-inc/my-project/builds/1514"
                 envVariable("BUILDKITE_BUILD_URL", providers)
-                        .ifPresent(s -> buildScan.link("CI build", s));
+                        .ifPresent(s -> buildScan.link("Buildkite build", s));
                 envVariable("BUILDKITE_COMMAND", providers).ifPresent(value ->
                         addCustomValueAndSearchLink(buildScan, "CI command", value));
-
-                // "4735ba57-80d0-46e2-8fa0-b28223a86586"
                 envVariable("BUILDKITE_BUILD_ID", providers).ifPresent(value ->
                         buildScan.value("CI build ID", value));
 
-                // "git://github.com/acme-inc/my-project.git"
                 Optional<String> buildkitePrRepo = envVariable("BUILDKITE_PULL_REQUEST_REPO", providers);
-                // "123"
                 Optional<String> buildkitePrNumber = envVariable("BUILDKITE_PULL_REQUEST", providers);
-                if (buildkitePrRepo.isPresent() && buildkitePrNumber.isPresent()) {
-                    // Create a GitHub link with the pr number and full repo url
+                if (Stream.of(buildkitePrRepo, buildkitePrNumber).allMatch(Optional::isPresent)) {
                     String prNumber = buildkitePrNumber.get();
                     toWebRepoUri(buildkitePrRepo.get())
                             .ifPresent(s -> buildScan.link("PR source", s + "/pull/" + prNumber));
