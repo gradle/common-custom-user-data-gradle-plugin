@@ -1,0 +1,2 @@
+- [FIX] Generates incorrect "GitHub Actions Build" and "GitHub/GitLab Source" links to repositories not hosted at github.com or gitlab.com
+- [NEW] Detect BuildKite CI and add respective custom tags, values and links
