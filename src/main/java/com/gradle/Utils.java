@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 final class Utils {
 
-    private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile("^(?:(?:https://|git://)|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$");
+    private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile("^(?:(?:https://|git://)(?:.+:.+@)?|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$");
 
     static Optional<String> sysPropertyOrEnvVariable(String sysPropertyName, String envVarName, ProviderFactory providers) {
         Optional<String> sysProperty = sysProperty(sysPropertyName, providers);
