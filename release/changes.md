@@ -1,0 +1,1 @@
+- [FIX] Generates incorrect links to source repositories when repository URL contains embedded user info
