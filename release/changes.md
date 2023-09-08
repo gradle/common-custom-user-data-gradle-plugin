@@ -1,1 +1,0 @@
-- [FIX] PGP key to sign the artifacts needs to be rotated
