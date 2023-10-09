@@ -479,7 +479,10 @@ final class CustomBuildScanEnhancements {
                 // additionally, using lambdas as task actions is deprecated
                 @Override
                 public void execute(Task task) {
-                    buildScan.value(test.getIdentityPath() + "#maxParallelForks", String.valueOf(test.getMaxParallelForks()));
+                    int maxParallelForks = test.getMaxParallelForks();
+                    if (maxParallelForks != 1) {
+                        buildScan.value(test.getIdentityPath() + "#maxParallelForks", String.valueOf(maxParallelForks));
+                    }
                 }
             });
         };
