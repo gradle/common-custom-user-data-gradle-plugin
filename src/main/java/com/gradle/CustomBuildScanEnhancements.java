@@ -78,7 +78,6 @@ final class CustomBuildScanEnhancements {
         captureCiOrLocal();
         captureCiMetadata();
         captureGitMetadata();
-        captureTestParallelization();
     }
 
     private void captureOs() {
@@ -459,30 +458,6 @@ final class CustomBuildScanEnhancements {
             return gitCommand.get();
         }
 
-    }
-
-    private void captureTestParallelization() {
-        gradle.afterProject(p -> {
-            TaskCollection<Test> tests = p.getTasks().withType(Test.class);
-            if (isGradle5OrNewer()) {
-                tests.configureEach(captureMaxParallelForks(buildScan));
-            } else {
-                tests.all(captureMaxParallelForks(buildScan));
-            }
-        });
-    }
-
-    private static Action<Test> captureMaxParallelForks(BuildScanExtension buildScan) {
-        return test -> {
-            test.doFirst(new Action<Task>() {
-                // use anonymous inner class to keep Test task instance cacheable
-                // additionally, using lambdas as task actions is deprecated
-                @Override
-                public void execute(Task task) {
-                    buildScan.value(test.getIdentityPath() + "#maxParallelForks", String.valueOf(test.getMaxParallelForks()));
-                }
-            });
-        };
     }
 
     private static void addCustomValueAndSearchLink(BuildScanExtension buildScan, String name, String value) {
