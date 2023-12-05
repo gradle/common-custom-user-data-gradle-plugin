@@ -180,11 +180,15 @@ final class CustomBuildScanEnhancements {
         @Override
         public void execute(BuildResult buildResult) {
             if (isJenkins(providers) || isHudson(providers)) {
+                String controllerUrlEnvVar = isJenkins(providers) ? "JENKINS_URL" : "HUDSON_URL";
+
                 Optional<String> buildUrl = envVariable("BUILD_URL", providers);
                 Optional<String> buildNumber = envVariable("BUILD_NUMBER", providers);
                 Optional<String> nodeName = envVariable("NODE_NAME", providers);
                 Optional<String> jobName = envVariable("JOB_NAME", providers);
                 Optional<String> stageName = envVariable("STAGE_NAME", providers);
+                Optional<String> controllerUrl = envVariable(controllerUrlEnvVar, providers);
+
 
                 buildUrl.ifPresent(url ->
                         buildScan.link(isJenkins(providers) ? "Jenkins build" : "Hudson build", url));
@@ -196,6 +200,8 @@ final class CustomBuildScanEnhancements {
                         addCustomValueAndSearchLink(buildScan, "CI job", value));
                 stageName.ifPresent(value ->
                         addCustomValueAndSearchLink(buildScan, "CI stage", value));
+                controllerUrl.ifPresent(value ->
+                        buildScan.value("CI controller", value));
 
                 jobName.ifPresent(j -> buildNumber.ifPresent(b -> {
                     Map<String, String> params = new LinkedHashMap<>();
