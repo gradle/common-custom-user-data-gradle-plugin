@@ -1,1 +1,0 @@
-- [NEW] Add a `CI controller` custom value to capture `JENKINS_URL` or `HUDSON_URL`
