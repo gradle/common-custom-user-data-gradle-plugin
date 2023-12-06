@@ -189,7 +189,6 @@ final class CustomBuildScanEnhancements {
                 Optional<String> stageName = envVariable("STAGE_NAME", providers);
                 Optional<String> controllerUrl = envVariable(controllerUrlEnvVar, providers);
 
-
                 buildUrl.ifPresent(url ->
                         buildScan.link(isJenkins(providers) ? "Jenkins build" : "Hudson build", url));
                 buildNumber.ifPresent(value ->
