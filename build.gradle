@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.16'
+    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.16.1'
     testImplementation(platform('org.junit:junit-bom:5.10.1'))
     testImplementation('org.junit.jupiter:junit-jupiter')
 }
