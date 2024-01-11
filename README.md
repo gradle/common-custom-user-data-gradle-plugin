@@ -34,7 +34,7 @@ See [here](settings.gradle) for an example.
 
 This table details the version compatibility of the Common Custom User Data Gradle plugin with the Develocity Gradle plugin.
 
-| Common Custom User Data Gradle plugin versions | Develocity Gradle plugin versions | Gradle version |
+| Common Custom User Data Gradle plugin versions | Develocity Gradle plugin versions        | Gradle version |
 | ---------------------------------------------- | ---------------------------------------- | -------------- |
 | `1.0+`                                         | `3.0+`                                   | `5.0+`         | 
 | `1.7+`                                         | `1.8+`                                   | `4.0+`         |
@@ -71,7 +71,7 @@ to modify the build scripts. For example, to disable the local build cache when 
 
 ### Develocity settings
 
-| Develocity API                 | System property                        | Environment variable                   |
+| Develocity API                        | System property                        | Environment variable                   |
 |:--------------------------------------|:---------------------------------------|:---------------------------------------|
 | gradleEnterprise.server               | gradle.enterprise.url                  | GRADLE_ENTERPRISE_URL                  |
 | gradleEnterprise.allowUntrustedServer | gradle.enterprise.allowUntrustedServer | GRADLE_ENTERPRISE_ALLOWUNTRUSTEDSERVER |
@@ -97,7 +97,7 @@ to modify the build scripts. For example, to disable the local build cache when 
 
 ### Develocity Build Cache settings
 
-| Develocity Build Cache API          | System property                              | Environment variable                      |
+| Develocity Build Cache API                 | System property                              | Environment variable                      |
 |:-------------------------------------------|:---------------------------------------------|:------------------------------------------|
 | buildCache.remote.setEnabled               | gradle.cache.remote.enabled                  | GRADLE_CACHE_REMOTE_ENABLED               |
 | buildCache.remote.setPush                  | gradle.cache.remote.push                     | GRADLE_CACHE_REMOTE_PUSH                  |
