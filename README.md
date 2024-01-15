@@ -1,8 +1,8 @@
-> _This repository is maintained by the Gradle Enterprise Solutions team, as one of several publicly available repositories:_
-> - _[Gradle Enterprise Build Configuration Samples][ge-build-config-samples]_
-> - _[Gradle Enterprise Build Optimization Experiments][ge-build-optimization-experiments]_
-> - _[Gradle Enterprise Build Validation Scripts][ge-build-validation-scripts]_
-> - _[Gradle Enterprise Open Source Projects][ge-oss-projects]_
+> _This repository is maintained by the Develocity Solutions team, as one of several publicly available repositories:_
+> - _[Develocity Build Configuration Samples][develocity-build-config-samples]_
+> - _[Develocity Build Optimization Experiments][develocity-build-optimization-experiments]_
+> - _[Develocity Build Validation Scripts][develocity-build-validation-scripts]_
+> - _[Develocity Open Source Projects][develocity-oss-projects]_
 > - _[Common Custom User Data Maven Extension][ccud-maven-extension]_
 > - _[Common Custom User Data Gradle Plugin][ccud-gradle-plugin] (this repository)_
 > - _[Android Cache Fix Gradle Plugin][android-cache-fix-plugin]_
@@ -11,30 +11,30 @@
 
 [![Verify Build](https://github.com/gradle/common-custom-user-data-gradle-plugin/actions/workflows/build-verification.yml/badge.svg?branch=main)](https://github.com/gradle/common-custom-user-data-gradle-plugin/actions/workflows/build-verification.yml)
 [![Plugin Portal](https://img.shields.io/maven-metadata/v?metadataUrl=https://plugins.gradle.org/m2/com/gradle/common-custom-user-data-gradle-plugin/maven-metadata.xml&label=Plugin%20Portal)](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin)
-[![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.solutions-team.gradle.com/scans)
+[![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.solutions-team.gradle.com/scans)
 
-The Common Custom User Data Gradle plugin for Gradle Enterprise enhances published build scans
-by adding a set of tags, links and custom values that have proven to be useful for many projects building with Gradle Enterprise.
+The Common Custom User Data Gradle plugin for Develocity enhances published build scans
+by adding a set of tags, links and custom values that have proven to be useful for many projects building with Develocity.
 
 You can leverage this plugin for your project in one of two ways:
 1. [Apply the published plugin](#applying-the-published-plugin) directly in your build and immediately benefit from enhanced build scans
-2. Copy this repository and [develop a customized version of the plugin](#developing-a-customized-version-of-the-plugin) to standardize Gradle Enterprise usage across multiple projects
+2. Copy this repository and [develop a customized version of the plugin](#developing-a-customized-version-of-the-plugin) to standardize Develocity usage across multiple projects
 
 ## Applying the published plugin
 
 The Common Custom User Data Gradle plugin is available in the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin). This
-plugin requires the [Gradle Enterprise Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.enterprise) to also be applied in your build in order to have an effect.
+plugin requires the [Develocity Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.enterprise) to also be applied in your build in order to have an effect.
 
 In order for the Common Custom User Gradle plugin to become active, you need to register it in the `settings.gradle` file of your project. The `settings.gradle` file is the same
-file where you have already declared the Gradle Enterprise Gradle plugin.
+file where you have already declared the Develocity Gradle plugin.
 
 See [here](settings.gradle) for an example.
 
 ### Version compatibility
 
-This table details the version compatibility of the Common Custom User Data Gradle plugin with the Gradle Enterprise Gradle plugin.
+This table details the version compatibility of the Common Custom User Data Gradle plugin with the Develocity Gradle plugin.
 
-| Common Custom User Data Gradle plugin versions | Gradle Enterprise Gradle plugin versions | Gradle version |
+| Common Custom User Data Gradle plugin versions | Develocity Gradle plugin versions        | Gradle version |
 | ---------------------------------------------- | ---------------------------------------- | -------------- |
 | `1.0+`                                         | `3.0+`                                   | `5.0+`         | 
 | `1.7+`                                         | `1.8+`                                   | `4.0+`         |
@@ -52,14 +52,14 @@ captured and under which conditions.
 
 ## Configuration overrides
 
-This plugin also allows overriding various Gradle Enterprise related settings via system properties and environment variables:
-- Gradle Enterprise general configuration
+This plugin also allows overriding various Develocity related settings via system properties and environment variables:
+- Develocity general configuration
 - Remote build cache configuration
 - Local build cache configuration
 
 See [Overrides.java](./src/main/java/com/gradle/Overrides.java) for the override behavior.
 
-You can use the system properties and environment variables to override Gradle Enterprise related settings temporarily without having
+You can use the system properties and environment variables to override Develocity related settings temporarily without having
 to modify the build scripts. For example, to disable the local build cache when running a build:
 
 ```bash
@@ -69,9 +69,9 @@ to modify the build scripts. For example, to disable the local build cache when 
 <details>
   <summary>Click to see the complete set of available system properties and environment variables in the table below. </summary>
 
-### Gradle Enterprise settings
+### Develocity settings
 
-| Gradle Enterprise API                 | System property                        | Environment variable                   |
+| Develocity API                        | System property                        | Environment variable                   |
 |:--------------------------------------|:---------------------------------------|:---------------------------------------|
 | gradleEnterprise.server               | gradle.enterprise.url                  | GRADLE_ENTERPRISE_URL                  |
 | gradleEnterprise.allowUntrustedServer | gradle.enterprise.allowUntrustedServer | GRADLE_ENTERPRISE_ALLOWUNTRUSTEDSERVER |
@@ -95,9 +95,9 @@ to modify the build scripts. For example, to disable the local build cache when 
 | buildCache.remote.setAllowInsecureProtocol | gradle.cache.remote.allowInsecureProtocol | GRADLE_CACHE_REMOTE_ALLOWINSECUREPROTOCOL |
 | buildCache.remote.setUrl                   | gradle.cache.remote.url                   | GRADLE_CACHE_REMOTE_URL                   |
 
-### Gradle Enterprise Build Cache settings
+### Develocity Build Cache settings
 
-| Gradle Enterprise Build Cache API          | System property                              | Environment variable                      |
+| Develocity Build Cache API                 | System property                              | Environment variable                      |
 |:-------------------------------------------|:---------------------------------------------|:------------------------------------------|
 | buildCache.remote.setEnabled               | gradle.cache.remote.enabled                  | GRADLE_CACHE_REMOTE_ENABLED               |
 | buildCache.remote.setPush                  | gradle.cache.remote.push                     | GRADLE_CACHE_REMOTE_PUSH                  |
@@ -114,9 +114,9 @@ For more flexibility, we recommend creating a copy of this repository so that yo
 
 This approach has a number of benefits:
 - Tailor the build scan enhancements to exactly the set of tags, links and custom values you require
-- Standardize the configuration for connecting to Gradle Enterprise and the remote build cache in your organization, removing the need for each project to specify this configuration
+- Standardize the configuration for connecting to Develocity and the remote build cache in your organization, removing the need for each project to specify this configuration
 
-If your customized plugin provides all required Gradle Enterprise configuration, then a consumer project will get all the benefits of Gradle Enterprise simply by applying the plugin. The
+If your customized plugin provides all required Develocity configuration, then a consumer project will get all the benefits of Develocity simply by applying the plugin. The
 project sources provide a good template to get started with your own plugin.
 
 Refer to the [Javadoc](https://docs.gradle.com/enterprise/gradle-plugin/api/) for more details on the key types available for use.
@@ -129,18 +129,18 @@ Refer to the [release history](https://github.com/gradle/common-custom-user-data
 
 ## Learn more
 
-Visit our website to learn more about [Gradle Enterprise][gradle-enterprise].
+Visit our website to learn more about [Develocity][develocity].
 
 ## License
 
-The Gradle Enterprise Common Custom User Data Gradle plugin is open-source software released under the [Apache 2.0 License][apache-license].
+The Develocity Common Custom User Data Gradle plugin is open-source software released under the [Apache 2.0 License][apache-license].
 
-[ge-build-config-samples]: https://github.com/gradle/gradle-enterprise-build-config-samples
-[ge-build-optimization-experiments]: https://github.com/gradle/gradle-enterprise-build-optimization-experiments
-[ge-build-validation-scripts]: https://github.com/gradle/gradle-enterprise-build-validation-scripts
-[ge-oss-projects]: https://github.com/gradle/gradle-enterprise-oss-projects
+[develocity-build-config-samples]: https://github.com/gradle/gradle-enterprise-build-config-samples
+[develocity-build-optimization-experiments]: https://github.com/gradle/gradle-enterprise-build-optimization-experiments
+[develocity-build-validation-scripts]: https://github.com/gradle/gradle-enterprise-build-validation-scripts
+[develocity-oss-projects]: https://github.com/gradle/gradle-enterprise-oss-projects
 [ccud-gradle-plugin]: https://github.com/gradle/common-custom-user-data-gradle-plugin
 [ccud-maven-extension]: https://github.com/gradle/common-custom-user-data-maven-extension
 [android-cache-fix-plugin]: https://github.com/gradle/android-cache-fix-gradle-plugin
-[gradle-enterprise]: https://gradle.com/enterprise
+[develocity]: https://gradle.com/develocity
 [apache-license]: https://www.apache.org/licenses/LICENSE-2.0.html
