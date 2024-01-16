@@ -136,7 +136,6 @@ Visit our website to learn more about [Develocity][develocity].
 The Develocity Common Custom User Data Gradle plugin is open-source software released under the [Apache 2.0 License][apache-license].
 
 [develocity-build-config-samples]: https://github.com/gradle/gradle-enterprise-build-config-samples
-[develocity-build-optimization-experiments]: https://github.com/gradle/gradle-enterprise-build-optimization-experiments
 [develocity-build-validation-scripts]: https://github.com/gradle/gradle-enterprise-build-validation-scripts
 [develocity-oss-projects]: https://github.com/gradle/gradle-enterprise-oss-projects
 [ccud-gradle-plugin]: https://github.com/gradle/common-custom-user-data-gradle-plugin
