@@ -17,10 +17,6 @@ jobs:
         distribution: temurin
         java-version: 8
     - name: Setup Gradle
-      uses: gradle/gradle-build-action@v3
-      with:
-        dependency-graph: generate-and-submit
-    - name: Run assemble to generate dependency graph
-      run: ./gradlew assemble -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
+      uses: gradle/actions/dependency-submission@v3
       env:
         GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_SOLUTIONS_ACCESS_TOKEN }}
