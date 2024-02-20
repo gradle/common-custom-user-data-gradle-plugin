@@ -11,13 +11,13 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * Provide standardized Gradle Enterprise configuration. By applying the plugin, these settings will automatically be applied.
+ * Provide standardized Develocity configuration. By applying the plugin, these settings will automatically be applied.
  */
 final class Overrides {
 
-    // system properties to override Gradle Enterprise configuration
-    static final String GRADLE_ENTERPRISE_URL = "gradle.enterprise.url";
-    static final String GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER = "gradle.enterprise.allowUntrustedServer";
+    // system properties to override Develocity configuration
+    static final String DEVELOCITY_URL = "develocity.url";
+    static final String DEVELOCITY_ALLOW_UNTRUSTED_SERVER = "develocity.allowUntrustedServer";
 
     // system properties to override local build cache configuration
     static final String LOCAL_CACHE_DIRECTORY = "gradle.cache.local.directory";
@@ -40,14 +40,14 @@ final class Overrides {
         this.providers = providers;
     }
 
-    void configureGradleEnterprise(GradleEnterpriseExtension gradleEnterprise) {
-        sysPropertyOrEnvVariable(GRADLE_ENTERPRISE_URL, providers).ifPresent(gradleEnterprise::setServer);
-        booleanSysPropertyOrEnvVariable(GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(gradleEnterprise::setAllowUntrustedServer);
+    void configureDevelocity(GradleEnterpriseExtension develocity) {
+        sysPropertyOrEnvVariable(DEVELOCITY_URL, providers).ifPresent(develocity::setServer);
+        booleanSysPropertyOrEnvVariable(DEVELOCITY_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(develocity::setAllowUntrustedServer);
     }
 
-    void configureGradleEnterpriseOnGradle4(BuildScanExtension buildScan) {
-        sysPropertyOrEnvVariable(GRADLE_ENTERPRISE_URL, providers).ifPresent(buildScan::setServer);
-        booleanSysPropertyOrEnvVariable(GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(buildScan::setAllowUntrustedServer);
+    void configureDevelocityOnGradle4(BuildScanExtension buildScan) {
+        sysPropertyOrEnvVariable(DEVELOCITY_URL, providers).ifPresent(buildScan::setServer);
+        booleanSysPropertyOrEnvVariable(DEVELOCITY_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(buildScan::setAllowUntrustedServer);
     }
 
     void configureBuildCache(BuildCacheConfiguration buildCache) {
@@ -58,7 +58,7 @@ final class Overrides {
             booleanSysPropertyOrEnvVariable(LOCAL_CACHE_PUSH, providers).ifPresent(local::setPush);
         });
 
-        // Only touch remote build cache configuration if it is already present and of type HttpBuildCache or GradleEnterpriseBuildCache
+        // Only touch remote build cache configuration if it is already present and of type HttpBuildCache or DevelocityBuildCache
         // Do nothing in case of another build cache type like AWS S3 being used
         if (buildCache.getRemote() instanceof HttpBuildCache) {
             buildCache.remote(HttpBuildCache.class, remote -> {

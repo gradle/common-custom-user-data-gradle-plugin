@@ -22,7 +22,7 @@ You can leverage this plugin for your project in one of two ways:
 ## Applying the published plugin
 
 The Common Custom User Data Gradle plugin is available in the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/com.gradle.common-custom-user-data-gradle-plugin). This
-plugin requires the [Develocity Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.enterprise) to also be applied in your build in order to have an effect.
+plugin requires the [Develocity Gradle plugin](https://plugins.gradle.org/plugin/com.gradle.develocity) to also be applied in your build in order to have an effect.
 
 In order for the Common Custom User Gradle plugin to become active, you need to register it in the `settings.gradle` file of your project. The `settings.gradle` file is the same
 file where you have already declared the Develocity Gradle plugin.
@@ -70,10 +70,10 @@ to modify the build scripts. For example, to disable the local build cache when 
 
 ### Develocity settings
 
-| Develocity API                        | System property                        | Environment variable                   |
-|:--------------------------------------|:---------------------------------------|:---------------------------------------|
-| gradleEnterprise.server               | gradle.enterprise.url                  | GRADLE_ENTERPRISE_URL                  |
-| gradleEnterprise.allowUntrustedServer | gradle.enterprise.allowUntrustedServer | GRADLE_ENTERPRISE_ALLOWUNTRUSTEDSERVER |
+| Develocity API                  | System property                 | Environment variable            |
+|:--------------------------------|:--------------------------------|:--------------------------------|
+| develocity.server               | develocity.url                  | DEVELOCITY_URL                  |
+| develocity.allowUntrustedServer | develocity.allowUntrustedServer | DEVELOCITY_ALLOWUNTRUSTEDSERVER |
 
 ### Local Build Cache settings
 

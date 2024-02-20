@@ -46,33 +46,33 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         }
     }
 
-    public static void apply(Object gradleEnterprise, ProviderFactory providers, Settings settings) {
+    public static void apply(Object gradleEnterpriseOrDevelocity, ProviderFactory providers, Settings settings) {
         applySettingsPlugin(
-                gradleEnterprise,
+                gradleEnterpriseOrDevelocity,
                 providers,
                 settings
         );
     }
 
-    private static void applySettingsPlugin(Object gradleEnterpriseExtension, ProviderFactory providers, Settings settings) {
-        GradleEnterpriseExtension gradleEnterprise = ProxyFactory.createProxy(gradleEnterpriseExtension, GradleEnterpriseExtension.class);
-        CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
+    private static void applySettingsPlugin(Object gradleEnterpriseOrDevelocity, ProviderFactory providers, Settings settings) {
+        GradleEnterpriseExtension develocity = ProxyFactory.createProxy(gradleEnterpriseOrDevelocity, GradleEnterpriseExtension.class);
+        CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
-        customGradleEnterpriseConfig.configureGradleEnterprise(gradleEnterprise);
+        customDevelocityConfig.configureDevelocity(develocity);
 
-        BuildScanExtension buildScan = gradleEnterprise.getBuildScan();
-        customGradleEnterpriseConfig.configureBuildScanPublishing(buildScan);
+        BuildScanExtension buildScan = develocity.getBuildScan();
+        customDevelocityConfig.configureBuildScanPublishing(buildScan);
         CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, settings.getGradle());
         buildScanEnhancements.apply();
 
         BuildCacheConfiguration buildCache = settings.getBuildCache();
-        customGradleEnterpriseConfig.configureBuildCache(buildCache);
+        customDevelocityConfig.configureBuildCache(buildCache);
 
         // configuration changes applied in this block will override earlier configuration settings,
         // including those set in the settings.gradle(.kts)
         Action<Settings> settingsAction = __ -> {
             Overrides overrides = new Overrides(providers);
-            overrides.configureGradleEnterprise(gradleEnterprise);
+            overrides.configureDevelocity(develocity);
             overrides.configureBuildCache(buildCache);
         };
 
@@ -92,14 +92,14 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     private void applyProjectPluginGradle5(Project project) {
         ensureRootProject(project);
         project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
-            CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
+            CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
             Object extension = project.getExtensions().getByName("gradleEnterprise");
             GradleEnterpriseExtension gradleEnterprise = ProxyFactory.createProxy(extension, GradleEnterpriseExtension.class);
-            customGradleEnterpriseConfig.configureGradleEnterprise(gradleEnterprise);
+            customDevelocityConfig.configureDevelocity(gradleEnterprise);
 
             BuildScanExtension buildScan = gradleEnterprise.getBuildScan();
-            customGradleEnterpriseConfig.configureBuildScanPublishing(buildScan);
+            customDevelocityConfig.configureBuildScanPublishing(buildScan);
             CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, project.getGradle());
             buildScanEnhancements.apply();
 
@@ -109,7 +109,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             // including those set in the root project's build.gradle(.kts)
             project.afterEvaluate(___ -> {
                 Overrides overrides = new Overrides(providers);
-                overrides.configureGradleEnterprise(gradleEnterprise);
+                overrides.configureDevelocity(gradleEnterprise);
             });
         });
     }
@@ -117,13 +117,13 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     private void applyProjectPluginGradle4(Project project) {
         ensureRootProject(project);
         project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
-            CustomGradleEnterpriseConfig customGradleEnterpriseConfig = new CustomGradleEnterpriseConfig();
+            CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
             Object extension = project.getExtensions().getByName("buildScan");
             BuildScanExtension buildScan = ProxyFactory.createProxy(extension, BuildScanExtension.class);
-            customGradleEnterpriseConfig.configureGradleEnterpriseOnGradle4(buildScan);
+            customDevelocityConfig.configureDevelocityOnGradle4(buildScan);
 
-            customGradleEnterpriseConfig.configureBuildScanPublishingOnGradle4(buildScan);
+            customDevelocityConfig.configureBuildScanPublishingOnGradle4(buildScan);
             CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, project.getGradle());
             buildScanEnhancements.apply();
 
@@ -133,7 +133,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             // including those set in the root project's build.gradle(.kts)
             project.afterEvaluate(___ -> {
                 Overrides overrides = new Overrides(providers);
-                overrides.configureGradleEnterpriseOnGradle4(buildScan);
+                overrides.configureDevelocityOnGradle4(buildScan);
             });
         });
     }

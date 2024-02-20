@@ -5,13 +5,13 @@ import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 
 /**
- * Provide standardized Gradle Enterprise configuration.
+ * Provide standardized Develocity configuration.
  * By applying the plugin, these settings will automatically be applied.
  */
-final class CustomGradleEnterpriseConfig {
+final class CustomDevelocityConfig {
 
-    void configureGradleEnterprise(GradleEnterpriseExtension gradleEnterprise) {
-        /* Example of Gradle Enterprise configuration
+    void configureDevelocity(GradleEnterpriseExtension gradleEnterprise) {
+        /* Example of Develocity configuration
 
         gradleEnterprise.setServer("https://enterprise-samples.gradle.com");
         gradleEnterprise.setAllowUntrustedServer(false);
@@ -19,8 +19,8 @@ final class CustomGradleEnterpriseConfig {
         */
     }
 
-    void configureGradleEnterpriseOnGradle4(BuildScanExtension buildScan) {
-        /* Example of Gradle Enterprise configuration
+    void configureDevelocityOnGradle4(BuildScanExtension buildScan) {
+        /* Example of Develocity configuration
 
         buildScan.setServer("https://enterprise-samples.gradle.com");
         buildScan.setAllowUntrustedServer(false);
