@@ -1,0 +1,1 @@
+- [NEW] Improve tags/values in GitHub Actions `pull_request` workflows using git detached HEAD state
