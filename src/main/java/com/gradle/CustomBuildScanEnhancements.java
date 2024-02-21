@@ -475,7 +475,7 @@ final class CustomBuildScanEnhancements {
         private static Optional<String> getLocalBranch(String remoteBranch) {
             // This finds the longest matching remote name. This is because, for example, a local git clone could have
             // two remotes named `origin` and `origin/two`. In this scenario, we would want a remote branch of
-            // `origin/two/main` to match to the `origin/two` remote, not to `remote`
+            // `origin/two/main` to match to the `origin/two` remote, not to `origin`
             Function<String, Optional<String>> findLongestMatchingRemote = remotes -> Arrays.stream(remotes.split("\\R"))
                     .filter(remote -> remoteBranch.startsWith(remote + "/"))
                     .max(Comparator.comparingInt(String::length));
