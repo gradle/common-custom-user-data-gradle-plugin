@@ -3,7 +3,7 @@ package com.gradle.ccud.proxies.enterprise;
 import com.gradle.ccud.proxies.ProxyType;
 
 /**
- * Proxy interface for com.gradle.scan.plugin.BuildScanCaptureSettings
+ * Proxy interface for {@code com.gradle.scan.plugin.BuildScanCaptureSettings}
  */
 public interface BuildScanCaptureSettingsProxy extends ProxyType {
 

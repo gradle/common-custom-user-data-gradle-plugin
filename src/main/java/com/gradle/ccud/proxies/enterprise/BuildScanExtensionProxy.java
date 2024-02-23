@@ -7,7 +7,7 @@ import org.gradle.api.Action;
 import javax.annotation.Nullable;
 
 /**
- * Proxy interface for com.gradle.scan.plugin.BuildScanExtension
+ * Proxy interface for {@code com.gradle.scan.plugin.BuildScanExtension}
  */
 public interface BuildScanExtensionProxy extends ProxyType {
 

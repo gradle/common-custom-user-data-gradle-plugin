@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Proxy interface for com.gradle.scan.plugin.BuildScanDataObfuscation
+ * Proxy interface for {@code com.gradle.scan.plugin.BuildScanDataObfuscation}
  */
 public interface BuildScanDataObfuscationProxy extends ProxyType {
 

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 
 /**
- * Proxy interface for com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache
+ * Proxy interface for {@code com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache}
  */
 public interface GradleEnterpriseBuildCacheProxy extends ProxyType, BuildCache {
 
