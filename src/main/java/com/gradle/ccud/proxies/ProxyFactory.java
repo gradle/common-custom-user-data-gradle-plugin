@@ -1,15 +1,30 @@
-package com.gradle;
+package com.gradle.ccud.proxies;
 
 import org.gradle.api.Action;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 public final class ProxyFactory {
+
+    private static final Constructor<MethodHandles.Lookup> LOOKUP_CONSTRUCTOR;
+
+    static {
+        try {
+            LOOKUP_CONSTRUCTOR = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+            LOOKUP_CONSTRUCTOR.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
     public static <T> T createProxy(Object target, Class<T> targetInterface) {
         return newProxyInstance(targetInterface, new ProxyingInvocationHandler(target));
@@ -31,24 +46,42 @@ public final class ProxyFactory {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
             try {
-                Method targetMethod = target.getClass().getMethod(method.getName(), convertTypes(method.getParameterTypes(), target.getClass().getClassLoader()));
-                Object[] targetArgs = toTargetArgs(args);
-                Object result = targetMethod.invoke(target, targetArgs);
+                Object result = method.isDefault()
+                    ? invokeDefaultMethod(proxy, method, args)
+                    : invokeDelegateMethod(proxy, method, args);
+
                 if (result == null || isJdkType(result.getClass())) {
                     return result;
                 }
                 return createProxy(result, method.getReturnType());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw new RuntimeException("Failed to invoke " + method + " on " + target + " with args " + Arrays.toString(args), e);
             }
         }
 
-        private static Object[] toTargetArgs(Object[] args) {
+        private static Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
+            Class<?> declaringClass = method.getDeclaringClass();
+            return LOOKUP_CONSTRUCTOR.newInstance(declaringClass, MethodHandles.Lookup.PRIVATE)
+                .unreflectSpecial(method, declaringClass)
+                .bindTo(proxy)
+                .invokeWithArguments(args);
+        }
+
+        private Object invokeDelegateMethod(Object proxy, Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            Method targetMethod = target.getClass().getMethod(method.getName(), convertTypes(method.getParameterTypes(), target.getClass().getClassLoader()));
+            Object[] targetArgs = toTargetArgs(proxy, method, args);
+            return targetMethod.invoke(target, targetArgs);
+        }
+
+        private static Object[] toTargetArgs(Object proxy, Method method, Object[] args) {
             if (args == null || args.length == 0) {
                 return args;
             }
             if (args.length == 1 && args[0] instanceof Action) {
-                return new Object[]{adaptActionArg((Action<?>) args[0])};
+                return new Object[]{adaptActionArg(proxy, method, (Action<?>) args[0])};
+            }
+            if (args.length == 1 && args[0] instanceof Function) {
+                return new Object[]{adaptFunctionArg((Function<?, ?>) args[0])};
             }
             if (Arrays.stream(args).allMatch(it -> isJdkType(it.getClass()))) {
                 return args;
@@ -57,8 +90,16 @@ public final class ProxyFactory {
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})
-        private static Action<Object> adaptActionArg(Action action) {
+        private static Action<Object> adaptActionArg(Object proxy, Method method, Action action) {
+            if (method.isAnnotationPresent(ProxyAction.class)) {
+                return arg -> action.execute(proxy);
+            }
             return arg -> action.execute(createLocalProxy(arg));
+        }
+
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        private static Function<Object, Object> adaptFunctionArg(Function func) {
+            return arg -> func.apply(createLocalProxy(arg));
         }
 
         private static Object createLocalProxy(Object target) {

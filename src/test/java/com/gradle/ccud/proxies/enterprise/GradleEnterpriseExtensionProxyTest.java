@@ -1,6 +1,6 @@
 package com.gradle.ccud.proxies.enterprise;
 
-import com.gradle.ProxyFactory;
+import com.gradle.ccud.proxies.ProxyFactory;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,7 +113,7 @@ class GradleEnterpriseExtensionProxyTest extends BaseProxyTest {
     void testBuildScanAction() {
         // given
         BuildScanExtension buildScanExtension = mock();
-        doExecuteActionWith(buildScanExtension).when(extension).buildScan(any());
+        when(extension.getBuildScan()).thenReturn(buildScanExtension);
 
         // when
         proxy.buildScan(buildScan -> {

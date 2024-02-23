@@ -1,7 +1,8 @@
 package com.gradle;
 
+import com.gradle.ccud.proxies.ProxyFactory;
+import com.gradle.ccud.proxies.enterprise.BuildScanExtensionProxy;
 import com.gradle.ccud.proxies.enterprise.GradleEnterpriseExtensionProxy;
-import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
@@ -60,7 +61,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
         customDevelocityConfig.configureDevelocity(develocity);
 
-        BuildScanExtension buildScan = develocity.getBuildScan();
+        BuildScanExtensionProxy buildScan = develocity.getBuildScan();
         customDevelocityConfig.configureBuildScanPublishing(buildScan);
         CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, settings.getGradle());
         buildScanEnhancements.apply();
@@ -98,7 +99,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             GradleEnterpriseExtensionProxy gradleEnterprise = ProxyFactory.createProxy(extension, GradleEnterpriseExtensionProxy.class);
             customDevelocityConfig.configureDevelocity(gradleEnterprise);
 
-            BuildScanExtension buildScan = gradleEnterprise.getBuildScan();
+            BuildScanExtensionProxy buildScan = gradleEnterprise.getBuildScan();
             customDevelocityConfig.configureBuildScanPublishing(buildScan);
             CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, project.getGradle());
             buildScanEnhancements.apply();
@@ -120,7 +121,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
             Object extension = project.getExtensions().getByName("buildScan");
-            BuildScanExtension buildScan = ProxyFactory.createProxy(extension, BuildScanExtension.class);
+            BuildScanExtensionProxy buildScan = ProxyFactory.createProxy(extension, BuildScanExtensionProxy.class);
             customDevelocityConfig.configureDevelocityOnGradle4(buildScan);
 
             customDevelocityConfig.configureBuildScanPublishingOnGradle4(buildScan);

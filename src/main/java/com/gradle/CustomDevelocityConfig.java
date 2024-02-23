@@ -1,7 +1,7 @@
 package com.gradle;
 
+import com.gradle.ccud.proxies.enterprise.BuildScanExtensionProxy;
 import com.gradle.ccud.proxies.enterprise.GradleEnterpriseExtensionProxy;
-import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 
 /**
@@ -19,7 +19,7 @@ final class CustomDevelocityConfig {
         */
     }
 
-    void configureDevelocityOnGradle4(BuildScanExtension buildScan) {
+    void configureDevelocityOnGradle4(BuildScanExtensionProxy buildScan) {
         /* Example of Develocity configuration
 
         buildScan.setServer("https://enterprise-samples.gradle.com");
@@ -28,7 +28,7 @@ final class CustomDevelocityConfig {
         */
     }
 
-    void configureBuildScanPublishing(BuildScanExtension buildScan) {
+    void configureBuildScanPublishing(BuildScanExtensionProxy buildScan) {
         /* Example of build scan publishing configuration
 
         boolean isCiServer = System.getenv().containsKey("CI");
@@ -40,7 +40,7 @@ final class CustomDevelocityConfig {
         */
     }
 
-    void configureBuildScanPublishingOnGradle4(BuildScanExtension buildScan) {
+    void configureBuildScanPublishingOnGradle4(BuildScanExtensionProxy buildScan) {
         /* Example of build scan publishing configuration
 
         boolean isCiServer = System.getenv().containsKey("CI");

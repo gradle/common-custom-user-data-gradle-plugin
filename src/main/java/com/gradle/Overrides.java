@@ -1,8 +1,8 @@
 package com.gradle;
 
+import com.gradle.ccud.proxies.enterprise.BuildScanExtensionProxy;
 import com.gradle.ccud.proxies.enterprise.GradleEnterpriseExtensionProxy;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
-import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
@@ -45,7 +45,7 @@ final class Overrides {
         booleanSysPropertyOrEnvVariable(DEVELOCITY_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(develocity::setAllowUntrustedServer);
     }
 
-    void configureDevelocityOnGradle4(BuildScanExtension buildScan) {
+    void configureDevelocityOnGradle4(BuildScanExtensionProxy buildScan) {
         sysPropertyOrEnvVariable(DEVELOCITY_URL, providers).ifPresent(buildScan::setServer);
         booleanSysPropertyOrEnvVariable(DEVELOCITY_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(buildScan::setAllowUntrustedServer);
     }

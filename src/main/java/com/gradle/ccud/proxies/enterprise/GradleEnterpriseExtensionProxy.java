@@ -1,16 +1,17 @@
 package com.gradle.ccud.proxies.enterprise;
 
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
-import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Action;
 
 import javax.annotation.Nullable;
 
 public interface GradleEnterpriseExtensionProxy {
 
-    BuildScanExtension getBuildScan();
+    BuildScanExtensionProxy getBuildScan();
 
-    void buildScan(Action<? super BuildScanExtension> action);
+    default void buildScan(Action<? super BuildScanExtensionProxy> action) {
+        action.execute(getBuildScan());
+    }
 
     void setServer(String server);
 

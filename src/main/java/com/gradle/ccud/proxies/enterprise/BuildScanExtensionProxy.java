@@ -1,0 +1,64 @@
+package com.gradle.ccud.proxies.enterprise;
+
+import com.gradle.ccud.proxies.ProxyAction;
+import com.gradle.scan.plugin.BuildResult;
+import com.gradle.scan.plugin.BuildScanCaptureSettings;
+import com.gradle.scan.plugin.BuildScanDataObfuscation;
+import com.gradle.scan.plugin.PublishedBuildScan;
+import org.gradle.api.Action;
+
+import javax.annotation.Nullable;
+
+public interface BuildScanExtensionProxy {
+
+    @ProxyAction
+    void background(Action<? super BuildScanExtensionProxy> action);
+
+    void tag(String tag);
+
+    void value(String name, String value);
+
+    void link(String name, String url);
+
+    void buildFinished(Action<? super BuildResult> action);
+
+    void buildScanPublished(Action<? super PublishedBuildScan> action);
+
+    void setTermsOfServiceUrl(String termsOfServiceUrl);
+
+    String getTermsOfServiceUrl();
+
+    void setTermsOfServiceAgree(String agree);
+
+    String getTermsOfServiceAgree();
+
+    void setServer(String server);
+
+    @Nullable
+    String getServer();
+
+    void setAllowUntrustedServer(boolean allow);
+
+    boolean getAllowUntrustedServer();
+
+    void publishAlways();
+
+    void publishAlwaysIf(boolean condition);
+
+    void publishOnFailure();
+
+    void publishOnFailureIf(boolean condition);
+
+    void setUploadInBackground(boolean uploadInBackground);
+
+    boolean isUploadInBackground();
+
+    BuildScanDataObfuscation getObfuscation();
+
+    void obfuscation(Action<? super BuildScanDataObfuscation> action);
+
+    BuildScanCaptureSettings getCapture();
+
+    void capture(Action<? super BuildScanCaptureSettings> action);
+
+}

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Stubber;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
@@ -16,6 +18,20 @@ abstract class BaseProxyTest {
             action.execute(obj);
             return null;
         });
+    }
+
+    protected static class ArgCapturingAction<T> implements Action<T> {
+
+        private final AtomicReference<T> arg = new AtomicReference<>();
+
+        @Override
+        public void execute(T t) {
+            arg.set(t);
+        }
+
+        public T getValue() {
+            return arg.get();
+        }
     }
 
 }
