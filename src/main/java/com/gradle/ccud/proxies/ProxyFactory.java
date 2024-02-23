@@ -2,10 +2,10 @@ package com.gradle.ccud.proxies;
 
 import org.gradle.api.Action;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -57,12 +57,13 @@ public final class ProxyFactory {
             return targetMethod.invoke(target, targetArgs);
         }
 
-        private static Object[] toTargetArgs(Method method, Object[] args) {
+        private static Object[] toTargetArgs(Method method, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
             if (args == null || args.length == 0) {
                 return args;
             }
             if (args.length == 1 && args[0] instanceof Action) {
-                return new Object[]{adaptActionArg(method, (Action<?>) args[0])};
+                Action<Object> objectAction = adaptActionArg(method, (Action<?>) args[0]);
+                return new Object[]{objectAction};
             }
             if (args.length == 1 && args[0] instanceof Function) {
                 return new Object[]{adaptFunctionArg((Function<?, ?>) args[0])};
@@ -74,14 +75,18 @@ public final class ProxyFactory {
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})
-        private static Action<Object> adaptActionArg(Method method, Action action) {
-            Parameter actionParam = method.getParameters()[0];
-            ProxyAction proxyAction = actionParam.getAnnotation(ProxyAction.class);
-            if (proxyAction != null) {
-                return arg -> action.execute(ProxyFactory.createProxy(arg, proxyAction.value()));
+        private static Action<Object> adaptActionArg(Method method, Action action) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+            Annotation[] paramAnnotations = method.getParameterAnnotations()[0];
+            if (paramAnnotations.length > 0 && paramAnnotations[0] instanceof ProxyAction) {
+                Class<?> proxyType = (Class<?>) readAnnotationValueInConfigurationCacheCompatibleWay(paramAnnotations[0]);
+                return arg -> action.execute(ProxyFactory.createProxy(arg, proxyType));
             }
 
             return arg -> action.execute(createLocalProxy(arg));
+        }
+
+        private static Object readAnnotationValueInConfigurationCacheCompatibleWay(Annotation annotation) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+            return annotation.getClass().getMethod("value").invoke(annotation);
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})
