@@ -5,6 +5,7 @@ import org.gradle.api.Action;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -35,7 +36,7 @@ public final class ProxyFactory {
             try {
                 Object result = method.isDefault()
                     ? invokeDefaultMethod(proxy, method, args)
-                    : invokeDelegateMethod(proxy, method, args);
+                    : invokeDelegateMethod(method, args);
 
                 if (result == null || isJdkType(result.getClass())) {
                     return result;
@@ -50,18 +51,18 @@ public final class ProxyFactory {
             return MethodHandleLookup.INSTANCE.getMethodHandle(proxy, method).invokeWithArguments(args);
         }
 
-        private Object invokeDelegateMethod(Object proxy, Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        private Object invokeDelegateMethod(Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
             Method targetMethod = target.getClass().getMethod(method.getName(), convertTypes(method.getParameterTypes(), target.getClass().getClassLoader()));
-            Object[] targetArgs = toTargetArgs(proxy, method, args);
+            Object[] targetArgs = toTargetArgs(method, args);
             return targetMethod.invoke(target, targetArgs);
         }
 
-        private static Object[] toTargetArgs(Object proxy, Method method, Object[] args) {
+        private static Object[] toTargetArgs(Method method, Object[] args) {
             if (args == null || args.length == 0) {
                 return args;
             }
             if (args.length == 1 && args[0] instanceof Action) {
-                return new Object[]{adaptActionArg(proxy, method, (Action<?>) args[0])};
+                return new Object[]{adaptActionArg(method, (Action<?>) args[0])};
             }
             if (args.length == 1 && args[0] instanceof Function) {
                 return new Object[]{adaptFunctionArg((Function<?, ?>) args[0])};
@@ -73,10 +74,13 @@ public final class ProxyFactory {
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})
-        private static Action<Object> adaptActionArg(Object proxy, Method method, Action action) {
-            if (method.isAnnotationPresent(ProxyAction.class)) {
-                return arg -> action.execute(proxy);
+        private static Action<Object> adaptActionArg(Method method, Action action) {
+            Parameter actionParam = method.getParameters()[0];
+            ProxyAction proxyAction = actionParam.getAnnotation(ProxyAction.class);
+            if (proxyAction != null) {
+                return arg -> action.execute(ProxyFactory.createProxy(arg, proxyAction.value()));
             }
+
             return arg -> action.execute(createLocalProxy(arg));
         }
 

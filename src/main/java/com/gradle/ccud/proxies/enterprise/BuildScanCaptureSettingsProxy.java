@@ -1,6 +1,8 @@
 package com.gradle.ccud.proxies.enterprise;
 
-public interface BuildScanCaptureSettingsProxy {
+import com.gradle.ccud.proxies.ProxyType;
+
+public interface BuildScanCaptureSettingsProxy extends ProxyType {
 
     void setTaskInputFiles(boolean capture);
 

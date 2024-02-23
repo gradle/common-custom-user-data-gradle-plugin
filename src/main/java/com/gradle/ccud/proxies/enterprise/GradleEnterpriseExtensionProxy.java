@@ -1,11 +1,12 @@
 package com.gradle.ccud.proxies.enterprise;
 
+import com.gradle.ccud.proxies.ProxyType;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import org.gradle.api.Action;
 
 import javax.annotation.Nullable;
 
-public interface GradleEnterpriseExtensionProxy {
+public interface GradleEnterpriseExtensionProxy extends ProxyType {
 
     BuildScanExtensionProxy getBuildScan();
 

@@ -1,7 +1,7 @@
 package com.gradle;
 
+import com.gradle.ccud.proxies.enterprise.BuildResultProxy;
 import com.gradle.ccud.proxies.enterprise.BuildScanExtensionProxy;
-import com.gradle.scan.plugin.BuildResult;
 import org.gradle.api.Action;
 import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
@@ -102,7 +102,7 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static final class CaptureIdeMetadataAction implements Action<BuildResult> {
+    private static final class CaptureIdeMetadataAction implements Action<BuildResultProxy> {
 
         private final BuildScanExtensionProxy buildScan;
         private final Map<String, Provider<String>> props;
@@ -113,7 +113,7 @@ final class CustomBuildScanEnhancements {
         }
 
         @Override
-        public void execute(BuildResult buildResult) {
+        public void execute(BuildResultProxy buildResult) {
             if (props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).isPresent()) {
                 String ideaVendorNameValue = props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).get();
                 if ("Google".equals(ideaVendorNameValue)) {
@@ -171,7 +171,7 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static final class CaptureCiMetadataAction implements Action<BuildResult> {
+    private static final class CaptureCiMetadataAction implements Action<BuildResultProxy> {
 
         private final BuildScanExtensionProxy buildScan;
         private final ProviderFactory providers;
@@ -184,7 +184,7 @@ final class CustomBuildScanEnhancements {
         }
 
         @Override
-        public void execute(BuildResult buildResult) {
+        public void execute(BuildResultProxy buildResult) {
             if (isJenkins(providers) || isHudson(providers)) {
                 String controllerUrlEnvVar = isJenkins(providers) ? "JENKINS_URL" : "HUDSON_URL";
 

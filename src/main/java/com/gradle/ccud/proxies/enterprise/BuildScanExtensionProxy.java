@@ -1,16 +1,15 @@
 package com.gradle.ccud.proxies.enterprise;
 
 import com.gradle.ccud.proxies.ProxyAction;
-import com.gradle.scan.plugin.BuildResult;
+import com.gradle.ccud.proxies.ProxyType;
 import com.gradle.scan.plugin.PublishedBuildScan;
 import org.gradle.api.Action;
 
 import javax.annotation.Nullable;
 
-public interface BuildScanExtensionProxy {
+public interface BuildScanExtensionProxy extends ProxyType {
 
-    @ProxyAction
-    void background(Action<? super BuildScanExtensionProxy> action);
+    void background(@ProxyAction(BuildScanExtensionProxy.class) Action<? super BuildScanExtensionProxy> action);
 
     void tag(String tag);
 
@@ -18,7 +17,7 @@ public interface BuildScanExtensionProxy {
 
     void link(String name, String url);
 
-    void buildFinished(Action<? super BuildResult> action);
+    void buildFinished(@ProxyAction(BuildResultProxy.class) Action<? super BuildResultProxy> action);
 
     void buildScanPublished(Action<? super PublishedBuildScan> action);
 
