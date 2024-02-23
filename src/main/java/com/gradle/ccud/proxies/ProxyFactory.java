@@ -2,8 +2,6 @@ package com.gradle.ccud.proxies;
 
 import org.gradle.api.Action;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,17 +12,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 public final class ProxyFactory {
-
-    private static final Constructor<MethodHandles.Lookup> LOOKUP_CONSTRUCTOR;
-
-    static {
-        try {
-            LOOKUP_CONSTRUCTOR = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
-            LOOKUP_CONSTRUCTOR.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(e);
-        }
-    }
 
     public static <T> T createProxy(Object target, Class<T> targetInterface) {
         return newProxyInstance(targetInterface, new ProxyingInvocationHandler(target));
@@ -60,11 +47,7 @@ public final class ProxyFactory {
         }
 
         private static Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
-            Class<?> declaringClass = method.getDeclaringClass();
-            return LOOKUP_CONSTRUCTOR.newInstance(declaringClass, MethodHandles.Lookup.PRIVATE)
-                .unreflectSpecial(method, declaringClass)
-                .bindTo(proxy)
-                .invokeWithArguments(args);
+            return MethodHandleLookup.INSTANCE.getMethodHandle(proxy, method).invokeWithArguments(args);
         }
 
         private Object invokeDelegateMethod(Object proxy, Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
