@@ -285,6 +285,8 @@ final class CustomBuildScanEnhancements {
                         addCustomValueAndSearchLink(buildScan, "CI workflow", value));
                 envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
                         addCustomValueAndSearchLink(buildScan, "CI run", value));
+                envVariable("GITHUB_HEAD_REF", providers).ifPresent(value ->
+                        buildScan.value("PR branch", value));
             }
 
             if (isGitLab(providers)) {
@@ -466,6 +468,11 @@ final class CustomBuildScanEnhancements {
                 }
             } else if (isBuildkite(providers)) {
                 Optional<String> branch = envVariable("BUILDKITE_BRANCH", providers);
+                if (branch.isPresent()) {
+                    return branch.get();
+                }
+            } else if (isGitHubActions(providers)) {
+                Optional<String> branch = envVariable("GITHUB_REF_NAME", providers);
                 if (branch.isPresent()) {
                     return branch.get();
                 }
