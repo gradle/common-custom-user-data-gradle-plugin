@@ -206,7 +206,7 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         doExecuteActionWith(scan).when(extension).buildScanPublished(any());
 
         // when
-        ArgCapturingAction<PublishedBuildScan> capturer = new ArgCapturingAction<>();
+        ArgCapturingAction<PublishedBuildScanProxy> capturer = new ArgCapturingAction<>();
         proxy.buildScanPublished(capturer);
 
         // then
