@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-final class ProxyFactory {
+public final class ProxyFactory {
 
-    static <T> T createProxy(Object target, Class<T> targetInterface) {
+    public static <T> T createProxy(Object target, Class<T> targetInterface) {
         return newProxyInstance(targetInterface, new ProxyingInvocationHandler(target));
     }
 

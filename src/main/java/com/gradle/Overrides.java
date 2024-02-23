@@ -1,7 +1,7 @@
 package com.gradle;
 
+import com.gradle.ccud.proxies.enterprise.GradleEnterpriseExtensionProxy;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
-import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
@@ -40,7 +40,7 @@ final class Overrides {
         this.providers = providers;
     }
 
-    void configureDevelocity(GradleEnterpriseExtension develocity) {
+    void configureDevelocity(GradleEnterpriseExtensionProxy develocity) {
         sysPropertyOrEnvVariable(DEVELOCITY_URL, providers).ifPresent(develocity::setServer);
         booleanSysPropertyOrEnvVariable(DEVELOCITY_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(develocity::setAllowUntrustedServer);
     }

@@ -1,6 +1,6 @@
 package com.gradle;
 
-import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
+import com.gradle.ccud.proxies.enterprise.GradleEnterpriseExtensionProxy;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -55,7 +55,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     }
 
     private static void applySettingsPlugin(Object gradleEnterpriseOrDevelocity, ProviderFactory providers, Settings settings) {
-        GradleEnterpriseExtension develocity = ProxyFactory.createProxy(gradleEnterpriseOrDevelocity, GradleEnterpriseExtension.class);
+        GradleEnterpriseExtensionProxy develocity = ProxyFactory.createProxy(gradleEnterpriseOrDevelocity, GradleEnterpriseExtensionProxy.class);
         CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
         customDevelocityConfig.configureDevelocity(develocity);
@@ -95,7 +95,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
             Object extension = project.getExtensions().getByName("gradleEnterprise");
-            GradleEnterpriseExtension gradleEnterprise = ProxyFactory.createProxy(extension, GradleEnterpriseExtension.class);
+            GradleEnterpriseExtensionProxy gradleEnterprise = ProxyFactory.createProxy(extension, GradleEnterpriseExtensionProxy.class);
             customDevelocityConfig.configureDevelocity(gradleEnterprise);
 
             BuildScanExtension buildScan = gradleEnterprise.getBuildScan();

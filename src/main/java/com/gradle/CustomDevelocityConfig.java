@@ -1,6 +1,6 @@
 package com.gradle;
 
-import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
+import com.gradle.ccud.proxies.enterprise.GradleEnterpriseExtensionProxy;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 
@@ -10,11 +10,11 @@ import org.gradle.caching.configuration.BuildCacheConfiguration;
  */
 final class CustomDevelocityConfig {
 
-    void configureDevelocity(GradleEnterpriseExtension gradleEnterprise) {
+    void configureDevelocity(GradleEnterpriseExtensionProxy develocity) {
         /* Example of Develocity configuration
 
-        gradleEnterprise.setServer("https://enterprise-samples.gradle.com");
-        gradleEnterprise.setAllowUntrustedServer(false);
+        develocity.setServer("https://enterprise-samples.gradle.com");
+        develocity.setAllowUntrustedServer(false);
 
         */
     }

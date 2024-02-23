@@ -22,6 +22,11 @@ dependencies {
     compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.16.2'
     testImplementation(platform('org.junit:junit-bom:5.10.2'))
     testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation("org.mockito:mockito-core:4.11.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:4.11.0")
+    testImplementation('com.gradle:gradle-enterprise-gradle-plugin:3.16.2') {
+        because("Verify that reflective proxies and adapters work with actual plugin classes")
+    }
 }
 
 wrapperUpgrade {
