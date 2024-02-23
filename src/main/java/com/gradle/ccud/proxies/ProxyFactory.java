@@ -86,6 +86,10 @@ public final class ProxyFactory {
         }
 
         private static Object createLocalProxy(Object target) {
+            if (isJdkType(target.getClass())) {
+                return target;
+            }
+
             ClassLoader localClassLoader = ProxyFactory.class.getClassLoader();
             return Proxy.newProxyInstance(
                 localClassLoader,

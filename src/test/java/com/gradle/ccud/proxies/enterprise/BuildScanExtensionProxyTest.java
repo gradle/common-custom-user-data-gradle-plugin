@@ -218,7 +218,7 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
     void testObfuscationAction() {
         // given
         BuildScanDataObfuscation obfuscation = mock();
-        doExecuteActionWith(obfuscation).when(extension).obfuscation(any());
+        when(extension.getObfuscation()).thenReturn(obfuscation);
 
         // when
         proxy.obfuscation(o -> {

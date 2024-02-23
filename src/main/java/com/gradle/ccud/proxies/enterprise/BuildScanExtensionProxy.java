@@ -2,7 +2,6 @@ package com.gradle.ccud.proxies.enterprise;
 
 import com.gradle.ccud.proxies.ProxyAction;
 import com.gradle.scan.plugin.BuildResult;
-import com.gradle.scan.plugin.BuildScanDataObfuscation;
 import com.gradle.scan.plugin.PublishedBuildScan;
 import org.gradle.api.Action;
 
@@ -52,9 +51,11 @@ public interface BuildScanExtensionProxy {
 
     boolean isUploadInBackground();
 
-    BuildScanDataObfuscation getObfuscation();
+    BuildScanDataObfuscationProxy getObfuscation();
 
-    void obfuscation(Action<? super BuildScanDataObfuscation> action);
+    default void obfuscation(Action<? super BuildScanDataObfuscationProxy> action) {
+        action.execute(getObfuscation());
+    }
 
     BuildScanCaptureSettingsProxy getCapture();
 
