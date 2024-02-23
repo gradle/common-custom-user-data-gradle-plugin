@@ -6,6 +6,9 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Proxy interface for com.gradle.scan.plugin.BuildScanDataObfuscation
+ */
 public interface BuildScanDataObfuscationProxy extends ProxyType {
 
     void username(Function<? super String, ? extends String> obfuscator);

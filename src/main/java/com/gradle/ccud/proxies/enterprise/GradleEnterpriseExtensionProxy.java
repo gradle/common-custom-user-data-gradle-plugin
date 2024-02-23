@@ -6,6 +6,9 @@ import org.gradle.caching.configuration.AbstractBuildCache;
 
 import javax.annotation.Nullable;
 
+/**
+ * Proxy interface for com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension
+ */
 public interface GradleEnterpriseExtensionProxy extends ProxyType {
 
     BuildScanExtensionProxy getBuildScan();

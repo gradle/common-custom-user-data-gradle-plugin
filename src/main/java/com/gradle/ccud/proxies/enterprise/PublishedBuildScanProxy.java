@@ -4,6 +4,9 @@ import com.gradle.ccud.proxies.ProxyType;
 
 import java.net.URI;
 
+/**
+ * Proxy interface for com.gradle.scan.plugin.PublishedBuildScan
+ */
 public interface PublishedBuildScanProxy extends ProxyType {
 
     String getBuildScanId();
