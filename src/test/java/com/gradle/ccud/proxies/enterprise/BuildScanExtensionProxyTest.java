@@ -236,7 +236,7 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
     void testCaptureAction() {
         // given
         BuildScanCaptureSettings capture = mock();
-        doExecuteActionWith(capture).when(extension).capture(any());
+        when(extension.getCapture()).thenReturn(capture);
 
         // when
         proxy.capture(c -> {

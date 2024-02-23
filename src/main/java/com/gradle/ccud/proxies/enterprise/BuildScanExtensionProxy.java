@@ -2,7 +2,6 @@ package com.gradle.ccud.proxies.enterprise;
 
 import com.gradle.ccud.proxies.ProxyAction;
 import com.gradle.scan.plugin.BuildResult;
-import com.gradle.scan.plugin.BuildScanCaptureSettings;
 import com.gradle.scan.plugin.BuildScanDataObfuscation;
 import com.gradle.scan.plugin.PublishedBuildScan;
 import org.gradle.api.Action;
@@ -57,8 +56,10 @@ public interface BuildScanExtensionProxy {
 
     void obfuscation(Action<? super BuildScanDataObfuscation> action);
 
-    BuildScanCaptureSettings getCapture();
+    BuildScanCaptureSettingsProxy getCapture();
 
-    void capture(Action<? super BuildScanCaptureSettings> action);
+    default void capture(Action<? super BuildScanCaptureSettingsProxy> action) {
+        action.execute(getCapture());
+    }
 
 }
