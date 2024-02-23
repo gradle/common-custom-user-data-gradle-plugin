@@ -1,8 +1,8 @@
 package com.gradle.ccud.proxies.enterprise;
 
 import com.gradle.ccud.proxies.ProxyType;
-import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import org.gradle.api.Action;
+import org.gradle.caching.configuration.AbstractBuildCache;
 
 import javax.annotation.Nullable;
 
@@ -33,6 +33,6 @@ public interface GradleEnterpriseExtensionProxy extends ProxyType {
     @Nullable
     String getAccessKey();
 
-    Class<? extends GradleEnterpriseBuildCache> getBuildCache();
+    Class<? extends AbstractBuildCache> getBuildCache();
 
 }
