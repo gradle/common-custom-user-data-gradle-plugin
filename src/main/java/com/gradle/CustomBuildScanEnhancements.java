@@ -7,14 +7,18 @@ import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -36,6 +40,7 @@ import static com.gradle.Utils.envVariable;
 import static com.gradle.Utils.execAndCheckSuccess;
 import static com.gradle.Utils.execAndGetStdOut;
 import static com.gradle.Utils.isGradle43rNewer;
+import static com.gradle.Utils.isGradle56OrNewer;
 import static com.gradle.Utils.isGradle61OrNewer;
 import static com.gradle.Utils.isGradle62OrNewer;
 import static com.gradle.Utils.isNotEmpty;
@@ -88,7 +93,7 @@ final class CustomBuildScanEnhancements {
             ideProperties.put(SYSTEM_PROP_IDEA_VENDOR_NAME, systemPropertyProvider(SYSTEM_PROP_IDEA_VENDOR_NAME, providers));
             ideProperties.put(SYSTEM_PROP_IDEA_VERSION, systemPropertyProvider(SYSTEM_PROP_IDEA_VERSION, providers));
             ideProperties.put(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradlePropertyProvider(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradle, providers));
-            ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers).orElse(gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY, gradle, providers)));
+            ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, firstOrElseSecond(providers, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers), gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY, gradle, providers)));
             ideProperties.put(SYSTEM_PROP_ECLIPSE_BUILD_ID, systemPropertyProvider(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers));
             ideProperties.put(SYSTEM_PROP_IDEA_SYNC_ACTIVE, systemPropertyProvider(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers));
 
@@ -439,9 +444,17 @@ final class CustomBuildScanEnhancements {
 
         private String getGitBranchName(Supplier<String> gitCommand) {
             if (isJenkins(providers) || isHudson(providers)) {
-                Optional<String> branch = envVariable("BRANCH_NAME", providers);
-                if (branch.isPresent()) {
-                    return branch.get();
+                Optional<String> branchName = envVariable("BRANCH_NAME", providers);
+                if (branchName.isPresent()) {
+                    return branchName.get();
+                }
+
+                Optional<String> gitBranch = envVariable("GIT_BRANCH", providers);
+                if (gitBranch.isPresent()) {
+                    Optional<String> localBranch = getLocalBranch(gitBranch.get());
+                    if (localBranch.isPresent()) {
+                        return localBranch.get();
+                    }
                 }
             } else if (isGitLab(providers)) {
                 Optional<String> branch = envVariable("CI_COMMIT_REF_NAME", providers);
@@ -467,6 +480,19 @@ final class CustomBuildScanEnhancements {
             return gitCommand.get();
         }
 
+        private static Optional<String> getLocalBranch(String remoteBranch) {
+            // This finds the longest matching remote name. This is because, for example, a local git clone could have
+            // two remotes named `origin` and `origin/two`. In this scenario, we would want a remote branch of
+            // `origin/two/main` to match to the `origin/two` remote, not to `origin`
+            Function<String, Optional<String>> findLongestMatchingRemote = remotes -> Arrays.stream(remotes.split("\\R"))
+                    .filter(remote -> remoteBranch.startsWith(remote + "/"))
+                    .max(Comparator.comparingInt(String::length));
+
+            return Optional.ofNullable(execAndGetStdOut("git", "remote"))
+                    .filter(Utils::isNotEmpty)
+                    .flatMap(findLongestMatchingRemote)
+                    .map(remote -> remoteBranch.replaceFirst("^" + remote + "/", ""));
+        }
     }
 
     private static void addCustomValueAndSearchLink(BuildScanExtension buildScan, String name, String value) {
@@ -521,6 +547,14 @@ final class CustomBuildScanEnhancements {
             return providers.gradleProperty(name);
         } else {
             return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
+        }
+    }
+
+    private static <T> Provider<T> firstOrElseSecond(ProviderFactory providers, Provider<T> overrideProperty, Provider<T> mainProperty) {
+        if (isGradle56OrNewer()) {
+            return overrideProperty.orElse(mainProperty);
+        } else {
+            return providers.provider(() -> overrideProperty.isPresent() ? overrideProperty.get() : mainProperty.getOrNull());
         }
     }
 
