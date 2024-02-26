@@ -1,18 +1,18 @@
-package com.gradle.ccud.adapters.enterprise.proxies;
+package com.gradle.cuud.adapters;
 
 import org.gradle.api.Action;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Stubber;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.mockito.Mockito.doAnswer;
 
-@ExtendWith(MockitoExtension.class)
-abstract class BaseProxyTest {
+public final class ActionMockFixtures {
 
-    protected static <T> Stubber doExecuteActionWith(T obj) {
+    private ActionMockFixtures() {
+    }
+
+    public static <T> Stubber doExecuteActionWith(T obj) {
         return doAnswer(invocation -> {
             Action<? super T> action = invocation.getArgument(0);
             action.execute(obj);
@@ -20,7 +20,7 @@ abstract class BaseProxyTest {
         });
     }
 
-    protected static class ArgCapturingAction<T> implements Action<T> {
+    public static class ArgCapturingAction<T> implements Action<T> {
 
         private final AtomicReference<T> arg = new AtomicReference<>();
 

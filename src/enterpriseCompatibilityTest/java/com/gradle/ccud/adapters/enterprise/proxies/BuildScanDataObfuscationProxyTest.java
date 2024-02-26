@@ -5,6 +5,8 @@ import com.gradle.scan.plugin.BuildScanDataObfuscation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Stubber;
 
 import java.net.InetAddress;
@@ -21,7 +23,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
-class BuildScanDataObfuscationProxyTest extends BaseProxyTest {
+@ExtendWith(MockitoExtension.class)
+class BuildScanDataObfuscationProxyTest {
 
     private BuildScanDataObfuscation obfuscation;
     private BuildScanDataObfuscationProxy proxy;

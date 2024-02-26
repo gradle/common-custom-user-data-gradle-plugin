@@ -1,6 +1,8 @@
 package com.gradle.ccud.adapters.enterprise.proxies;
 
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.cuud.adapters.ActionMockFixtures;
+import com.gradle.cuud.adapters.ActionMockFixtures.ArgCapturingAction;
 import com.gradle.scan.plugin.BuildResult;
 import com.gradle.scan.plugin.BuildScanCaptureSettings;
 import com.gradle.scan.plugin.BuildScanDataObfuscation;
@@ -9,7 +11,10 @@ import com.gradle.scan.plugin.PublishedBuildScan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.gradle.cuud.adapters.ActionMockFixtures.doExecuteActionWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,7 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class BuildScanExtensionProxyTest extends BaseProxyTest {
+@ExtendWith(MockitoExtension.class)
+class BuildScanExtensionProxyTest {
 
     private BuildScanExtension extension;
     private BuildScanExtensionProxy proxy;
@@ -190,7 +196,7 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         doExecuteActionWith(buildResult).when(extension).buildFinished(any());
 
         // when
-        ArgCapturingAction<BuildResultProxy> capturer = new ArgCapturingAction<>();
+        ArgCapturingAction<BuildResultProxy> capturer = new ActionMockFixtures.ArgCapturingAction<>();
         proxy.buildFinished(capturer);
 
         // then

@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'jvm-test-suite'
+    id 'java-test-fixtures'
     id 'com.gradle.plugin-publish' version '1.2.1'
     id 'com.github.breadmoirai.github-release' version '2.5.2'
     id 'org.gradle.wrapper-upgrade' version '0.11.4'
@@ -21,6 +22,7 @@ repositories {
 
 dependencies {
     compileOnly('com.gradle:develocity-gradle-plugin:3.17')
+    testFixturesImplementation('org.mockito:mockito-core:4.11.0')
 }
 
 wrapperUpgrade {
@@ -75,6 +77,7 @@ testing {
 
             dependencies {
                 implementation(project())
+                implementation(testFixtures(project()))
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
                 implementation('org.mockito:mockito-core:4.11.0')

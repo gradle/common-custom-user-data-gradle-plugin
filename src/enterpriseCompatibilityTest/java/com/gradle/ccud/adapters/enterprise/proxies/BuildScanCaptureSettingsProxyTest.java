@@ -5,13 +5,16 @@ import com.gradle.scan.plugin.BuildScanCaptureSettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class BuildScanCaptureSettingsProxyTest extends BaseProxyTest {
+@ExtendWith(MockitoExtension.class)
+class BuildScanCaptureSettingsProxyTest {
 
     private BuildScanCaptureSettings capture;
     private BuildScanCaptureSettingsProxy proxy;
