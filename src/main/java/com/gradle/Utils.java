@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-final class Utils {
+public final class Utils {
 
     private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile("^(?:(?:https://|git://)(?:.+:.+@)?|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$");
 
@@ -186,7 +186,7 @@ final class Utils {
         return isGradleNewerThan("4.3");
     }
 
-    static boolean isGradle5OrNewer() {
+    public static boolean isGradle5OrNewer() {
         return isGradleNewerThan("5.0");
     }
 
