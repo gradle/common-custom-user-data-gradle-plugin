@@ -12,6 +12,7 @@ import org.gradle.caching.configuration.BuildCacheConfiguration;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.gradle.Utils.isGradle4OrNewer;
 import static com.gradle.Utils.isGradle5OrNewer;
@@ -86,40 +87,57 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     }
 
     private void applySettingsPlugin(Settings settings) {
-        settings.getPluginManager().withPlugin("com.gradle.enterprise", __ -> applySettingsPlugin(settings.getExtensions().getByName("gradleEnterprise"), providers, settings));
+        AtomicBoolean somePluginAlreadyConfigured = new AtomicBoolean(false);
+        settings.getPluginManager().withPlugin("com.gradle.develocity", __ -> {
+            if (somePluginAlreadyConfigured.compareAndSet(false, true)) {
+                applySettingsPlugin(settings.getExtensions().getByName("develocity"), providers, settings);
+            }
+        });
+        settings.getPluginManager().withPlugin("com.gradle.enterprise", __ -> {
+            if (somePluginAlreadyConfigured.compareAndSet(false, true)) {
+                applySettingsPlugin(settings.getExtensions().getByName("gradleEnterprise"), providers, settings);
+            }
+        });
     }
 
     private void applyProjectPluginGradle5(Project project) {
         ensureRootProject(project);
-        applyProjectPlugin(project, "com.gradle.build-scan", "gradleEnterprise");
+        AtomicBoolean somePluginAlreadyConfigured = new AtomicBoolean(false);
+        project.getPluginManager().withPlugin("com.gradle.develocity", __ -> {
+            if (somePluginAlreadyConfigured.compareAndSet(false, true)) {
+                applyProjectPlugin(project, project.getExtensions().getByName("develocity"));
+            }
+        });
+        project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
+            if (somePluginAlreadyConfigured.compareAndSet(false, true)) {
+                applyProjectPlugin(project, project.getExtensions().getByName("gradleEnterprise"));
+            }
+        });
     }
 
     private void applyProjectPluginGradle4(Project project) {
         ensureRootProject(project);
-        applyProjectPlugin(project, "com.gradle.build-scan", "buildScan");
+        project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> applyProjectPlugin(project, project.getExtensions().getByName("buildScan")));
     }
 
-    private void applyProjectPlugin(Project project, String pluginId, String rootExtensionName) {
-        project.getPluginManager().withPlugin(pluginId, __ -> {
-            CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
+    private void applyProjectPlugin(Project project, Object develocityOrBuildScanExtension) {
+        CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
-            Object extension = project.getExtensions().getByName(rootExtensionName);
-            DevelocityAdapter develocity = DevelocityAdapter.create(extension);
-            customDevelocityConfig.configureDevelocity(develocity);
+        DevelocityAdapter develocity = DevelocityAdapter.create(develocityOrBuildScanExtension);
+        customDevelocityConfig.configureDevelocity(develocity);
 
-            BuildScanAdapter buildScan = develocity.getBuildScan();
-            customDevelocityConfig.configureBuildScanPublishing(buildScan);
-            CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, develocity::getServer, providers, project.getGradle());
-            buildScanEnhancements.apply();
+        BuildScanAdapter buildScan = develocity.getBuildScan();
+        customDevelocityConfig.configureBuildScanPublishing(buildScan);
+        CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, develocity::getServer, providers, project.getGradle());
+        buildScanEnhancements.apply();
 
-            // Build cache configuration cannot be accessed from a project plugin
+        // Build cache configuration cannot be accessed from a project plugin
 
-            // configuration changes applied within this block will override earlier configuration settings,
-            // including those set in the root project's build.gradle(.kts)
-            project.afterEvaluate(___ -> {
-                Overrides overrides = new Overrides(providers);
-                overrides.configureDevelocity(develocity);
-            });
+        // configuration changes applied within this block will override earlier configuration settings,
+        // including those set in the root project's build.gradle(.kts)
+        project.afterEvaluate(___ -> {
+            Overrides overrides = new Overrides(providers);
+            overrides.configureDevelocity(develocity);
         });
     }
 
