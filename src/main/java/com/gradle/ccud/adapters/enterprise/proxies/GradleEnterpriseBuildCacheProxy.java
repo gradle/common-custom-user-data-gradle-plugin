@@ -1,7 +1,7 @@
-package com.gradle.ccud.proxies.enterprise;
+package com.gradle.ccud.adapters.enterprise.proxies;
 
 import com.gradle.CommonCustomUserDataGradlePlugin;
-import com.gradle.ccud.proxies.ProxyType;
+import com.gradle.ccud.adapters.reflection.ProxyType;
 import org.gradle.caching.configuration.BuildCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

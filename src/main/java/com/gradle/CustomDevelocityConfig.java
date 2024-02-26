@@ -1,7 +1,7 @@
 package com.gradle;
 
-import com.gradle.ccud.proxies.enterprise.BuildScanExtensionProxy;
-import com.gradle.ccud.proxies.enterprise.GradleEnterpriseExtensionProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 
 /**

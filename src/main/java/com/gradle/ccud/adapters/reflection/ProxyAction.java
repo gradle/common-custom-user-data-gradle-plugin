@@ -1,4 +1,4 @@
-package com.gradle.ccud.proxies;
+package com.gradle.ccud.adapters.reflection;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

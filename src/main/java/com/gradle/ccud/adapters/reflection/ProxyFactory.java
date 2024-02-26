@@ -1,4 +1,4 @@
-package com.gradle.ccud.proxies;
+package com.gradle.ccud.adapters.reflection;
 
 import org.gradle.api.Action;
 

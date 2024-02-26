@@ -1,13 +1,12 @@
 package com.gradle;
 
-import com.gradle.ccud.proxies.enterprise.BuildResultProxy;
-import com.gradle.ccud.proxies.enterprise.BuildScanExtensionProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildResultProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
 import org.gradle.api.Action;
 import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.AbstractMap;

@@ -1,9 +1,9 @@
 package com.gradle;
 
-import com.gradle.ccud.proxies.ProxyFactory;
-import com.gradle.ccud.proxies.enterprise.BuildScanExtensionProxy;
-import com.gradle.ccud.proxies.enterprise.GradleEnterpriseBuildCacheProxy;
-import com.gradle.ccud.proxies.enterprise.GradleEnterpriseExtensionProxy;
+import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
@@ -11,8 +11,8 @@ import org.gradle.caching.http.HttpBuildCache;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.gradle.ccud.proxies.enterprise.GradleEnterpriseBuildCacheProxy.gradleEnterpriseBuildCacheClass;
-import static com.gradle.ccud.proxies.enterprise.GradleEnterpriseBuildCacheProxy.isGradleEnterpriseBuildCache;
+import static com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy.gradleEnterpriseBuildCacheClass;
+import static com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy.isGradleEnterpriseBuildCache;
 
 /**
  * Provide standardized Develocity configuration. By applying the plugin, these settings will automatically be applied.

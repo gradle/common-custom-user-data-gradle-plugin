@@ -1,4 +1,4 @@
-package com.gradle.ccud.proxies;
+package com.gradle.ccud.adapters.reflection;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

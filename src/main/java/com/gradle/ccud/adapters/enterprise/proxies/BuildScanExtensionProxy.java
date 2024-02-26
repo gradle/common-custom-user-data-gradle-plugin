@@ -1,7 +1,7 @@
-package com.gradle.ccud.proxies.enterprise;
+package com.gradle.ccud.adapters.enterprise.proxies;
 
-import com.gradle.ccud.proxies.ProxyAction;
-import com.gradle.ccud.proxies.ProxyType;
+import com.gradle.ccud.adapters.reflection.ProxyAction;
+import com.gradle.ccud.adapters.reflection.ProxyType;
 import org.gradle.api.Action;
 
 import javax.annotation.Nullable;

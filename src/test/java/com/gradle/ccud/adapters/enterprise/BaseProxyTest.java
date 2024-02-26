@@ -1,4 +1,4 @@
-package com.gradle.ccud.proxies.enterprise;
+package com.gradle.ccud.adapters.enterprise;
 
 import org.gradle.api.Action;
 import org.junit.jupiter.api.extension.ExtendWith;

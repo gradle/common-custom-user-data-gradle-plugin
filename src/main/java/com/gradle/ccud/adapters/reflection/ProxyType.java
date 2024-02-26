@@ -1,4 +1,4 @@
-package com.gradle.ccud.proxies;
+package com.gradle.ccud.adapters.reflection;
 
 /**
  * Marker interface to identify all proxy types.

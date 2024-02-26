@@ -1,6 +1,7 @@
-package com.gradle.ccud.proxies.enterprise;
+package com.gradle.ccud.adapters.enterprise;
 
-import com.gradle.ccud.proxies.ProxyFactory;
+import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.junit.jupiter.api.BeforeEach;
