@@ -1,8 +1,10 @@
 package com.gradle.ccud.adapters;
 
+import com.gradle.ccud.adapters.develocity.DevelocityConfigurationAdapter;
 import com.gradle.ccud.adapters.enterprise.GradleEnterpriseExtensionAdapter;
 import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.develocity.agent.gradle.DevelocityConfiguration;
 import org.gradle.api.Action;
 import org.gradle.caching.configuration.AbstractBuildCache;
 
@@ -29,7 +31,9 @@ public interface DevelocityAdapter {
 //            return new BuildScanExtension_1_X_Adapter(ProxyFactory.createProxy(gradleEnterpriseOrDevelocity, BuildScanExtensionProxy.class));
 //        }
 
-        if (isGradleEnterpriseExtension(gradleEnterpriseOrDevelocity)) {
+        if (isDevelocityConfiguration(gradleEnterpriseOrDevelocity)) {
+            return new DevelocityConfigurationAdapter(ProxyFactory.createProxy(gradleEnterpriseOrDevelocity, DevelocityConfiguration.class));
+        } else if (isGradleEnterpriseExtension(gradleEnterpriseOrDevelocity)) {
             return new GradleEnterpriseExtensionAdapter(ProxyFactory.createProxy(gradleEnterpriseOrDevelocity, GradleEnterpriseExtensionProxy.class));
         }
 
