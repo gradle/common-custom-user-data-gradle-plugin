@@ -1,5 +1,6 @@
 package com.gradle.ccud.adapters.develocity;
 
+import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.develocity.agent.gradle.scan.BuildScanDataObfuscationConfiguration;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.mock;
 class BuildScanDataObfuscationConfigurationAdapterTest {
 
     private BuildScanDataObfuscationConfiguration obfuscation;
-    private BuildScanDataObfuscationConfigurationAdapter adapter;
+    private BuildScanObfuscationAdapter adapter;
 
     @BeforeEach
     void setup() {

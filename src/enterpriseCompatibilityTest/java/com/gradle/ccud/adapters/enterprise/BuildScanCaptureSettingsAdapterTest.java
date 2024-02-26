@@ -1,5 +1,6 @@
 package com.gradle.ccud.adapters.enterprise;
 
+import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
 import com.gradle.ccud.adapters.enterprise.proxies.BuildScanCaptureSettingsProxy;
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.scan.plugin.BuildScanCaptureSettings;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.when;
 class BuildScanCaptureSettingsAdapterTest {
 
     private BuildScanCaptureSettings capture;
-    private BuildScanCaptureSettingsAdapter adapter;
+    private BuildScanCaptureAdapter adapter;
 
     @BeforeEach
     void setup() {

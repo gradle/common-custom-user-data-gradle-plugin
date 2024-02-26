@@ -1,5 +1,6 @@
 package com.gradle.ccud.adapters.develocity;
 
+import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.develocity.agent.gradle.scan.BuildScanCaptureConfiguration;
 import org.gradle.api.provider.Property;
@@ -19,7 +20,7 @@ import static org.mockito.Mockito.when;
 class BuildScanCaptureConfigurationAdapterTest {
 
     private BuildScanCaptureConfiguration capture;
-    private BuildScanCaptureConfigurationAdapter adapter;
+    private BuildScanCaptureAdapter adapter;
 
     @BeforeEach
     void setup() {

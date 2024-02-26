@@ -1,5 +1,6 @@
 package com.gradle.ccud.adapters.enterprise;
 
+import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
 import com.gradle.ccud.adapters.enterprise.proxies.BuildScanDataObfuscationProxy;
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.scan.plugin.BuildScanDataObfuscation;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.mock;
 class BuildScanDataObfuscationAdapterTest {
 
     private BuildScanDataObfuscation obfuscation;
-    private BuildScanDataObfuscationAdapter adapter;
+    private BuildScanObfuscationAdapter adapter;
 
     @BeforeEach
     void setup() {
