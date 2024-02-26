@@ -1,7 +1,7 @@
 package com.gradle;
 
-import com.gradle.ccud.adapters.enterprise.proxies.BuildResultProxy;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
+import com.gradle.ccud.adapters.BuildResultAdapter;
+import com.gradle.ccud.adapters.BuildScanAdapter;
 import org.gradle.api.Action;
 import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
@@ -62,12 +62,14 @@ final class CustomBuildScanEnhancements {
     private static final String SYSTEM_PROP_ECLIPSE_BUILD_ID = "eclipse.buildId";
     private static final String SYSTEM_PROP_IDEA_SYNC_ACTIVE = "idea.sync.active";
 
-    private final BuildScanExtensionProxy buildScan;
+    private final BuildScanAdapter buildScan;
+    private final DevelocityServerProvider serverProvider;
     private final ProviderFactory providers;
     private final Gradle gradle;
 
-    CustomBuildScanEnhancements(BuildScanExtensionProxy buildScan, ProviderFactory providers, Gradle gradle) {
+    CustomBuildScanEnhancements(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, ProviderFactory providers, Gradle gradle) {
         this.buildScan = buildScan;
+        this.serverProvider = serverProvider;
         this.providers = providers;
         this.gradle = gradle;
     }
@@ -101,18 +103,18 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static final class CaptureIdeMetadataAction implements Action<BuildResultProxy> {
+    private static final class CaptureIdeMetadataAction implements Action<BuildResultAdapter> {
 
-        private final BuildScanExtensionProxy buildScan;
+        private final BuildScanAdapter buildScan;
         private final Map<String, Provider<String>> props;
 
-        private CaptureIdeMetadataAction(BuildScanExtensionProxy buildScan, Map<String, Provider<String>> props) {
+        private CaptureIdeMetadataAction(BuildScanAdapter buildScan, Map<String, Provider<String>> props) {
             this.buildScan = buildScan;
             this.props = props;
         }
 
         @Override
-        public void execute(BuildResultProxy buildResult) {
+        public void execute(BuildResultAdapter buildResult) {
             if (props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).isPresent()) {
                 String ideaVendorNameValue = props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).get();
                 if ("Google".equals(ideaVendorNameValue)) {
@@ -166,24 +168,26 @@ final class CustomBuildScanEnhancements {
             Provider<Directory> projectDirectory = providers.provider(() -> gradle.getRootProject().getLayout().getProjectDirectory());
 
             // Process data at execution time not to have a CI environment variable (ie. build number) invalidates the configuration cache
-            buildScan.buildFinished(new CaptureCiMetadataAction(buildScan, providers, projectDirectory));
+            buildScan.buildFinished(new CaptureCiMetadataAction(buildScan, serverProvider, providers, projectDirectory));
         }
     }
 
-    private static final class CaptureCiMetadataAction implements Action<BuildResultProxy> {
+    private static final class CaptureCiMetadataAction implements Action<BuildResultAdapter> {
 
-        private final BuildScanExtensionProxy buildScan;
+        private final BuildScanAdapter buildScan;
+        private final DevelocityServerProvider serverProvider;
         private final ProviderFactory providers;
         private final Provider<Directory> projectDirectory;
 
-        private CaptureCiMetadataAction(BuildScanExtensionProxy buildScan, ProviderFactory providers, Provider<Directory> projectDirectory) {
+        private CaptureCiMetadataAction(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, ProviderFactory providers, Provider<Directory> projectDirectory) {
             this.buildScan = buildScan;
+            this.serverProvider = serverProvider;
             this.providers = providers;
             this.projectDirectory = projectDirectory;
         }
 
         @Override
-        public void execute(BuildResultProxy buildResult) {
+        public void execute(BuildResultAdapter buildResult) {
             if (isJenkins(providers) || isHudson(providers)) {
                 String ciProvider = isJenkins(providers) ? "Jenkins" : "Hudson";
                 String controllerUrlEnvVar = isJenkins(providers) ? "JENKINS_URL" : "HUDSON_URL";
@@ -197,23 +201,23 @@ final class CustomBuildScanEnhancements {
 
                 buildScan.value("CI provider", ciProvider);
                 buildUrl.ifPresent(url ->
-                        buildScan.link(isJenkins(providers) ? "Jenkins build" : "Hudson build", url));
+                    buildScan.link(isJenkins(providers) ? "Jenkins build" : "Hudson build", url));
                 buildNumber.ifPresent(value ->
-                        buildScan.value("CI build number", value));
+                    buildScan.value("CI build number", value));
                 nodeName.ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI node", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI node", value));
                 jobName.ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI job", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
                 stageName.ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI stage", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI stage", value));
                 controllerUrl.ifPresent(value ->
-                        buildScan.value("CI controller", value));
+                    buildScan.value("CI controller", value));
 
                 jobName.ifPresent(j -> buildNumber.ifPresent(b -> {
                     Map<String, String> params = new LinkedHashMap<>();
                     params.put("CI job", j);
                     params.put("CI build number", b);
-                    addSearchLink(buildScan, "CI pipeline", params);
+                    addSearchLink(buildScan, serverProvider, "CI pipeline", params);
                 }));
             }
 
@@ -243,11 +247,11 @@ final class CustomBuildScanEnhancements {
                     }
                     String teamCityBuildTypeId = buildProperties.getProperty("teamcity.buildType.id");
                     if (isNotEmpty(teamCityBuildTypeId)) {
-                        addCustomValueAndSearchLink(buildScan, "CI build config", teamCityBuildTypeId);
+                        addCustomValueAndSearchLink(buildScan, serverProvider, "CI build config", teamCityBuildTypeId);
                     }
                     String teamCityAgentName = buildProperties.getProperty("agent.name");
                     if (isNotEmpty(teamCityAgentName)) {
-                        addCustomValueAndSearchLink(buildScan, "CI agent", teamCityAgentName);
+                        addCustomValueAndSearchLink(buildScan, serverProvider, "CI agent", teamCityAgentName);
                     }
                 }
             }
@@ -255,27 +259,27 @@ final class CustomBuildScanEnhancements {
             if (isCircleCI(providers)) {
                 buildScan.value("CI provider", "CircleCI");
                 envVariable("CIRCLE_BUILD_URL", providers).ifPresent(url ->
-                        buildScan.link("CircleCI build", url));
+                    buildScan.link("CircleCI build", url));
                 envVariable("CIRCLE_BUILD_NUM", providers).ifPresent(value ->
-                        buildScan.value("CI build number", value));
+                    buildScan.value("CI build number", value));
                 envVariable("CIRCLE_JOB", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI job", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
                 envVariable("CIRCLE_WORKFLOW_ID", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI workflow", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI workflow", value));
             }
 
             if (isBamboo(providers)) {
                 buildScan.value("CI provider", "Bamboo");
                 envVariable("bamboo_resultsUrl", providers).ifPresent(url ->
-                        buildScan.link("Bamboo build", url));
+                    buildScan.link("Bamboo build", url));
                 envVariable("bamboo_buildNumber", providers).ifPresent(value ->
-                        buildScan.value("CI build number", value));
+                    buildScan.value("CI build number", value));
                 envVariable("bamboo_planName", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI plan", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI plan", value));
                 envVariable("bamboo_buildPlanName", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI build plan", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI build plan", value));
                 envVariable("bamboo_agentId", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI agent", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI agent", value));
             }
 
             if (isGitHubActions(providers)) {
@@ -287,42 +291,42 @@ final class CustomBuildScanEnhancements {
                     buildScan.link("GitHub Actions build", gitHubUrl.get() + "/" + gitRepository.get() + "/actions/runs/" + gitHubRunId.get());
                 }
                 envVariable("GITHUB_WORKFLOW", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI workflow", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI workflow", value));
                 envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI run", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI run", value));
                 envVariable("GITHUB_HEAD_REF", providers).ifPresent(value ->
-                        buildScan.value("PR branch", value));
+                    buildScan.value("PR branch", value));
             }
 
             if (isGitLab(providers)) {
                 buildScan.value("CI provider", "GitLab");
                 envVariable("CI_JOB_URL", providers).ifPresent(url ->
-                        buildScan.link("GitLab build", url));
+                    buildScan.link("GitLab build", url));
                 envVariable("CI_PIPELINE_URL", providers).ifPresent(url ->
-                        buildScan.link("GitLab pipeline", url));
+                    buildScan.link("GitLab pipeline", url));
                 envVariable("CI_JOB_NAME", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI job", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
                 envVariable("CI_JOB_STAGE", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI stage", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI stage", value));
             }
 
             if (isTravis(providers)) {
                 buildScan.value("CI provider", "Travis");
                 envVariable("TRAVIS_BUILD_WEB_URL", providers).ifPresent(url ->
-                        buildScan.link("Travis build", url));
+                    buildScan.link("Travis build", url));
                 envVariable("TRAVIS_BUILD_NUMBER", providers).ifPresent(value ->
-                        buildScan.value("CI build number", value));
+                    buildScan.value("CI build number", value));
                 envVariable("TRAVIS_JOB_NAME", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI job", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
                 envVariable("TRAVIS_EVENT_TYPE", providers).ifPresent(buildScan::tag);
             }
 
             if (isBitrise(providers)) {
                 buildScan.value("CI provider", "Bitrise");
                 envVariable("BITRISE_BUILD_URL", providers).ifPresent(url ->
-                        buildScan.link("Bitrise build", url));
+                    buildScan.link("Bitrise build", url));
                 envVariable("BITRISE_BUILD_NUMBER", providers).ifPresent(value ->
-                        buildScan.value("CI build number", value));
+                    buildScan.value("CI build number", value));
             }
 
             if (isGoCD(providers)) {
@@ -336,18 +340,18 @@ final class CustomBuildScanEnhancements {
                 if (Stream.of(pipelineName, pipelineNumber, stageName, stageNumber, jobName, goServerUrl).allMatch(Optional::isPresent)) {
                     //noinspection OptionalGetWithoutIsPresent
                     String buildUrl = String.format("%s/tab/build/detail/%s/%s/%s/%s/%s",
-                            goServerUrl.get(), pipelineName.get(),
-                            pipelineNumber.get(), stageName.get(), stageNumber.get(), jobName.get());
+                        goServerUrl.get(), pipelineName.get(),
+                        pipelineNumber.get(), stageName.get(), stageNumber.get(), jobName.get());
                     buildScan.link("GoCD build", buildUrl);
                 } else if (goServerUrl.isPresent()) {
                     buildScan.link("GoCD", goServerUrl.get());
                 }
                 pipelineName.ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI pipeline", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI pipeline", value));
                 jobName.ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI job", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
                 stageName.ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI stage", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI stage", value));
             }
 
             if (isAzurePipelines(providers)) {
@@ -358,31 +362,31 @@ final class CustomBuildScanEnhancements {
                 if (Stream.of(azureServerUrl, azureProject, buildId).allMatch(Optional::isPresent)) {
                     //noinspection OptionalGetWithoutIsPresent
                     String buildUrl = String.format("%s%s/_build/results?buildId=%s",
-                            azureServerUrl.get(), azureProject.get(), buildId.get());
+                        azureServerUrl.get(), azureProject.get(), buildId.get());
                     buildScan.link("Azure Pipelines build", buildUrl);
                 } else if (azureServerUrl.isPresent()) {
                     buildScan.link("Azure Pipelines", azureServerUrl.get());
                 }
 
                 buildId.ifPresent(value ->
-                        buildScan.value("CI build number", value));
+                    buildScan.value("CI build number", value));
             }
 
             if (isBuildkite(providers)) {
                 buildScan.value("CI provider", "Buildkite");
                 envVariable("BUILDKITE_BUILD_URL", providers)
-                        .ifPresent(s -> buildScan.link("Buildkite build", s));
+                    .ifPresent(s -> buildScan.link("Buildkite build", s));
                 envVariable("BUILDKITE_COMMAND", providers).ifPresent(value ->
-                        addCustomValueAndSearchLink(buildScan, "CI command", value));
+                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI command", value));
                 envVariable("BUILDKITE_BUILD_ID", providers).ifPresent(value ->
-                        buildScan.value("CI build ID", value));
+                    buildScan.value("CI build ID", value));
 
                 Optional<String> buildkitePrRepo = envVariable("BUILDKITE_PULL_REQUEST_REPO", providers);
                 Optional<String> buildkitePrNumber = envVariable("BUILDKITE_PULL_REQUEST", providers);
                 if (buildkitePrRepo.isPresent() && buildkitePrNumber.isPresent()) {
                     String prNumber = buildkitePrNumber.get();
                     toWebRepoUri(buildkitePrRepo.get())
-                            .ifPresent(s -> buildScan.link("PR source", s + "/pull/" + prNumber));
+                        .ifPresent(s -> buildScan.link("PR source", s + "/pull/" + prNumber));
                 }
             }
         }
@@ -391,19 +395,21 @@ final class CustomBuildScanEnhancements {
 
     private void captureGitMetadata() {
         // Run expensive computation in background
-        buildScan.background(new CaptureGitMetadataAction(providers));
+        buildScan.background(new CaptureGitMetadataAction(providers, serverProvider));
     }
 
-    private static final class CaptureGitMetadataAction implements Action<BuildScanExtensionProxy> {
+    private static final class CaptureGitMetadataAction implements Action<BuildScanAdapter> {
 
         private final ProviderFactory providers;
+        private final DevelocityServerProvider serverProvider;
 
-        private CaptureGitMetadataAction(ProviderFactory providers) {
+        private CaptureGitMetadataAction(ProviderFactory providers, DevelocityServerProvider serverProvider) {
             this.providers = providers;
+            this.serverProvider = serverProvider;
         }
 
         @Override
-        public void execute(BuildScanExtensionProxy buildScan) {
+        public void execute(BuildScanAdapter buildScan) {
             if (!isGitInstalled()) {
                 return;
             }
@@ -422,7 +428,7 @@ final class CustomBuildScanEnhancements {
             }
             if (isNotEmpty(gitCommitShortId)) {
                 // Ensure server URL is configured by deferring call at execution time
-                buildScan.buildFinished(result -> addCustomValueAndSearchLink(buildScan, "Git commit id", "Git commit id short", gitCommitShortId));
+                buildScan.buildFinished(result -> addCustomValueAndSearchLink(buildScan, serverProvider, "Git commit id", "Git commit id short", gitCommitShortId));
             }
             if (isNotEmpty(gitBranchName)) {
                 buildScan.tag(gitBranchName);
@@ -496,52 +502,42 @@ final class CustomBuildScanEnhancements {
             // two remotes named `origin` and `origin/two`. In this scenario, we would want a remote branch of
             // `origin/two/main` to match to the `origin/two` remote, not to `origin`
             Function<String, Optional<String>> findLongestMatchingRemote = remotes -> Arrays.stream(remotes.split("\\R"))
-                    .filter(remote -> remoteBranch.startsWith(remote + "/"))
-                    .max(Comparator.comparingInt(String::length));
+                .filter(remote -> remoteBranch.startsWith(remote + "/"))
+                .max(Comparator.comparingInt(String::length));
 
             return Optional.ofNullable(execAndGetStdOut("git", "remote"))
-                    .filter(Utils::isNotEmpty)
-                    .flatMap(findLongestMatchingRemote)
-                    .map(remote -> remoteBranch.replaceFirst("^" + remote + "/", ""));
+                .filter(Utils::isNotEmpty)
+                .flatMap(findLongestMatchingRemote)
+                .map(remote -> remoteBranch.replaceFirst("^" + remote + "/", ""));
         }
     }
 
-    private static void addCustomValueAndSearchLink(BuildScanExtensionProxy buildScan, String name, String value) {
+    private static void addCustomValueAndSearchLink(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, String name, String value) {
         buildScan.value(name, value);
-        addSearchLink(buildScan, name, name, value);
+        addSearchLink(buildScan, serverProvider, name, name, value);
     }
 
-    private static void addCustomValueAndSearchLink(BuildScanExtensionProxy buildScan, String linkLabel, String name, String value) {
+    private static void addCustomValueAndSearchLink(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, String linkLabel, String name, String value) {
         buildScan.value(name, value);
-        addSearchLink(buildScan, linkLabel, name, value);
+        addSearchLink(buildScan, serverProvider, linkLabel, name, value);
     }
 
-    private static void addSearchLink(BuildScanExtensionProxy buildScan, String linkLabel, Map<String, String> values) {
+    private static void addSearchLink(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, String linkLabel, Map<String, String> values) {
         // the parameters for a link querying multiple custom values look like:
         // search.names=name1,name2&search.values=value1,value2
         // this reduction groups all names and all values together in order to properly generate the query
         values.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey()) // results in a deterministic order of link parameters
-                .reduce((a, b) -> new AbstractMap.SimpleEntry<>(a.getKey() + "," + b.getKey(), a.getValue() + "," + b.getValue()))
-                .ifPresent(x -> addSearchLink(buildScan, linkLabel, x.getKey(), x.getValue()));
+            .sorted(Map.Entry.comparingByKey()) // results in a deterministic order of link parameters
+            .reduce((a, b) -> new AbstractMap.SimpleEntry<>(a.getKey() + "," + b.getKey(), a.getValue() + "," + b.getValue()))
+            .ifPresent(x -> addSearchLink(buildScan, serverProvider, linkLabel, x.getKey(), x.getValue()));
     }
 
-    private static void addSearchLink(BuildScanExtensionProxy buildScan, String linkLabel, String name, String value) {
+    private static void addSearchLink(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, String linkLabel, String name, String value) {
         String searchParams = "search.names=" + urlEncode(name) + "&search.values=" + urlEncode(value);
-        String server = getServer(buildScan);
+        String server = serverProvider.get();
         if (server != null) {
             String url = appendIfMissing(server, '/') + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
             buildScan.link(linkLabel + " build scans", url);
-        }
-    }
-
-    private static String getServer(BuildScanExtensionProxy buildScan) {
-        try {
-            buildScan.getClass().getMethod("getServer");
-            return buildScan.getServer();
-        } catch (NoSuchMethodException e) {
-            // not available in Gradle 4.x / Build Scan plugin 1.x
-            return null;
         }
     }
 
@@ -567,6 +563,10 @@ final class CustomBuildScanEnhancements {
         } else {
             return providers.provider(() -> overrideProperty.isPresent() ? overrideProperty.get() : mainProperty.getOrNull());
         }
+    }
+
+    @FunctionalInterface
+    interface DevelocityServerProvider extends Supplier<String> {
     }
 
 }

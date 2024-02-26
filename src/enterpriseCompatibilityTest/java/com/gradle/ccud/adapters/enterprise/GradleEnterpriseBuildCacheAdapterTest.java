@@ -1,8 +1,6 @@
 package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildCacheAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +23,7 @@ public class GradleEnterpriseBuildCacheAdapterTest {
     @BeforeEach
     void setup() {
         cache = mock();
-        adapter = new GradleEnterpriseBuildCacheAdapter(ProxyFactory.createProxy(cache, GradleEnterpriseBuildCacheProxy.class));
+        adapter = BuildCacheAdapter.create(cache, GradleEnterpriseBuildCache.class);
     }
 
     @Test

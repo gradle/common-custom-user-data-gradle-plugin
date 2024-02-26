@@ -1,18 +1,14 @@
 package com.gradle;
 
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
-import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy;
-import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.BuildCacheAdapter;
+import com.gradle.ccud.adapters.DevelocityAdapter;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.caching.configuration.AbstractBuildCache;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
 
 import java.time.Duration;
 import java.util.Optional;
-
-import static com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy.gradleEnterpriseBuildCacheClass;
-import static com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy.isGradleEnterpriseBuildCache;
 
 /**
  * Provide standardized Develocity configuration. By applying the plugin, these settings will automatically be applied.
@@ -48,17 +44,12 @@ final class Overrides {
         this.providers = providers;
     }
 
-    void configureDevelocity(GradleEnterpriseExtensionProxy develocity) {
+    void configureDevelocity(DevelocityAdapter develocity) {
         firstAvailableSysPropertyOrEnvVariable(providers, DEVELOCITY_URL, GRADLE_ENTERPRISE_URL).ifPresent(develocity::setServer);
         firstAvailableBooleanSysPropertyOrEnvVariable(providers, DEVELOCITY_ALLOW_UNTRUSTED_SERVER, GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER).ifPresent(develocity::setAllowUntrustedServer);
     }
 
-    void configureDevelocityOnGradle4(BuildScanExtensionProxy buildScan) {
-        firstAvailableSysPropertyOrEnvVariable(providers, DEVELOCITY_URL, GRADLE_ENTERPRISE_URL).ifPresent(buildScan::setServer);
-        firstAvailableBooleanSysPropertyOrEnvVariable(providers, DEVELOCITY_ALLOW_UNTRUSTED_SERVER, GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER).ifPresent(buildScan::setAllowUntrustedServer);
-    }
-
-    void configureBuildCache(BuildCacheConfiguration buildCache) {
+    void configureBuildCache(BuildCacheConfiguration buildCache, Class<? extends AbstractBuildCache> develocityCacheClass) {
         buildCache.local(local -> {
             sysPropertyOrEnvVariable(LOCAL_CACHE_DIRECTORY, providers).ifPresent(local::setDirectory);
             durationSysPropertyOrEnvVariable(LOCAL_CACHE_REMOVE_UNUSED_ENTRIES_AFTER_DAYS, providers).ifPresent(v -> local.setRemoveUnusedEntriesAfterDays((int) v.toDays()));
@@ -76,15 +67,15 @@ final class Overrides {
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
             });
-        } else if (isGradleEnterpriseBuildCache(buildCache.getRemote())) {
-            buildCache.remote(gradleEnterpriseBuildCacheClass(), remote -> {
-                GradleEnterpriseBuildCacheProxy proxy = ProxyFactory.createProxy(remote, GradleEnterpriseBuildCacheProxy.class);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SERVER, providers).ifPresent(proxy::setServer);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(proxy::setPath);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(proxy::setAllowUntrustedServer);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(proxy::setAllowInsecureProtocol);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(proxy::setEnabled);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(proxy::setPush);
+        } else if (develocityCacheClass.isInstance(buildCache.getRemote())) {
+            buildCache.remote(develocityCacheClass, remote -> {
+                BuildCacheAdapter adapter = BuildCacheAdapter.create(remote, develocityCacheClass);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SERVER, providers).ifPresent(adapter::setServer);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(adapter::setPath);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(adapter::setAllowUntrustedServer);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(adapter::setAllowInsecureProtocol);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(adapter::setEnabled);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(adapter::setPush);
             });
         }
     }

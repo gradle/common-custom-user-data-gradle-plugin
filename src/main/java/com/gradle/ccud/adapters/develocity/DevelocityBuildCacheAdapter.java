@@ -75,4 +75,24 @@ public class DevelocityBuildCacheAdapter implements BuildCacheAdapter {
     public void setUseExpectContinue(boolean useExpectContinue) {
         buildCache.setUseExpectContinue(useExpectContinue);
     }
+
+    @Override
+    public boolean isEnabled() {
+        return buildCache.isEnabled();
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        buildCache.setEnabled(enabled);
+    }
+
+    @Override
+    public boolean isPush() {
+        return buildCache.isPush();
+    }
+
+    @Override
+    public void setPush(boolean enabled) {
+        buildCache.setPush(enabled);
+    }
 }

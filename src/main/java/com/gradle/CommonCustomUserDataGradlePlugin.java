@@ -1,8 +1,7 @@
 package com.gradle;
 
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
-import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
+import com.gradle.ccud.adapters.BuildScanAdapter;
+import com.gradle.ccud.adapters.DevelocityAdapter;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
@@ -49,21 +48,21 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
     public static void apply(Object gradleEnterpriseOrDevelocity, ProviderFactory providers, Settings settings) {
         applySettingsPlugin(
-                gradleEnterpriseOrDevelocity,
-                providers,
-                settings
+            gradleEnterpriseOrDevelocity,
+            providers,
+            settings
         );
     }
 
     private static void applySettingsPlugin(Object gradleEnterpriseOrDevelocity, ProviderFactory providers, Settings settings) {
-        GradleEnterpriseExtensionProxy develocity = ProxyFactory.createProxy(gradleEnterpriseOrDevelocity, GradleEnterpriseExtensionProxy.class);
+        DevelocityAdapter develocity = DevelocityAdapter.create(gradleEnterpriseOrDevelocity);
         CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
         customDevelocityConfig.configureDevelocity(develocity);
 
-        BuildScanExtensionProxy buildScan = develocity.getBuildScan();
+        BuildScanAdapter buildScan = develocity.getBuildScan();
         customDevelocityConfig.configureBuildScanPublishing(buildScan);
-        CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, settings.getGradle());
+        CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, develocity::getServer, providers, settings.getGradle());
         buildScanEnhancements.apply();
 
         BuildCacheConfiguration buildCache = settings.getBuildCache();
@@ -74,7 +73,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         Action<Settings> settingsAction = __ -> {
             Overrides overrides = new Overrides(providers);
             overrides.configureDevelocity(develocity);
-            overrides.configureBuildCache(buildCache);
+            overrides.configureBuildCache(buildCache, develocity.getBuildCache());
         };
 
         // it is possible that the settings have already been evaluated by now, in which case
@@ -92,40 +91,25 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
     private void applyProjectPluginGradle5(Project project) {
         ensureRootProject(project);
-        project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
-            CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
-
-            Object extension = project.getExtensions().getByName("gradleEnterprise");
-            GradleEnterpriseExtensionProxy gradleEnterprise = ProxyFactory.createProxy(extension, GradleEnterpriseExtensionProxy.class);
-            customDevelocityConfig.configureDevelocity(gradleEnterprise);
-
-            BuildScanExtensionProxy buildScan = gradleEnterprise.getBuildScan();
-            customDevelocityConfig.configureBuildScanPublishing(buildScan);
-            CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, project.getGradle());
-            buildScanEnhancements.apply();
-
-            // Build cache configuration cannot be accessed from a project plugin
-
-            // configuration changes applied within this block will override earlier configuration settings,
-            // including those set in the root project's build.gradle(.kts)
-            project.afterEvaluate(___ -> {
-                Overrides overrides = new Overrides(providers);
-                overrides.configureDevelocity(gradleEnterprise);
-            });
-        });
+        applyProjectPlugin(project, "com.gradle.build-scan", "gradleEnterprise");
     }
 
     private void applyProjectPluginGradle4(Project project) {
         ensureRootProject(project);
-        project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
+        applyProjectPlugin(project, "com.gradle.build-scan", "buildScan");
+    }
+
+    private void applyProjectPlugin(Project project, String pluginId, String rootExtensionName) {
+        project.getPluginManager().withPlugin(pluginId, __ -> {
             CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
-            Object extension = project.getExtensions().getByName("buildScan");
-            BuildScanExtensionProxy buildScan = ProxyFactory.createProxy(extension, BuildScanExtensionProxy.class);
-            customDevelocityConfig.configureDevelocityOnGradle4(buildScan);
+            Object extension = project.getExtensions().getByName(rootExtensionName);
+            DevelocityAdapter develocity = DevelocityAdapter.create(extension);
+            customDevelocityConfig.configureDevelocity(develocity);
 
-            customDevelocityConfig.configureBuildScanPublishingOnGradle4(buildScan);
-            CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, providers, project.getGradle());
+            BuildScanAdapter buildScan = develocity.getBuildScan();
+            customDevelocityConfig.configureBuildScanPublishing(buildScan);
+            CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, develocity::getServer, providers, project.getGradle());
             buildScanEnhancements.apply();
 
             // Build cache configuration cannot be accessed from a project plugin
@@ -134,7 +118,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
             // including those set in the root project's build.gradle(.kts)
             project.afterEvaluate(___ -> {
                 Overrides overrides = new Overrides(providers);
-                overrides.configureDevelocityOnGradle4(buildScan);
+                overrides.configureDevelocity(develocity);
             });
         });
     }

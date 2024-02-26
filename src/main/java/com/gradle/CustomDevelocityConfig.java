@@ -1,7 +1,7 @@
 package com.gradle;
 
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
-import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
+import com.gradle.ccud.adapters.BuildScanAdapter;
+import com.gradle.ccud.adapters.DevelocityAdapter;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 
 /**
@@ -10,7 +10,7 @@ import org.gradle.caching.configuration.BuildCacheConfiguration;
  */
 final class CustomDevelocityConfig {
 
-    void configureDevelocity(GradleEnterpriseExtensionProxy develocity) {
+    void configureDevelocity(DevelocityAdapter develocity) {
         /* Example of Develocity configuration
 
         develocity.setServer("https://enterprise-samples.gradle.com");
@@ -19,16 +19,7 @@ final class CustomDevelocityConfig {
         */
     }
 
-    void configureDevelocityOnGradle4(BuildScanExtensionProxy buildScan) {
-        /* Example of Develocity configuration
-
-        buildScan.setServer("https://enterprise-samples.gradle.com");
-        buildScan.setAllowUntrustedServer(false);
-
-        */
-    }
-
-    void configureBuildScanPublishing(BuildScanExtensionProxy buildScan) {
+    void configureBuildScanPublishing(BuildScanAdapter buildScan) {
         /* Example of build scan publishing configuration
 
         boolean isCiServer = System.getenv().containsKey("CI");
@@ -36,16 +27,6 @@ final class CustomDevelocityConfig {
         buildScan.publishAlways();
         buildScan.capture(capture -> capture.setTaskInputFiles(true));
         buildScan.setUploadInBackground(!isCiServer);
-
-        */
-    }
-
-    void configureBuildScanPublishingOnGradle4(BuildScanExtensionProxy buildScan) {
-        /* Example of build scan publishing configuration
-
-        boolean isCiServer = System.getenv().containsKey("CI");
-
-        buildScan.publishAlways();
 
         */
     }

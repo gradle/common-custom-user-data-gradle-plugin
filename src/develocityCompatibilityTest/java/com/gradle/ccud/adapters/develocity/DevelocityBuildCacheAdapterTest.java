@@ -23,7 +23,7 @@ public class DevelocityBuildCacheAdapterTest {
     @BeforeEach
     void setup() {
         cache = mock();
-        adapter = new DevelocityBuildCacheAdapter(cache);
+        adapter = BuildCacheAdapter.create(cache, DevelocityBuildCache.class);
     }
 
     @Test
