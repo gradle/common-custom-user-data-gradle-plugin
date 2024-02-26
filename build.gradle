@@ -2,6 +2,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'signing'
+    id 'jvm-test-suite'
     id 'com.gradle.plugin-publish' version '1.2.1'
     id 'com.github.breadmoirai.github-release' version '2.5.2'
     id 'org.gradle.wrapper-upgrade' version '0.11.4'
@@ -16,16 +17,6 @@ description = 'A Gradle plugin to capture common custom user data used for Gradl
 
 repositories {
     gradlePluginPortal()
-}
-
-dependencies {
-    testImplementation(platform('org.junit:junit-bom:5.10.2'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation("org.mockito:mockito-core:4.11.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:4.11.0")
-    testImplementation('com.gradle:gradle-enterprise-gradle-plugin:3.16.2') {
-        because("Verify that reflective proxies and adapters work with actual plugin classes")
-    }
 }
 
 wrapperUpgrade {
@@ -64,8 +55,36 @@ tasks.withType(ValidatePlugins).configureEach {
     enableStricterValidation = true
 }
 
-test {
-    useJUnitPlatform()
+testing {
+    suites {
+        test {
+            useJUnitJupiter()
+
+            dependencies {
+                implementation(platform('org.junit:junit-bom:5.10.2'))
+                implementation('org.junit.jupiter:junit-jupiter')
+            }
+        }
+
+        enterpriseCompatibilityTest(org.gradle.api.plugins.jvm.JvmTestSuite) {
+            useJUnitJupiter()
+
+            dependencies {
+                implementation(project())
+                implementation(platform('org.junit:junit-bom:5.10.2'))
+                implementation('org.junit.jupiter:junit-jupiter')
+                implementation('org.mockito:mockito-core:4.11.0')
+                implementation('org.mockito:mockito-junit-jupiter:4.11.0')
+                implementation('com.gradle:gradle-enterprise-gradle-plugin:3.16.2') {
+                    because("Verify that reflective proxies and adapters work with actual plugin classes")
+                }
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn(testing.suites.enterpriseCompatibilityTest)
 }
 
 /*

@@ -1,9 +1,6 @@
-package com.gradle.ccud.adapters.enterprise;
+package com.gradle.ccud.adapters.enterprise.proxies;
 
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildResultProxy;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
-import com.gradle.ccud.adapters.enterprise.proxies.PublishedBuildScanProxy;
 import com.gradle.scan.plugin.BuildResult;
 import com.gradle.scan.plugin.BuildScanCaptureSettings;
 import com.gradle.scan.plugin.BuildScanDataObfuscation;
