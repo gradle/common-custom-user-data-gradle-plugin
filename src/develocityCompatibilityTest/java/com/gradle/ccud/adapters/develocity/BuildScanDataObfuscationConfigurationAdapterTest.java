@@ -1,7 +1,7 @@
-package com.gradle.ccud.adapters.enterprise.proxies;
+package com.gradle.ccud.adapters.develocity;
 
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
-import com.gradle.scan.plugin.BuildScanDataObfuscation;
+import com.gradle.develocity.agent.gradle.scan.BuildScanDataObfuscationConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,15 +24,15 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class BuildScanDataObfuscationProxyTest {
+class BuildScanDataObfuscationConfigurationAdapterTest {
 
-    private BuildScanDataObfuscation obfuscation;
-    private BuildScanDataObfuscationProxy proxy;
+    private BuildScanDataObfuscationConfiguration obfuscation;
+    private BuildScanDataObfuscationConfigurationAdapter adapter;
 
     @BeforeEach
     void setup() {
         obfuscation = mock();
-        proxy = ProxyFactory.createProxy(obfuscation, BuildScanDataObfuscationProxy.class);
+        adapter = new BuildScanDataObfuscationConfigurationAdapter(ProxyFactory.createProxy(obfuscation, BuildScanDataObfuscationConfiguration.class));
     }
 
     @Test
@@ -43,7 +43,7 @@ class BuildScanDataObfuscationProxyTest {
         captureReturnValue("username", capture::set).when(obfuscation).username(any());
 
         // when
-        proxy.username(it -> it + "_obfuscated");
+        adapter.username(it -> it + "_obfuscated");
 
         // then
         assertEquals("username_obfuscated", capture.get());
@@ -57,7 +57,7 @@ class BuildScanDataObfuscationProxyTest {
         captureReturnValue("hostname", capture::set).when(obfuscation).hostname(any());
 
         // when
-        proxy.hostname(it -> it + "_obfuscated");
+        adapter.hostname(it -> it + "_obfuscated");
 
         // then
         assertEquals("hostname_obfuscated", capture.get());
@@ -71,7 +71,7 @@ class BuildScanDataObfuscationProxyTest {
         captureReturnValue(Arrays.asList(InetAddress.getByName("1.2.3.4"), InetAddress.getByName("5.6.7.8")), capture::set).when(obfuscation).ipAddresses(any());
 
         // when
-        proxy.ipAddresses(it -> it.stream().map(address -> address.toString() + "_obfuscated").collect(Collectors.toList()));
+        adapter.ipAddresses(it -> it.stream().map(address -> address.toString() + "_obfuscated").collect(Collectors.toList()));
 
         // then
         assertEquals(Arrays.asList("/1.2.3.4_obfuscated", "/5.6.7.8_obfuscated"), capture.get());
