@@ -19,6 +19,10 @@ repositories {
     gradlePluginPortal()
 }
 
+dependencies {
+    compileOnly('com.gradle:develocity-gradle-plugin:3.17')
+}
+
 wrapperUpgrade {
     gradle {
         'common-custom-user-data-gradle-plugin' {
