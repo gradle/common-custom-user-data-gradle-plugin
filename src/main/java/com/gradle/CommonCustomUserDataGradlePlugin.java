@@ -63,7 +63,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
         BuildScanAdapter buildScan = develocity.getBuildScan();
         customDevelocityConfig.configureBuildScanPublishing(buildScan);
-        CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, develocity::getServer, providers, settings.getGradle());
+        CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(develocity, providers, settings.getGradle());
         buildScanEnhancements.apply();
 
         BuildCacheConfiguration buildCache = settings.getBuildCache();
@@ -128,7 +128,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
 
         BuildScanAdapter buildScan = develocity.getBuildScan();
         customDevelocityConfig.configureBuildScanPublishing(buildScan);
-        CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(buildScan, develocity::getServer, providers, project.getGradle());
+        CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(develocity, providers, project.getGradle());
         buildScanEnhancements.apply();
 
         // Build cache configuration cannot be accessed from a project plugin

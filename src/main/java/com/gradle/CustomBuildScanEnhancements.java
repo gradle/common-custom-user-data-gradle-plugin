@@ -2,6 +2,7 @@ package com.gradle;
 
 import com.gradle.ccud.adapters.BuildResultAdapter;
 import com.gradle.ccud.adapters.BuildScanAdapter;
+import com.gradle.ccud.adapters.DevelocityAdapter;
 import org.gradle.api.Action;
 import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
@@ -62,14 +63,14 @@ final class CustomBuildScanEnhancements {
     private static final String SYSTEM_PROP_ECLIPSE_BUILD_ID = "eclipse.buildId";
     private static final String SYSTEM_PROP_IDEA_SYNC_ACTIVE = "idea.sync.active";
 
+    private final DevelocityAdapter develocity;
     private final BuildScanAdapter buildScan;
-    private final DevelocityServerProvider serverProvider;
     private final ProviderFactory providers;
     private final Gradle gradle;
 
-    CustomBuildScanEnhancements(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, ProviderFactory providers, Gradle gradle) {
-        this.buildScan = buildScan;
-        this.serverProvider = serverProvider;
+    CustomBuildScanEnhancements(DevelocityAdapter develocity, ProviderFactory providers, Gradle gradle) {
+        this.develocity = develocity;
+        this.buildScan = develocity.getBuildScan();
         this.providers = providers;
         this.gradle = gradle;
     }
@@ -168,20 +169,20 @@ final class CustomBuildScanEnhancements {
             Provider<Directory> projectDirectory = providers.provider(() -> gradle.getRootProject().getLayout().getProjectDirectory());
 
             // Process data at execution time not to have a CI environment variable (ie. build number) invalidates the configuration cache
-            buildScan.buildFinished(new CaptureCiMetadataAction(buildScan, serverProvider, providers, projectDirectory));
+            buildScan.buildFinished(new CaptureCiMetadataAction(develocity, providers, projectDirectory));
         }
     }
 
     private static final class CaptureCiMetadataAction implements Action<BuildResultAdapter> {
 
+        private final DevelocityAdapter develocity;
         private final BuildScanAdapter buildScan;
-        private final DevelocityServerProvider serverProvider;
         private final ProviderFactory providers;
         private final Provider<Directory> projectDirectory;
 
-        private CaptureCiMetadataAction(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, ProviderFactory providers, Provider<Directory> projectDirectory) {
-            this.buildScan = buildScan;
-            this.serverProvider = serverProvider;
+        private CaptureCiMetadataAction(DevelocityAdapter develocity, ProviderFactory providers, Provider<Directory> projectDirectory) {
+            this.develocity = develocity;
+            this.buildScan = develocity.getBuildScan();
             this.providers = providers;
             this.projectDirectory = projectDirectory;
         }
@@ -205,11 +206,11 @@ final class CustomBuildScanEnhancements {
                 buildNumber.ifPresent(value ->
                     buildScan.value("CI build number", value));
                 nodeName.ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI node", value));
+                    addCustomValueAndSearchLink(develocity, "CI node", value));
                 jobName.ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
+                    addCustomValueAndSearchLink(develocity, "CI job", value));
                 stageName.ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI stage", value));
+                    addCustomValueAndSearchLink(develocity, "CI stage", value));
                 controllerUrl.ifPresent(value ->
                     buildScan.value("CI controller", value));
 
@@ -217,7 +218,7 @@ final class CustomBuildScanEnhancements {
                     Map<String, String> params = new LinkedHashMap<>();
                     params.put("CI job", j);
                     params.put("CI build number", b);
-                    addSearchLink(buildScan, serverProvider, "CI pipeline", params);
+                    addSearchLink(develocity, "CI pipeline", params);
                 }));
             }
 
@@ -247,11 +248,11 @@ final class CustomBuildScanEnhancements {
                     }
                     String teamCityBuildTypeId = buildProperties.getProperty("teamcity.buildType.id");
                     if (isNotEmpty(teamCityBuildTypeId)) {
-                        addCustomValueAndSearchLink(buildScan, serverProvider, "CI build config", teamCityBuildTypeId);
+                        addCustomValueAndSearchLink(develocity, "CI build config", teamCityBuildTypeId);
                     }
                     String teamCityAgentName = buildProperties.getProperty("agent.name");
                     if (isNotEmpty(teamCityAgentName)) {
-                        addCustomValueAndSearchLink(buildScan, serverProvider, "CI agent", teamCityAgentName);
+                        addCustomValueAndSearchLink(develocity, "CI agent", teamCityAgentName);
                     }
                 }
             }
@@ -263,9 +264,9 @@ final class CustomBuildScanEnhancements {
                 envVariable("CIRCLE_BUILD_NUM", providers).ifPresent(value ->
                     buildScan.value("CI build number", value));
                 envVariable("CIRCLE_JOB", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
+                    addCustomValueAndSearchLink(develocity, "CI job", value));
                 envVariable("CIRCLE_WORKFLOW_ID", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI workflow", value));
+                    addCustomValueAndSearchLink(develocity, "CI workflow", value));
             }
 
             if (isBamboo(providers)) {
@@ -275,11 +276,11 @@ final class CustomBuildScanEnhancements {
                 envVariable("bamboo_buildNumber", providers).ifPresent(value ->
                     buildScan.value("CI build number", value));
                 envVariable("bamboo_planName", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI plan", value));
+                    addCustomValueAndSearchLink(develocity, "CI plan", value));
                 envVariable("bamboo_buildPlanName", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI build plan", value));
+                    addCustomValueAndSearchLink(develocity, "CI build plan", value));
                 envVariable("bamboo_agentId", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI agent", value));
+                    addCustomValueAndSearchLink(develocity, "CI agent", value));
             }
 
             if (isGitHubActions(providers)) {
@@ -291,9 +292,9 @@ final class CustomBuildScanEnhancements {
                     buildScan.link("GitHub Actions build", gitHubUrl.get() + "/" + gitRepository.get() + "/actions/runs/" + gitHubRunId.get());
                 }
                 envVariable("GITHUB_WORKFLOW", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI workflow", value));
+                    addCustomValueAndSearchLink(develocity, "CI workflow", value));
                 envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI run", value));
+                    addCustomValueAndSearchLink(develocity, "CI run", value));
                 envVariable("GITHUB_HEAD_REF", providers).ifPresent(value ->
                     buildScan.value("PR branch", value));
             }
@@ -305,9 +306,9 @@ final class CustomBuildScanEnhancements {
                 envVariable("CI_PIPELINE_URL", providers).ifPresent(url ->
                     buildScan.link("GitLab pipeline", url));
                 envVariable("CI_JOB_NAME", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
+                    addCustomValueAndSearchLink(develocity, "CI job", value));
                 envVariable("CI_JOB_STAGE", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI stage", value));
+                    addCustomValueAndSearchLink(develocity, "CI stage", value));
             }
 
             if (isTravis(providers)) {
@@ -317,7 +318,7 @@ final class CustomBuildScanEnhancements {
                 envVariable("TRAVIS_BUILD_NUMBER", providers).ifPresent(value ->
                     buildScan.value("CI build number", value));
                 envVariable("TRAVIS_JOB_NAME", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
+                    addCustomValueAndSearchLink(develocity, "CI job", value));
                 envVariable("TRAVIS_EVENT_TYPE", providers).ifPresent(buildScan::tag);
             }
 
@@ -347,11 +348,11 @@ final class CustomBuildScanEnhancements {
                     buildScan.link("GoCD", goServerUrl.get());
                 }
                 pipelineName.ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI pipeline", value));
+                    addCustomValueAndSearchLink(develocity, "CI pipeline", value));
                 jobName.ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI job", value));
+                    addCustomValueAndSearchLink(develocity, "CI job", value));
                 stageName.ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI stage", value));
+                    addCustomValueAndSearchLink(develocity, "CI stage", value));
             }
 
             if (isAzurePipelines(providers)) {
@@ -360,7 +361,6 @@ final class CustomBuildScanEnhancements {
                 Optional<String> azureProject = envVariable("SYSTEM_TEAMPROJECT", providers);
                 Optional<String> buildId = envVariable("BUILD_BUILDID", providers);
                 if (Stream.of(azureServerUrl, azureProject, buildId).allMatch(Optional::isPresent)) {
-                    //noinspection OptionalGetWithoutIsPresent
                     String buildUrl = String.format("%s%s/_build/results?buildId=%s",
                         azureServerUrl.get(), azureProject.get(), buildId.get());
                     buildScan.link("Azure Pipelines build", buildUrl);
@@ -377,7 +377,7 @@ final class CustomBuildScanEnhancements {
                 envVariable("BUILDKITE_BUILD_URL", providers)
                     .ifPresent(s -> buildScan.link("Buildkite build", s));
                 envVariable("BUILDKITE_COMMAND", providers).ifPresent(value ->
-                    addCustomValueAndSearchLink(buildScan, serverProvider, "CI command", value));
+                    addCustomValueAndSearchLink(develocity, "CI command", value));
                 envVariable("BUILDKITE_BUILD_ID", providers).ifPresent(value ->
                     buildScan.value("CI build ID", value));
 
@@ -395,17 +395,17 @@ final class CustomBuildScanEnhancements {
 
     private void captureGitMetadata() {
         // Run expensive computation in background
-        buildScan.background(new CaptureGitMetadataAction(providers, serverProvider));
+        buildScan.background(new CaptureGitMetadataAction(providers, develocity));
     }
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanAdapter> {
 
         private final ProviderFactory providers;
-        private final DevelocityServerProvider serverProvider;
+        private final DevelocityAdapter develocity;
 
-        private CaptureGitMetadataAction(ProviderFactory providers, DevelocityServerProvider serverProvider) {
+        private CaptureGitMetadataAction(ProviderFactory providers, DevelocityAdapter develocity) {
             this.providers = providers;
-            this.serverProvider = serverProvider;
+            this.develocity = develocity;
         }
 
         @Override
@@ -428,7 +428,7 @@ final class CustomBuildScanEnhancements {
             }
             if (isNotEmpty(gitCommitShortId)) {
                 // Ensure server URL is configured by deferring call at execution time
-                buildScan.buildFinished(result -> addCustomValueAndSearchLink(buildScan, serverProvider, "Git commit id", "Git commit id short", gitCommitShortId));
+                buildScan.buildFinished(result -> addCustomValueAndSearchLink(develocity, "Git commit id", "Git commit id short", gitCommitShortId));
             }
             if (isNotEmpty(gitBranchName)) {
                 buildScan.tag(gitBranchName);
@@ -512,32 +512,32 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static void addCustomValueAndSearchLink(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, String name, String value) {
-        buildScan.value(name, value);
-        addSearchLink(buildScan, serverProvider, name, name, value);
+    private static void addCustomValueAndSearchLink(DevelocityAdapter develocity, String name, String value) {
+        develocity.getBuildScan().value(name, value);
+        addSearchLink(develocity, name, name, value);
     }
 
-    private static void addCustomValueAndSearchLink(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, String linkLabel, String name, String value) {
-        buildScan.value(name, value);
-        addSearchLink(buildScan, serverProvider, linkLabel, name, value);
+    private static void addCustomValueAndSearchLink(DevelocityAdapter develocity, String linkLabel, String name, String value) {
+        develocity.getBuildScan().value(name, value);
+        addSearchLink(develocity, linkLabel, name, value);
     }
 
-    private static void addSearchLink(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, String linkLabel, Map<String, String> values) {
+    private static void addSearchLink(DevelocityAdapter develocity, String linkLabel, Map<String, String> values) {
         // the parameters for a link querying multiple custom values look like:
         // search.names=name1,name2&search.values=value1,value2
         // this reduction groups all names and all values together in order to properly generate the query
         values.entrySet().stream()
             .sorted(Map.Entry.comparingByKey()) // results in a deterministic order of link parameters
             .reduce((a, b) -> new AbstractMap.SimpleEntry<>(a.getKey() + "," + b.getKey(), a.getValue() + "," + b.getValue()))
-            .ifPresent(x -> addSearchLink(buildScan, serverProvider, linkLabel, x.getKey(), x.getValue()));
+            .ifPresent(x -> addSearchLink(develocity, linkLabel, x.getKey(), x.getValue()));
     }
 
-    private static void addSearchLink(BuildScanAdapter buildScan, DevelocityServerProvider serverProvider, String linkLabel, String name, String value) {
+    private static void addSearchLink(DevelocityAdapter develocity, String linkLabel, String name, String value) {
         String searchParams = "search.names=" + urlEncode(name) + "&search.values=" + urlEncode(value);
-        String server = serverProvider.get();
+        String server = develocity.getServer();
         if (server != null) {
             String url = appendIfMissing(server, '/') + "scans?" + searchParams + "#selection.buildScanB=" + urlEncode("{SCAN_ID}");
-            buildScan.link(linkLabel + " build scans", url);
+            develocity.getBuildScan().link(linkLabel + " build scans", url);
         }
     }
 
@@ -563,10 +563,6 @@ final class CustomBuildScanEnhancements {
         } else {
             return providers.provider(() -> overrideProperty.isPresent() ? overrideProperty.get() : mainProperty.getOrNull());
         }
-    }
-
-    @FunctionalInterface
-    interface DevelocityServerProvider extends Supplier<String> {
     }
 
 }
