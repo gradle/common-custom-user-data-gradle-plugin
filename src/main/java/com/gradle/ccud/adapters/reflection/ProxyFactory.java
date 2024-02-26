@@ -1,6 +1,7 @@
 package com.gradle.ccud.adapters.reflection;
 
 import org.gradle.api.Action;
+import org.gradle.api.specs.Spec;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -65,6 +66,9 @@ public final class ProxyFactory {
                 Action<Object> objectAction = adaptActionArg(method, (Action<?>) args[0]);
                 return new Object[]{objectAction};
             }
+            if (args.length == 1 && args[0] instanceof Spec) {
+                return new Object[]{adaptSpecArg((Spec<?>) args[0])};
+            }
             if (args.length == 1 && args[0] instanceof Function) {
                 return new Object[]{adaptFunctionArg((Function<?, ?>) args[0])};
             }
@@ -83,6 +87,11 @@ public final class ProxyFactory {
             }
 
             return arg -> action.execute(createLocalProxy(arg));
+        }
+
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        private static Spec<Object> adaptSpecArg(Spec spec) {
+            return arg -> spec.isSatisfiedBy(createLocalProxy(arg));
         }
 
         private static Object readAnnotationValueInConfigurationCacheCompatibleWay(Annotation annotation) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {

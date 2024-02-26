@@ -11,9 +11,15 @@ public final class PropertyMockFixtures {
     }
 
     @SuppressWarnings("unchecked")
+    public static <T> Property<T> mockProperty() {
+        return (Property<T>) mock(Property.class);
+    }
+
+    @SuppressWarnings("unchecked")
     public static <T> Property<T> mockPropertyReturning(T value) {
         Property<T> prop = (Property<T>) mock(Property.class);
         lenient().when(prop.get()).thenReturn(value);
+        lenient().when(prop.getOrNull()).thenReturn(value);
         return prop;
     }
 
