@@ -1,5 +1,6 @@
-package com.gradle.ccud.adapters.enterprise.proxies;
+package com.gradle.ccud.adapters.enterprise;
 
+import com.gradle.ccud.adapters.enterprise.proxies.BuildScanCaptureSettingsProxy;
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.scan.plugin.BuildScanCaptureSettings;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,22 +15,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class BuildScanCaptureSettingsProxyTest {
+class BuildScanCaptureSettingsAdapterTest {
 
     private BuildScanCaptureSettings capture;
-    private BuildScanCaptureSettingsProxy proxy;
+    private BuildScanCaptureSettingsAdapter adapter;
 
     @BeforeEach
     void setup() {
         capture = mock();
-        proxy = ProxyFactory.createProxy(capture, BuildScanCaptureSettingsProxy.class);
+        adapter = new BuildScanCaptureSettingsAdapter(ProxyFactory.createProxy(capture, BuildScanCaptureSettingsProxy.class));
     }
 
     @Test
-    @DisplayName("can capture build logging value using proxy")
+    @DisplayName("can capture build logging value using adapter")
     void testBuildLogging() {
         // when
-        proxy.setBuildLogging(true);
+        adapter.setBuildLogging(true);
 
         // then
         verify(capture).setBuildLogging(true);
@@ -38,14 +39,14 @@ class BuildScanCaptureSettingsProxyTest {
         when(capture.isBuildLogging()).thenReturn(true);
 
         // then
-        assertTrue(proxy.isBuildLogging());
+        assertTrue(adapter.isBuildLogging());
     }
 
     @Test
-    @DisplayName("can capture test logging value using proxy")
+    @DisplayName("can capture test logging value using adapter")
     void testTestLogging() {
         // when
-        proxy.setTestLogging(true);
+        adapter.setTestLogging(true);
 
         // then
         verify(capture).setTestLogging(true);
@@ -54,14 +55,14 @@ class BuildScanCaptureSettingsProxyTest {
         when(capture.isTestLogging()).thenReturn(true);
 
         // then
-        assertTrue(proxy.isTestLogging());
+        assertTrue(adapter.isTestLogging());
     }
 
     @Test
-    @DisplayName("can capture task input files value using proxy")
+    @DisplayName("can capture task input files value using adapter")
     void testTaskInputFiles() {
         // when
-        proxy.setTaskInputFiles(true);
+        adapter.setFileFingerprints(true);
 
         // then
         verify(capture).setTaskInputFiles(true);
@@ -70,7 +71,7 @@ class BuildScanCaptureSettingsProxyTest {
         when(capture.isTaskInputFiles()).thenReturn(true);
 
         // then
-        assertTrue(proxy.isTaskInputFiles());
+        assertTrue(adapter.isFileFingerprints());
     }
 
 }
