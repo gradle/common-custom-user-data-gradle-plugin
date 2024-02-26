@@ -125,4 +125,36 @@ public class DevelocityBuildCacheAdapterTest {
         // then
         assertTrue(adapter.getUseExpectContinue());
     }
+
+    @Test
+    @DisplayName("can enable using adapter")
+    void testEnable() {
+        // when
+        adapter.setEnabled(true);
+
+        // then
+        verify(cache).setEnabled(true);
+
+        // when
+        when(cache.isEnabled()).thenReturn(true);
+
+        // then
+        assertTrue(adapter.isEnabled());
+    }
+
+    @Test
+    @DisplayName("can enable pushing using adapter")
+    void testPush() {
+        // when
+        adapter.setPush(true);
+
+        // then
+        verify(cache).setPush(true);
+
+        // when
+        when(cache.isPush()).thenReturn(true);
+
+        // then
+        assertTrue(adapter.isPush());
+    }
 }
