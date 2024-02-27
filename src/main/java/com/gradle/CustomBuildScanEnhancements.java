@@ -290,7 +290,7 @@ final class CustomBuildScanEnhancements {
             }
 
             if (isGitLab(providers)) {
-                buildScan.value("CI provider", "GitLab CI");
+                buildScan.value("CI provider", "GitLab");
                 envVariable("CI_JOB_URL", providers).ifPresent(url ->
                         buildScan.link("GitLab build", url));
                 envVariable("CI_PIPELINE_URL", providers).ifPresent(url ->
