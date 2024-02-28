@@ -1,0 +1,1 @@
+- [New] Capture `CI provider` custom value.
