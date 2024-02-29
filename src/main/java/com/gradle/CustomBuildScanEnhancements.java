@@ -7,14 +7,18 @@ import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -287,6 +291,8 @@ final class CustomBuildScanEnhancements {
                         addCustomValueAndSearchLink(buildScan, "CI workflow", value));
                 envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
                         addCustomValueAndSearchLink(buildScan, "CI run", value));
+                envVariable("GITHUB_HEAD_REF", providers).ifPresent(value ->
+                        buildScan.value("PR branch", value));
             }
 
             if (isGitLab(providers)) {
@@ -450,9 +456,17 @@ final class CustomBuildScanEnhancements {
 
         private String getGitBranchName(Supplier<String> gitCommand) {
             if (isJenkins(providers) || isHudson(providers)) {
-                Optional<String> branch = envVariable("BRANCH_NAME", providers);
-                if (branch.isPresent()) {
-                    return branch.get();
+                Optional<String> branchName = envVariable("BRANCH_NAME", providers);
+                if (branchName.isPresent()) {
+                    return branchName.get();
+                }
+
+                Optional<String> gitBranch = envVariable("GIT_BRANCH", providers);
+                if (gitBranch.isPresent()) {
+                    Optional<String> localBranch = getLocalBranch(gitBranch.get());
+                    if (localBranch.isPresent()) {
+                        return localBranch.get();
+                    }
                 }
             } else if (isGitLab(providers)) {
                 Optional<String> branch = envVariable("CI_COMMIT_REF_NAME", providers);
@@ -469,10 +483,28 @@ final class CustomBuildScanEnhancements {
                 if (branch.isPresent()) {
                     return branch.get();
                 }
+            } else if (isGitHubActions(providers)) {
+                Optional<String> branch = envVariable("GITHUB_REF_NAME", providers);
+                if (branch.isPresent()) {
+                    return branch.get();
+                }
             }
             return gitCommand.get();
         }
 
+        private static Optional<String> getLocalBranch(String remoteBranch) {
+            // This finds the longest matching remote name. This is because, for example, a local git clone could have
+            // two remotes named `origin` and `origin/two`. In this scenario, we would want a remote branch of
+            // `origin/two/main` to match to the `origin/two` remote, not to `origin`
+            Function<String, Optional<String>> findLongestMatchingRemote = remotes -> Arrays.stream(remotes.split("\\R"))
+                    .filter(remote -> remoteBranch.startsWith(remote + "/"))
+                    .max(Comparator.comparingInt(String::length));
+
+            return Optional.ofNullable(execAndGetStdOut("git", "remote"))
+                    .filter(Utils::isNotEmpty)
+                    .flatMap(findLongestMatchingRemote)
+                    .map(remote -> remoteBranch.replaceFirst("^" + remote + "/", ""));
+        }
     }
 
     private static void addCustomValueAndSearchLink(BuildScanExtension buildScan, String name, String value) {
