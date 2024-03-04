@@ -1,8 +1,6 @@
 package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildCacheAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +23,7 @@ public class GradleEnterpriseBuildCacheAdapterTest {
     @BeforeEach
     void setup() {
         cache = mock();
-        adapter = new GradleEnterpriseBuildCacheAdapter(ProxyFactory.createProxy(cache, GradleEnterpriseBuildCacheProxy.class));
+        adapter = BuildCacheAdapter.create(cache, GradleEnterpriseBuildCache.class);
     }
 
     @Test
@@ -126,5 +124,37 @@ public class GradleEnterpriseBuildCacheAdapterTest {
 
         // then
         assertTrue(adapter.getUseExpectContinue());
+    }
+
+    @Test
+    @DisplayName("can enable using adapter")
+    void testEnable() {
+        // when
+        adapter.setEnabled(true);
+
+        // then
+        verify(cache).setEnabled(true);
+
+        // when
+        when(cache.isEnabled()).thenReturn(true);
+
+        // then
+        assertTrue(adapter.isEnabled());
+    }
+
+    @Test
+    @DisplayName("can enable pushing using adapter")
+    void testPush() {
+        // when
+        adapter.setPush(true);
+
+        // then
+        verify(cache).setPush(true);
+
+        // when
+        when(cache.isPush()).thenReturn(true);
+
+        // then
+        assertTrue(adapter.isPush());
     }
 }
