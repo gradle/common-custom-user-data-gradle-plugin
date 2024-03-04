@@ -29,6 +29,7 @@ repositories {
 sourceSets {
     create("compatibilityApi")
     create("develocityCompatibility")
+    create("enterpriseCompatibility")
 }
 
 dependencies {
@@ -38,8 +39,13 @@ dependencies {
     develocityCompatibilityCompileOnly('com.gradle:develocity-gradle-plugin:3.17-rc-1')
     develocityCompatibilityImplementation(sourceSets.compatibilityApi.output)
 
+    enterpriseCompatibilityCompileOnly(gradleApi())
+    enterpriseCompatibilityImplementation(sourceSets.compatibilityApi.output)
+
     api(sourceSets.compatibilityApi.output)
     api(sourceSets.develocityCompatibility.output)
+    api(sourceSets.enterpriseCompatibility.output)
+
     testFixturesImplementation('org.mockito:mockito-core:4.11.0')
 }
 
@@ -60,6 +66,7 @@ java {
 jar {
     from sourceSets.compatibilityApi.output
     from sourceSets.develocityCompatibility.output
+    from sourceSets.enterpriseCompatibility.output
 }
 
 gradlePlugin {

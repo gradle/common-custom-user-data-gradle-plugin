@@ -1,6 +1,5 @@
 package com.gradle.ccud.adapters.enterprise;
 
-import com.gradle.CommonCustomUserDataGradlePlugin;
 import com.gradle.ccud.adapters.BuildResultAdapter;
 import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
@@ -25,7 +24,7 @@ import java.util.List;
  */
 public class BuildScanExtension_1_X_Adapter implements DevelocityAdapter, BuildScanAdapter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CommonCustomUserDataGradlePlugin.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BuildScanExtension_1_X_Adapter.class);
 
     private final BuildScanExtensionProxy extension;
 
