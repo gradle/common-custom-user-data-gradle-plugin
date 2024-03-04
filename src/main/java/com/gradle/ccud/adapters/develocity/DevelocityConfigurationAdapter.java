@@ -2,6 +2,7 @@ package com.gradle.ccud.adapters.develocity;
 
 import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.DevelocityAdapter;
+import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.develocity.agent.gradle.DevelocityConfiguration;
 import org.gradle.api.Action;
 import org.gradle.caching.configuration.AbstractBuildCache;
@@ -12,9 +13,9 @@ public class DevelocityConfigurationAdapter implements DevelocityAdapter {
     private final DevelocityConfiguration configuration;
     private final BuildScanConfigurationAdapter buildScan;
 
-    public DevelocityConfigurationAdapter(DevelocityConfiguration configuration) {
-        this.configuration = configuration;
-        this.buildScan = new BuildScanConfigurationAdapter(configuration.getBuildScan());
+    public DevelocityConfigurationAdapter(Object configuration) {
+        this.configuration = ProxyFactory.createProxy(configuration, DevelocityConfiguration.class);
+        this.buildScan = new BuildScanConfigurationAdapter(this.configuration.getBuildScan());
     }
 
     @Override

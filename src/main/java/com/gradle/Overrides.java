@@ -10,6 +10,8 @@ import org.gradle.caching.http.HttpBuildCache;
 import java.time.Duration;
 import java.util.Optional;
 
+import static com.gradle.AdapterFactory.createBuildCacheAdapter;
+
 /**
  * Provide standardized Develocity configuration. By applying the plugin, these settings will automatically be applied.
  */
@@ -69,7 +71,7 @@ final class Overrides {
             });
         } else if (develocityCacheClass.isInstance(buildCache.getRemote())) {
             buildCache.remote(develocityCacheClass, remote -> {
-                BuildCacheAdapter adapter = BuildCacheAdapter.create(remote, develocityCacheClass);
+                BuildCacheAdapter adapter = createBuildCacheAdapter(remote, develocityCacheClass);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_SERVER, providers).ifPresent(adapter::setServer);
                 sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(adapter::setPath);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(adapter::setAllowUntrustedServer);

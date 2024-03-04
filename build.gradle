@@ -75,7 +75,6 @@ testing {
             dependencies {
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
-                implementation('com.tngtech.archunit:archunit-junit5:1.2.1')
             }
         }
 

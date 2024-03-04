@@ -3,6 +3,7 @@ package com.gradle.ccud.adapters.enterprise;
 import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.DevelocityAdapter;
 import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
+import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import org.gradle.api.Action;
 import org.gradle.caching.configuration.AbstractBuildCache;
 import org.jetbrains.annotations.Nullable;
@@ -12,9 +13,9 @@ public class GradleEnterpriseExtensionAdapter implements DevelocityAdapter {
     private final GradleEnterpriseExtensionProxy extension;
     private final BuildScanExtensionAdapter buildScan;
 
-    public GradleEnterpriseExtensionAdapter(GradleEnterpriseExtensionProxy extension) {
-        this.extension = extension;
-        this.buildScan = new BuildScanExtensionAdapter(extension.getBuildScan());
+    public GradleEnterpriseExtensionAdapter(Object extension) {
+        this.extension = ProxyFactory.createProxy(extension, GradleEnterpriseExtensionProxy.class);
+        this.buildScan = new BuildScanExtensionAdapter(this.extension.getBuildScan());
     }
 
     @Override

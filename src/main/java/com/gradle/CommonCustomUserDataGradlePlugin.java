@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.gradle.AdapterFactory.createDevelocityAdapter;
 import static com.gradle.Utils.isGradle4OrNewer;
 import static com.gradle.Utils.isGradle5OrNewer;
 import static com.gradle.Utils.isGradle6OrNewer;
@@ -56,7 +57,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     }
 
     private static void applySettingsPlugin(Object gradleEnterpriseOrDevelocity, ProviderFactory providers, Settings settings) {
-        DevelocityAdapter develocity = DevelocityAdapter.create(gradleEnterpriseOrDevelocity);
+        DevelocityAdapter develocity = createDevelocityAdapter(gradleEnterpriseOrDevelocity);
         CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
         customDevelocityConfig.configureDevelocity(develocity);
@@ -123,7 +124,7 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
     private void applyProjectPlugin(Project project, Object develocityOrBuildScanExtension) {
         CustomDevelocityConfig customDevelocityConfig = new CustomDevelocityConfig();
 
-        DevelocityAdapter develocity = DevelocityAdapter.create(develocityOrBuildScanExtension);
+        DevelocityAdapter develocity = createDevelocityAdapter(develocityOrBuildScanExtension);
         customDevelocityConfig.configureDevelocity(develocity);
 
         BuildScanAdapter buildScan = develocity.getBuildScan();

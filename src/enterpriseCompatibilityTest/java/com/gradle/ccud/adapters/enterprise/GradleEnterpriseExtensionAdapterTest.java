@@ -27,7 +27,7 @@ class GradleEnterpriseExtensionAdapterTest {
         buildScan = mock();
         extension = mock();
         when(extension.getBuildScan()).thenReturn(buildScan);
-        adapter = DevelocityAdapter.create(extension);
+        adapter = new GradleEnterpriseExtensionAdapter(extension);
     }
 
     @Test
