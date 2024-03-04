@@ -1,11 +1,9 @@
-package com.gradle.ccud.adapters.reflection;
+package com.gradle.ccud.adapters;
 
 import org.gradle.api.Action;
 import org.gradle.api.specs.Spec;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -35,10 +33,9 @@ public final class ProxyFactory {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
             try {
-                Object result = method.isDefault()
-                    ? invokeDefaultMethod(proxy, method, args)
-                    : invokeDelegateMethod(method, args);
-
+                Method targetMethod = target.getClass().getMethod(method.getName(), convertTypes(method.getParameterTypes(), target.getClass().getClassLoader()));
+                Object[] targetArgs = toTargetArgs(args);
+                Object result = targetMethod.invoke(target, targetArgs);
                 if (result == null || isJdkType(result.getClass())) {
                     return result;
                 }
@@ -48,23 +45,12 @@ public final class ProxyFactory {
             }
         }
 
-        private static Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
-            return MethodHandleLookup.INSTANCE.getMethodHandle(proxy, method).invokeWithArguments(args);
-        }
-
-        private Object invokeDelegateMethod(Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-            Method targetMethod = target.getClass().getMethod(method.getName(), convertTypes(method.getParameterTypes(), target.getClass().getClassLoader()));
-            Object[] targetArgs = toTargetArgs(method, args);
-            return targetMethod.invoke(target, targetArgs);
-        }
-
-        private static Object[] toTargetArgs(Method method, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        private static Object[] toTargetArgs(Object[] args) {
             if (args == null || args.length == 0) {
                 return args;
             }
             if (args.length == 1 && args[0] instanceof Action) {
-                Action<Object> objectAction = adaptActionArg(method, (Action<?>) args[0]);
-                return new Object[]{objectAction};
+                return new Object[]{adaptActionArg((Action<?>) args[0])};
             }
             if (args.length == 1 && args[0] instanceof Spec) {
                 return new Object[]{adaptSpecArg((Spec<?>) args[0])};
@@ -79,23 +65,13 @@ public final class ProxyFactory {
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})
-        private static Action<Object> adaptActionArg(Method method, Action action) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-            Annotation[] paramAnnotations = method.getParameterAnnotations()[0];
-            if (paramAnnotations.length > 0 && paramAnnotations[0] instanceof ProxyAction) {
-                Class<?> proxyType = (Class<?>) readAnnotationValueInConfigurationCacheCompatibleWay(paramAnnotations[0]);
-                return arg -> action.execute(ProxyFactory.createProxy(arg, proxyType));
-            }
-
+        private static Action<Object> adaptActionArg(Action action) {
             return arg -> action.execute(createLocalProxy(arg));
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})
         private static Spec<Object> adaptSpecArg(Spec spec) {
             return arg -> spec.isSatisfiedBy(createLocalProxy(arg));
-        }
-
-        private static Object readAnnotationValueInConfigurationCacheCompatibleWay(Annotation annotation) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-            return annotation.getClass().getMethod("value").invoke(annotation);
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})

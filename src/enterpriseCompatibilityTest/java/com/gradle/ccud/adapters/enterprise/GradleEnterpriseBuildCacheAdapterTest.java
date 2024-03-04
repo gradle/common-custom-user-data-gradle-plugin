@@ -1,7 +1,6 @@
 package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildCacheAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

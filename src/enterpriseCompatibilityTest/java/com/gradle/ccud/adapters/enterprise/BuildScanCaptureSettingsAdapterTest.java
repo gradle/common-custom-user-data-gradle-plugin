@@ -1,7 +1,7 @@
 package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.scan.plugin.BuildScanCaptureSettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -1,7 +1,7 @@
 package com.gradle.ccud.adapters.develocity;
 
 import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.develocity.agent.gradle.scan.BuildScanDataObfuscationConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

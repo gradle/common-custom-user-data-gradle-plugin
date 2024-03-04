@@ -2,7 +2,7 @@ package com.gradle.ccud.adapters.develocity;
 
 import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.DevelocityAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.develocity.agent.gradle.DevelocityConfiguration;
 import org.gradle.api.Action;
 import org.gradle.caching.configuration.AbstractBuildCache;

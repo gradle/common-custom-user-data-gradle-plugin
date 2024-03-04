@@ -3,7 +3,7 @@ package com.gradle.ccud.adapters.enterprise;
 import com.gradle.ccud.adapters.BuildResultAdapter;
 import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.PublishedBuildScanAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.cuud.adapters.ActionMockFixtures;
 import com.gradle.cuud.adapters.ActionMockFixtures.ArgCapturingAction;
 import com.gradle.scan.plugin.BuildResult;

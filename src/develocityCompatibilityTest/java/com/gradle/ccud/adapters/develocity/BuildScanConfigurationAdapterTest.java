@@ -3,7 +3,7 @@ package com.gradle.ccud.adapters.develocity;
 import com.gradle.ccud.adapters.BuildResultAdapter;
 import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.PublishedBuildScanAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.cuud.adapters.ActionMockFixtures.ArgCapturingAction;
 import com.gradle.develocity.agent.gradle.scan.BuildResult;
 import com.gradle.develocity.agent.gradle.scan.BuildScanCaptureConfiguration;

@@ -2,7 +2,7 @@ package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.DevelocityAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import org.gradle.api.Action;
 import org.gradle.caching.configuration.AbstractBuildCache;

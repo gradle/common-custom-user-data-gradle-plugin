@@ -6,7 +6,7 @@ import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
 import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
 import com.gradle.ccud.adapters.DevelocityAdapter;
 import com.gradle.ccud.adapters.PublishedBuildScanAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Action;
 import org.gradle.caching.configuration.AbstractBuildCache;
