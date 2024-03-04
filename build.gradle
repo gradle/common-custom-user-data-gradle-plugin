@@ -18,10 +18,16 @@ description = 'A Gradle plugin to capture common custom user data used for Gradl
 
 repositories {
     gradlePluginPortal()
+    maven {
+        url = uri("https://repo.grdev.net/artifactory/public")
+        content {
+            includeVersion("com.gradle", "develocity-gradle-plugin", "3.17-rc-1")
+        }
+    }
 }
 
 dependencies {
-    compileOnly('com.gradle:develocity-gradle-plugin:3.17')
+    compileOnly('com.gradle:develocity-gradle-plugin:3.17-rc-1')
     testFixturesImplementation('org.mockito:mockito-core:4.11.0')
 }
 
@@ -98,7 +104,7 @@ testing {
                 implementation('org.junit.jupiter:junit-jupiter')
                 implementation('org.mockito:mockito-core:4.11.0')
                 implementation('org.mockito:mockito-junit-jupiter:4.11.0')
-                implementation('com.gradle:develocity-gradle-plugin:3.17') {
+                implementation('com.gradle:develocity-gradle-plugin:3.17-rc-1') {
                     because("Verify that reflective proxies and adapters work with actual plugin classes")
                 }
             }
