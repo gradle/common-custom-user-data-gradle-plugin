@@ -1,9 +1,9 @@
 package com.gradle;
 
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
 import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy;
 import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
+import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
@@ -21,7 +21,11 @@ final class Overrides {
 
     // system properties to override Develocity configuration
     static final String DEVELOCITY_URL = "develocity.url";
+    // deprecated, use 'develocity.url' instead
+    static final String GRADLE_ENTERPRISE_URL = "gradle.enterprise.url";
     static final String DEVELOCITY_ALLOW_UNTRUSTED_SERVER = "develocity.allowUntrustedServer";
+    // deprecated, use 'develocity.allowUntrustedServer' instead
+    static final String GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER = "gradle.enterprise.allowUntrustedServer";
 
     // system properties to override local build cache configuration
     static final String LOCAL_CACHE_DIRECTORY = "gradle.cache.local.directory";
@@ -45,13 +49,13 @@ final class Overrides {
     }
 
     void configureDevelocity(GradleEnterpriseExtensionProxy develocity) {
-        sysPropertyOrEnvVariable(DEVELOCITY_URL, providers).ifPresent(develocity::setServer);
-        booleanSysPropertyOrEnvVariable(DEVELOCITY_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(develocity::setAllowUntrustedServer);
+        firstAvailableSysPropertyOrEnvVariable(providers, DEVELOCITY_URL, GRADLE_ENTERPRISE_URL).ifPresent(develocity::setServer);
+        firstAvailableBooleanSysPropertyOrEnvVariable(providers, DEVELOCITY_ALLOW_UNTRUSTED_SERVER, GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER).ifPresent(develocity::setAllowUntrustedServer);
     }
 
     void configureDevelocityOnGradle4(BuildScanExtensionProxy buildScan) {
-        sysPropertyOrEnvVariable(DEVELOCITY_URL, providers).ifPresent(buildScan::setServer);
-        booleanSysPropertyOrEnvVariable(DEVELOCITY_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(buildScan::setAllowUntrustedServer);
+        firstAvailableSysPropertyOrEnvVariable(providers, DEVELOCITY_URL, GRADLE_ENTERPRISE_URL).ifPresent(buildScan::setServer);
+        firstAvailableBooleanSysPropertyOrEnvVariable(providers, DEVELOCITY_ALLOW_UNTRUSTED_SERVER, GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER).ifPresent(buildScan::setAllowUntrustedServer);
     }
 
     void configureBuildCache(BuildCacheConfiguration buildCache) {
@@ -85,8 +89,30 @@ final class Overrides {
         }
     }
 
+    static Optional<String> firstAvailableSysPropertyOrEnvVariable(ProviderFactory providers, String... sysPropertyNames) {
+        for (String sysPropertyName : sysPropertyNames) {
+            Optional<String> optValue = sysPropertyOrEnvVariable(sysPropertyName, providers);
+            if (optValue.isPresent()) {
+                return optValue;
+            }
+        }
+
+        return Optional.empty();
+    }
+
     static Optional<String> sysPropertyOrEnvVariable(String sysPropertyName, ProviderFactory providers) {
         return Utils.sysPropertyOrEnvVariable(sysPropertyName, toEnvVarName(sysPropertyName), providers);
+    }
+
+    static Optional<Boolean> firstAvailableBooleanSysPropertyOrEnvVariable(ProviderFactory providers, String... sysPropertyNames) {
+        for (String sysPropertyName : sysPropertyNames) {
+            Optional<Boolean> optValue = booleanSysPropertyOrEnvVariable(sysPropertyName, providers);
+            if (optValue.isPresent()) {
+                return optValue;
+            }
+        }
+
+        return Optional.empty();
     }
 
     static Optional<Boolean> booleanSysPropertyOrEnvVariable(String sysPropertyName, ProviderFactory providers) {
