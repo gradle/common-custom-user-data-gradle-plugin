@@ -8,8 +8,8 @@ public class DevelocityBuildCacheAdapter implements BuildCacheAdapter {
 
     private final DevelocityBuildCache buildCache;
 
-    public DevelocityBuildCacheAdapter(DevelocityBuildCache buildCache) {
-        this.buildCache = buildCache;
+    public DevelocityBuildCacheAdapter(Object buildCache) {
+        this.buildCache = (DevelocityBuildCache) buildCache;
     }
 
     @Nullable
