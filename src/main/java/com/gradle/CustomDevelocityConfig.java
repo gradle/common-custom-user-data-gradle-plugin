@@ -63,7 +63,7 @@ final class CustomDevelocityConfig {
 
         // Only permit store operations to the remote build cache for CI builds
         // Local builds will only read from the remote build cache
-        buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
+        buildCache.remote(com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy.gradleEnterpriseBuildCacheClass() ,remote -> {
             remote.setEnabled(true);
             remote.setPush(isCiServer);
         });
