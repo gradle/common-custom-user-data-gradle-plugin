@@ -7,8 +7,6 @@ import com.gradle.ccud.adapters.develocity.DevelocityConfigurationAdapter;
 import com.gradle.ccud.adapters.enterprise.BuildScanExtension_1_X_Adapter;
 import com.gradle.ccud.adapters.enterprise.GradleEnterpriseBuildCacheAdapter;
 import com.gradle.ccud.adapters.enterprise.GradleEnterpriseExtensionAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import org.gradle.caching.configuration.AbstractBuildCache;
 
 import java.util.Arrays;
@@ -74,6 +72,6 @@ class AdapterFactory {
             return new DevelocityBuildCacheAdapter(cache);
         }
 
-        return new GradleEnterpriseBuildCacheAdapter(ProxyFactory.createProxy(cache, GradleEnterpriseBuildCacheProxy.class));
+        return new GradleEnterpriseBuildCacheAdapter(cache);
     }
 }

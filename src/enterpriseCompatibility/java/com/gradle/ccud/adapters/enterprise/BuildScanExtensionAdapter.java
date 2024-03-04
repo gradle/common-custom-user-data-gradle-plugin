@@ -5,7 +5,7 @@ import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
 import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
 import com.gradle.ccud.adapters.PublishedBuildScanAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
+import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Action;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,11 +15,11 @@ import java.util.List;
 
 class BuildScanExtensionAdapter implements BuildScanAdapter {
 
-    private final BuildScanExtensionProxy buildScan;
+    private final BuildScanExtension buildScan;
     private final BuildScanCaptureSettingsAdapter capture;
     private final BuildScanDataObfuscationAdapter obfuscation;
 
-    BuildScanExtensionAdapter(BuildScanExtensionProxy buildScan) {
+    BuildScanExtensionAdapter(BuildScanExtension buildScan) {
         this.buildScan = buildScan;
         this.capture = new BuildScanCaptureSettingsAdapter(buildScan.getCapture());
         this.obfuscation = new BuildScanDataObfuscationAdapter(buildScan.getObfuscation());

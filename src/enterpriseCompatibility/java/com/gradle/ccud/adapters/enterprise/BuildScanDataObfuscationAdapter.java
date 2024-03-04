@@ -1,7 +1,7 @@
 package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanDataObfuscationProxy;
+import com.gradle.scan.plugin.BuildScanDataObfuscation;
 
 import java.net.InetAddress;
 import java.util.List;
@@ -9,9 +9,9 @@ import java.util.function.Function;
 
 final class BuildScanDataObfuscationAdapter implements BuildScanObfuscationAdapter {
 
-    private final BuildScanDataObfuscationProxy obfuscation;
+    private final BuildScanDataObfuscation obfuscation;
 
-    BuildScanDataObfuscationAdapter(BuildScanDataObfuscationProxy obfuscation) {
+    BuildScanDataObfuscationAdapter(BuildScanDataObfuscation obfuscation) {
         this.obfuscation = obfuscation;
     }
 

@@ -1,15 +1,15 @@
 package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildCacheAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy;
+import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import org.jetbrains.annotations.Nullable;
 
 public class GradleEnterpriseBuildCacheAdapter implements BuildCacheAdapter {
 
-    private final GradleEnterpriseBuildCacheProxy buildCache;
+    private final GradleEnterpriseBuildCache buildCache;
 
-    public GradleEnterpriseBuildCacheAdapter(GradleEnterpriseBuildCacheProxy buildCache) {
-        this.buildCache = buildCache;
+    public GradleEnterpriseBuildCacheAdapter(Object buildCache) {
+        this.buildCache = (GradleEnterpriseBuildCache) buildCache;
     }
 
     @Nullable

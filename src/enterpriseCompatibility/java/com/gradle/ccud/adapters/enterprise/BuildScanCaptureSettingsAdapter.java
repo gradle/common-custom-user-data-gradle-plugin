@@ -1,13 +1,13 @@
 package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanCaptureSettingsProxy;
+import com.gradle.scan.plugin.BuildScanCaptureSettings;
 
 class BuildScanCaptureSettingsAdapter implements BuildScanCaptureAdapter {
 
-    private final BuildScanCaptureSettingsProxy capture;
+    private final BuildScanCaptureSettings capture;
 
-    BuildScanCaptureSettingsAdapter(BuildScanCaptureSettingsProxy capture) {
+    BuildScanCaptureSettingsAdapter(BuildScanCaptureSettings capture) {
         this.capture = capture;
     }
 

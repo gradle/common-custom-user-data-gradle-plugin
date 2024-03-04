@@ -6,8 +6,8 @@ import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
 import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
 import com.gradle.ccud.adapters.DevelocityAdapter;
 import com.gradle.ccud.adapters.PublishedBuildScanAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Action;
 import org.gradle.caching.configuration.AbstractBuildCache;
 import org.jetbrains.annotations.Nullable;
@@ -26,10 +26,10 @@ public class BuildScanExtension_1_X_Adapter implements DevelocityAdapter, BuildS
 
     private static final Logger LOG = LoggerFactory.getLogger(BuildScanExtension_1_X_Adapter.class);
 
-    private final BuildScanExtensionProxy extension;
+    private final BuildScanExtension extension;
 
     public BuildScanExtension_1_X_Adapter(Object extension) {
-        this.extension = ProxyFactory.createProxy(extension, BuildScanExtensionProxy.class);
+        this.extension = ProxyFactory.createProxy(extension, BuildScanExtension.class);
     }
 
     @Override
