@@ -44,8 +44,8 @@ dependencies {
     enterpriseCompatibilityImplementation(sourceSets.compatibilityApi.output)
 
     api(sourceSets.compatibilityApi.output)
-    api(sourceSets.develocityCompatibility.output)
-    api(sourceSets.enterpriseCompatibility.output)
+    implementation(sourceSets.develocityCompatibility.output)
+    implementation(sourceSets.enterpriseCompatibility.output)
 
     testFixturesImplementation('org.mockito:mockito-core:4.11.0')
 }
@@ -108,6 +108,7 @@ testing {
 
             dependencies {
                 implementation(project())
+                implementation(sourceSets.enterpriseCompatibility.output)
                 implementation(testFixtures(project()))
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
@@ -124,6 +125,7 @@ testing {
 
             dependencies {
                 implementation(project())
+                implementation(sourceSets.develocityCompatibility.output)
                 implementation(testFixtures(project()))
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
