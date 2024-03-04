@@ -1,10 +1,14 @@
-package com.gradle.ccud.adapters.enterprise.proxies;
+package com.gradle.ccud.adapters.enterprise;
 
+import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildScanDataObfuscationProxy;
 import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.scan.plugin.BuildScanDataObfuscation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Stubber;
 
 import java.net.InetAddress;
@@ -21,54 +25,55 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
-class BuildScanDataObfuscationProxyTest extends BaseProxyTest {
+@ExtendWith(MockitoExtension.class)
+class BuildScanDataObfuscationAdapterTest {
 
     private BuildScanDataObfuscation obfuscation;
-    private BuildScanDataObfuscationProxy proxy;
+    private BuildScanObfuscationAdapter adapter;
 
     @BeforeEach
     void setup() {
         obfuscation = mock();
-        proxy = ProxyFactory.createProxy(obfuscation, BuildScanDataObfuscationProxy.class);
+        adapter = new BuildScanDataObfuscationAdapter(ProxyFactory.createProxy(obfuscation, BuildScanDataObfuscationProxy.class));
     }
 
     @Test
-    @DisplayName("can obfuscate username using proxy")
+    @DisplayName("can obfuscate username using adapter")
     void testUsername() {
         // given
         AtomicReference<String> capture = new AtomicReference<>();
         captureReturnValue("username", capture::set).when(obfuscation).username(any());
 
         // when
-        proxy.username(it -> it + "_obfuscated");
+        adapter.username(it -> it + "_obfuscated");
 
         // then
         assertEquals("username_obfuscated", capture.get());
     }
 
     @Test
-    @DisplayName("can obfuscate hostname using proxy")
+    @DisplayName("can obfuscate hostname using adapter")
     void testHostname() {
         // given
         AtomicReference<String> capture = new AtomicReference<>();
         captureReturnValue("hostname", capture::set).when(obfuscation).hostname(any());
 
         // when
-        proxy.hostname(it -> it + "_obfuscated");
+        adapter.hostname(it -> it + "_obfuscated");
 
         // then
         assertEquals("hostname_obfuscated", capture.get());
     }
 
     @Test
-    @DisplayName("can obfuscate IP addresses using proxy")
+    @DisplayName("can obfuscate IP addresses using adapter")
     void testIpAddresses() throws UnknownHostException {
         // given
         AtomicReference<List<String>> capture = new AtomicReference<>();
         captureReturnValue(Arrays.asList(InetAddress.getByName("1.2.3.4"), InetAddress.getByName("5.6.7.8")), capture::set).when(obfuscation).ipAddresses(any());
 
         // when
-        proxy.ipAddresses(it -> it.stream().map(address -> address.toString() + "_obfuscated").collect(Collectors.toList()));
+        adapter.ipAddresses(it -> it.stream().map(address -> address.toString() + "_obfuscated").collect(Collectors.toList()));
 
         // then
         assertEquals(Arrays.asList("/1.2.3.4_obfuscated", "/5.6.7.8_obfuscated"), capture.get());

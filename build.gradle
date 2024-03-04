@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'jvm-test-suite'
+    id 'java-test-fixtures'
     id 'com.gradle.plugin-publish' version '1.2.1'
     id 'com.github.breadmoirai.github-release' version '2.5.2'
     id 'org.gradle.wrapper-upgrade' version '0.11.4'
@@ -17,6 +18,17 @@ description = 'A Gradle plugin to capture common custom user data used for Gradl
 
 repositories {
     gradlePluginPortal()
+    maven {
+        url = uri("https://repo.grdev.net/artifactory/public")
+        content {
+            includeVersion("com.gradle", "develocity-gradle-plugin", "3.17-rc-1")
+        }
+    }
+}
+
+dependencies {
+    compileOnly('com.gradle:develocity-gradle-plugin:3.17-rc-1')
+    testFixturesImplementation('org.mockito:mockito-core:4.11.0')
 }
 
 wrapperUpgrade {
@@ -71,6 +83,7 @@ testing {
 
             dependencies {
                 implementation(project())
+                implementation(testFixtures(project()))
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
                 implementation('org.mockito:mockito-core:4.11.0')
@@ -80,11 +93,28 @@ testing {
                 }
             }
         }
+
+        develocityCompatibilityTest(org.gradle.api.plugins.jvm.JvmTestSuite) {
+            useJUnitJupiter()
+
+            dependencies {
+                implementation(project())
+                implementation(testFixtures(project()))
+                implementation(platform('org.junit:junit-bom:5.10.2'))
+                implementation('org.junit.jupiter:junit-jupiter')
+                implementation('org.mockito:mockito-core:4.11.0')
+                implementation('org.mockito:mockito-junit-jupiter:4.11.0')
+                implementation('com.gradle:develocity-gradle-plugin:3.17-rc-1') {
+                    because("Verify that reflective proxies and adapters work with actual plugin classes")
+                }
+            }
+        }
     }
 }
 
 tasks.named('check') {
     dependsOn(testing.suites.enterpriseCompatibilityTest)
+    dependsOn(testing.suites.develocityCompatibilityTest)
 }
 
 /*
