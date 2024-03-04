@@ -26,7 +26,14 @@ repositories {
     }
 }
 
+sourceSets {
+    create("compatibilityApi")
+}
+
 dependencies {
+    compatibilityApiCompileOnly(gradleApi())
+
+    api(sourceSets.compatibilityApi.output)
     compileOnly('com.gradle:develocity-gradle-plugin:3.17-rc-1')
     testFixturesImplementation('org.mockito:mockito-core:4.11.0')
 }
@@ -43,6 +50,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(8)
     }
+}
+
+jar {
+    from sourceSets.compatibilityApi.output
 }
 
 gradlePlugin {
