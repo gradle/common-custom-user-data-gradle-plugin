@@ -2,6 +2,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'signing'
+    id 'jvm-test-suite'
     id 'com.gradle.plugin-publish' version '1.2.1'
     id 'com.github.breadmoirai.github-release' version '2.5.2'
     id 'org.gradle.wrapper-upgrade' version '0.11.4'
@@ -12,16 +13,10 @@ def releaseNotes = releaseNotes()
 
 group = 'com.gradle'
 version = releaseVersion.get()
-description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Gradle Enterprise'
+description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Develocity'
 
 repositories {
     gradlePluginPortal()
-}
-
-dependencies {
-    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.16.2'
-    testImplementation(platform('org.junit:junit-bom:5.10.2'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
 }
 
 wrapperUpgrade {
@@ -47,10 +42,10 @@ gradlePlugin {
     plugins {
         commonCustomUserData {
             id = 'com.gradle.common-custom-user-data-gradle-plugin'
-            displayName = 'Gradle Enterprise Common Custom User Data Gradle Plugin'
+            displayName = 'Develocity Common Custom User Data Gradle Plugin'
             description = releaseNotes.get()
             implementationClass = 'com.gradle.CommonCustomUserDataGradlePlugin'
-            tags.addAll('android', 'java', 'gradle enterprise')
+            tags.addAll('android', 'java', 'develocity')
         }
     }
 }
@@ -60,8 +55,36 @@ tasks.withType(ValidatePlugins).configureEach {
     enableStricterValidation = true
 }
 
-test {
-    useJUnitPlatform()
+testing {
+    suites {
+        test {
+            useJUnitJupiter()
+
+            dependencies {
+                implementation(platform('org.junit:junit-bom:5.10.2'))
+                implementation('org.junit.jupiter:junit-jupiter')
+            }
+        }
+
+        enterpriseCompatibilityTest(org.gradle.api.plugins.jvm.JvmTestSuite) {
+            useJUnitJupiter()
+
+            dependencies {
+                implementation(project())
+                implementation(platform('org.junit:junit-bom:5.10.2'))
+                implementation('org.junit.jupiter:junit-jupiter')
+                implementation('org.mockito:mockito-core:4.11.0')
+                implementation('org.mockito:mockito-junit-jupiter:4.11.0')
+                implementation('com.gradle:gradle-enterprise-gradle-plugin:3.16.2') {
+                    because("Verify that reflective proxies and adapters work with actual plugin classes")
+                }
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn(testing.suites.enterpriseCompatibilityTest)
 }
 
 /*

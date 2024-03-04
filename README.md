@@ -70,10 +70,10 @@ to modify the build scripts. For example, to disable the local build cache when 
 
 ### Develocity settings
 
-| Develocity API                        | System property                        | Environment variable                   |
-|:--------------------------------------|:---------------------------------------|:---------------------------------------|
-| gradleEnterprise.server               | gradle.enterprise.url                  | GRADLE_ENTERPRISE_URL                  |
-| gradleEnterprise.allowUntrustedServer | gradle.enterprise.allowUntrustedServer | GRADLE_ENTERPRISE_ALLOWUNTRUSTEDSERVER |
+| Develocity API                  | System property                 | Environment variable            |
+|:--------------------------------|:--------------------------------|:--------------------------------|
+| develocity.server               | develocity.url                  | DEVELOCITY_URL                  |
+| develocity.allowUntrustedServer | develocity.allowUntrustedServer | DEVELOCITY_ALLOWUNTRUSTEDSERVER |
 
 ### Local Build Cache settings
 

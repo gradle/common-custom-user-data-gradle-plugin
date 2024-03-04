@@ -1,8 +1,9 @@
 package com.gradle;
 
-import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
-import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
-import com.gradle.scan.plugin.BuildScanExtension;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
+import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 import org.gradle.caching.http.HttpBuildCache;
@@ -10,13 +11,20 @@ import org.gradle.caching.http.HttpBuildCache;
 import java.time.Duration;
 import java.util.Optional;
 
+import static com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy.gradleEnterpriseBuildCacheClass;
+import static com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy.isGradleEnterpriseBuildCache;
+
 /**
- * Provide standardized Gradle Enterprise configuration. By applying the plugin, these settings will automatically be applied.
+ * Provide standardized Develocity configuration. By applying the plugin, these settings will automatically be applied.
  */
 final class Overrides {
 
-    // system properties to override Gradle Enterprise configuration
+    // system properties to override Develocity configuration
+    static final String DEVELOCITY_URL = "develocity.url";
+    // deprecated, use 'develocity.url' instead
     static final String GRADLE_ENTERPRISE_URL = "gradle.enterprise.url";
+    static final String DEVELOCITY_ALLOW_UNTRUSTED_SERVER = "develocity.allowUntrustedServer";
+    // deprecated, use 'develocity.allowUntrustedServer' instead
     static final String GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER = "gradle.enterprise.allowUntrustedServer";
 
     // system properties to override local build cache configuration
@@ -40,14 +48,14 @@ final class Overrides {
         this.providers = providers;
     }
 
-    void configureGradleEnterprise(GradleEnterpriseExtension gradleEnterprise) {
-        sysPropertyOrEnvVariable(GRADLE_ENTERPRISE_URL, providers).ifPresent(gradleEnterprise::setServer);
-        booleanSysPropertyOrEnvVariable(GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(gradleEnterprise::setAllowUntrustedServer);
+    void configureDevelocity(GradleEnterpriseExtensionProxy develocity) {
+        firstAvailableSysPropertyOrEnvVariable(providers, DEVELOCITY_URL, GRADLE_ENTERPRISE_URL).ifPresent(develocity::setServer);
+        firstAvailableBooleanSysPropertyOrEnvVariable(providers, DEVELOCITY_ALLOW_UNTRUSTED_SERVER, GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER).ifPresent(develocity::setAllowUntrustedServer);
     }
 
-    void configureGradleEnterpriseOnGradle4(BuildScanExtension buildScan) {
-        sysPropertyOrEnvVariable(GRADLE_ENTERPRISE_URL, providers).ifPresent(buildScan::setServer);
-        booleanSysPropertyOrEnvVariable(GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(buildScan::setAllowUntrustedServer);
+    void configureDevelocityOnGradle4(BuildScanExtensionProxy buildScan) {
+        firstAvailableSysPropertyOrEnvVariable(providers, DEVELOCITY_URL, GRADLE_ENTERPRISE_URL).ifPresent(buildScan::setServer);
+        firstAvailableBooleanSysPropertyOrEnvVariable(providers, DEVELOCITY_ALLOW_UNTRUSTED_SERVER, GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER).ifPresent(buildScan::setAllowUntrustedServer);
     }
 
     void configureBuildCache(BuildCacheConfiguration buildCache) {
@@ -58,7 +66,7 @@ final class Overrides {
             booleanSysPropertyOrEnvVariable(LOCAL_CACHE_PUSH, providers).ifPresent(local::setPush);
         });
 
-        // Only touch remote build cache configuration if it is already present and of type HttpBuildCache or GradleEnterpriseBuildCache
+        // Only touch remote build cache configuration if it is already present and of type HttpBuildCache or DevelocityBuildCache
         // Do nothing in case of another build cache type like AWS S3 being used
         if (buildCache.getRemote() instanceof HttpBuildCache) {
             buildCache.remote(HttpBuildCache.class, remote -> {
@@ -68,20 +76,43 @@ final class Overrides {
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
             });
-        } else if (buildCache.getRemote() instanceof GradleEnterpriseBuildCache) {
-            buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SERVER, providers).ifPresent(remote::setServer);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(remote::setAllowInsecureProtocol);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
+        } else if (isGradleEnterpriseBuildCache(buildCache.getRemote())) {
+            buildCache.remote(gradleEnterpriseBuildCacheClass(), remote -> {
+                GradleEnterpriseBuildCacheProxy proxy = ProxyFactory.createProxy(remote, GradleEnterpriseBuildCacheProxy.class);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_SERVER, providers).ifPresent(proxy::setServer);
+                sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(proxy::setPath);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(proxy::setAllowUntrustedServer);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(proxy::setAllowInsecureProtocol);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(proxy::setEnabled);
+                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(proxy::setPush);
             });
         }
     }
 
+    static Optional<String> firstAvailableSysPropertyOrEnvVariable(ProviderFactory providers, String... sysPropertyNames) {
+        for (String sysPropertyName : sysPropertyNames) {
+            Optional<String> optValue = sysPropertyOrEnvVariable(sysPropertyName, providers);
+            if (optValue.isPresent()) {
+                return optValue;
+            }
+        }
+
+        return Optional.empty();
+    }
+
     static Optional<String> sysPropertyOrEnvVariable(String sysPropertyName, ProviderFactory providers) {
         return Utils.sysPropertyOrEnvVariable(sysPropertyName, toEnvVarName(sysPropertyName), providers);
+    }
+
+    static Optional<Boolean> firstAvailableBooleanSysPropertyOrEnvVariable(ProviderFactory providers, String... sysPropertyNames) {
+        for (String sysPropertyName : sysPropertyNames) {
+            Optional<Boolean> optValue = booleanSysPropertyOrEnvVariable(sysPropertyName, providers);
+            if (optValue.isPresent()) {
+                return optValue;
+            }
+        }
+
+        return Optional.empty();
     }
 
     static Optional<Boolean> booleanSysPropertyOrEnvVariable(String sysPropertyName, ProviderFactory providers) {

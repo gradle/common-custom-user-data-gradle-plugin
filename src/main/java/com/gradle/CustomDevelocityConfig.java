@@ -1,26 +1,26 @@
 package com.gradle;
 
-import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
-import com.gradle.scan.plugin.BuildScanExtension;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseExtensionProxy;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 
 /**
- * Provide standardized Gradle Enterprise configuration.
+ * Provide standardized Develocity configuration.
  * By applying the plugin, these settings will automatically be applied.
  */
-final class CustomGradleEnterpriseConfig {
+final class CustomDevelocityConfig {
 
-    void configureGradleEnterprise(GradleEnterpriseExtension gradleEnterprise) {
-        /* Example of Gradle Enterprise configuration
+    void configureDevelocity(GradleEnterpriseExtensionProxy develocity) {
+        /* Example of Develocity configuration
 
-        gradleEnterprise.setServer("https://enterprise-samples.gradle.com");
-        gradleEnterprise.setAllowUntrustedServer(false);
+        develocity.setServer("https://enterprise-samples.gradle.com");
+        develocity.setAllowUntrustedServer(false);
 
         */
     }
 
-    void configureGradleEnterpriseOnGradle4(BuildScanExtension buildScan) {
-        /* Example of Gradle Enterprise configuration
+    void configureDevelocityOnGradle4(BuildScanExtensionProxy buildScan) {
+        /* Example of Develocity configuration
 
         buildScan.setServer("https://enterprise-samples.gradle.com");
         buildScan.setAllowUntrustedServer(false);
@@ -28,7 +28,7 @@ final class CustomGradleEnterpriseConfig {
         */
     }
 
-    void configureBuildScanPublishing(BuildScanExtension buildScan) {
+    void configureBuildScanPublishing(BuildScanExtensionProxy buildScan) {
         /* Example of build scan publishing configuration
 
         boolean isCiServer = System.getenv().containsKey("CI");
@@ -40,7 +40,7 @@ final class CustomGradleEnterpriseConfig {
         */
     }
 
-    void configureBuildScanPublishingOnGradle4(BuildScanExtension buildScan) {
+    void configureBuildScanPublishingOnGradle4(BuildScanExtensionProxy buildScan) {
         /* Example of build scan publishing configuration
 
         boolean isCiServer = System.getenv().containsKey("CI");
@@ -63,7 +63,7 @@ final class CustomGradleEnterpriseConfig {
 
         // Only permit store operations to the remote build cache for CI builds
         // Local builds will only read from the remote build cache
-        buildCache.remote(GradleEnterpriseBuildCache.class, remote -> {
+        buildCache.remote(com.gradle.ccud.adapters.enterprise.proxies.GradleEnterpriseBuildCacheProxy.gradleEnterpriseBuildCacheClass() ,remote -> {
             remote.setEnabled(true);
             remote.setPush(isCiServer);
         });

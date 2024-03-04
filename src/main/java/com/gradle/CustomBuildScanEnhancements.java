@@ -1,13 +1,12 @@
 package com.gradle;
 
-import com.gradle.scan.plugin.BuildResult;
-import com.gradle.scan.plugin.BuildScanExtension;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildResultProxy;
+import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
 import org.gradle.api.Action;
 import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.AbstractMap;
@@ -63,11 +62,11 @@ final class CustomBuildScanEnhancements {
     private static final String SYSTEM_PROP_ECLIPSE_BUILD_ID = "eclipse.buildId";
     private static final String SYSTEM_PROP_IDEA_SYNC_ACTIVE = "idea.sync.active";
 
-    private final BuildScanExtension buildScan;
+    private final BuildScanExtensionProxy buildScan;
     private final ProviderFactory providers;
     private final Gradle gradle;
 
-    CustomBuildScanEnhancements(BuildScanExtension buildScan, ProviderFactory providers, Gradle gradle) {
+    CustomBuildScanEnhancements(BuildScanExtensionProxy buildScan, ProviderFactory providers, Gradle gradle) {
         this.buildScan = buildScan;
         this.providers = providers;
         this.gradle = gradle;
@@ -102,18 +101,18 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static final class CaptureIdeMetadataAction implements Action<BuildResult> {
+    private static final class CaptureIdeMetadataAction implements Action<BuildResultProxy> {
 
-        private final BuildScanExtension buildScan;
+        private final BuildScanExtensionProxy buildScan;
         private final Map<String, Provider<String>> props;
 
-        private CaptureIdeMetadataAction(BuildScanExtension buildScan, Map<String, Provider<String>> props) {
+        private CaptureIdeMetadataAction(BuildScanExtensionProxy buildScan, Map<String, Provider<String>> props) {
             this.buildScan = buildScan;
             this.props = props;
         }
 
         @Override
-        public void execute(BuildResult buildResult) {
+        public void execute(BuildResultProxy buildResult) {
             if (props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).isPresent()) {
                 String ideaVendorNameValue = props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).get();
                 if ("Google".equals(ideaVendorNameValue)) {
@@ -171,20 +170,20 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static final class CaptureCiMetadataAction implements Action<BuildResult> {
+    private static final class CaptureCiMetadataAction implements Action<BuildResultProxy> {
 
-        private final BuildScanExtension buildScan;
+        private final BuildScanExtensionProxy buildScan;
         private final ProviderFactory providers;
         private final Provider<Directory> projectDirectory;
 
-        private CaptureCiMetadataAction(BuildScanExtension buildScan, ProviderFactory providers, Provider<Directory> projectDirectory) {
+        private CaptureCiMetadataAction(BuildScanExtensionProxy buildScan, ProviderFactory providers, Provider<Directory> projectDirectory) {
             this.buildScan = buildScan;
             this.providers = providers;
             this.projectDirectory = projectDirectory;
         }
 
         @Override
-        public void execute(BuildResult buildResult) {
+        public void execute(BuildResultProxy buildResult) {
             if (isJenkins(providers) || isHudson(providers)) {
                 String ciProvider = isJenkins(providers) ? "Jenkins" : "Hudson";
                 String controllerUrlEnvVar = isJenkins(providers) ? "JENKINS_URL" : "HUDSON_URL";
@@ -395,7 +394,7 @@ final class CustomBuildScanEnhancements {
         buildScan.background(new CaptureGitMetadataAction(providers));
     }
 
-    private static final class CaptureGitMetadataAction implements Action<BuildScanExtension> {
+    private static final class CaptureGitMetadataAction implements Action<BuildScanExtensionProxy> {
 
         private final ProviderFactory providers;
 
@@ -404,7 +403,7 @@ final class CustomBuildScanEnhancements {
         }
 
         @Override
-        public void execute(BuildScanExtension buildScan) {
+        public void execute(BuildScanExtensionProxy buildScan) {
             if (!isGitInstalled()) {
                 return;
             }
@@ -507,17 +506,17 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static void addCustomValueAndSearchLink(BuildScanExtension buildScan, String name, String value) {
+    private static void addCustomValueAndSearchLink(BuildScanExtensionProxy buildScan, String name, String value) {
         buildScan.value(name, value);
         addSearchLink(buildScan, name, name, value);
     }
 
-    private static void addCustomValueAndSearchLink(BuildScanExtension buildScan, String linkLabel, String name, String value) {
+    private static void addCustomValueAndSearchLink(BuildScanExtensionProxy buildScan, String linkLabel, String name, String value) {
         buildScan.value(name, value);
         addSearchLink(buildScan, linkLabel, name, value);
     }
 
-    private static void addSearchLink(BuildScanExtension buildScan, String linkLabel, Map<String, String> values) {
+    private static void addSearchLink(BuildScanExtensionProxy buildScan, String linkLabel, Map<String, String> values) {
         // the parameters for a link querying multiple custom values look like:
         // search.names=name1,name2&search.values=value1,value2
         // this reduction groups all names and all values together in order to properly generate the query
@@ -527,7 +526,7 @@ final class CustomBuildScanEnhancements {
                 .ifPresent(x -> addSearchLink(buildScan, linkLabel, x.getKey(), x.getValue()));
     }
 
-    private static void addSearchLink(BuildScanExtension buildScan, String linkLabel, String name, String value) {
+    private static void addSearchLink(BuildScanExtensionProxy buildScan, String linkLabel, String name, String value) {
         String searchParams = "search.names=" + urlEncode(name) + "&search.values=" + urlEncode(value);
         String server = getServer(buildScan);
         if (server != null) {
@@ -536,7 +535,7 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static String getServer(BuildScanExtension buildScan) {
+    private static String getServer(BuildScanExtensionProxy buildScan) {
         try {
             buildScan.getClass().getMethod("getServer");
             return buildScan.getServer();
