@@ -26,8 +26,27 @@ repositories {
     }
 }
 
+sourceSets {
+    create("compatibilityApi")
+    create("develocityCompatibility")
+    create("enterpriseCompatibility")
+}
+
 dependencies {
-    compileOnly('com.gradle:develocity-gradle-plugin:3.17-rc-1')
+    compatibilityApiCompileOnly(gradleApi())
+
+    develocityCompatibilityCompileOnly(gradleApi())
+    develocityCompatibilityCompileOnly('com.gradle:develocity-gradle-plugin:3.17-rc-1')
+    develocityCompatibilityImplementation(sourceSets.compatibilityApi.output)
+
+    enterpriseCompatibilityCompileOnly(gradleApi())
+    enterpriseCompatibilityCompileOnly('com.gradle:gradle-enterprise-gradle-plugin:3.16.2')
+    enterpriseCompatibilityImplementation(sourceSets.compatibilityApi.output)
+
+    api(sourceSets.compatibilityApi.output)
+    implementation(sourceSets.develocityCompatibility.output)
+    implementation(sourceSets.enterpriseCompatibility.output)
+
     testFixturesImplementation('org.mockito:mockito-core:4.11.0')
 }
 
@@ -43,6 +62,12 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(8)
     }
+}
+
+jar {
+    from sourceSets.compatibilityApi.output
+    from sourceSets.develocityCompatibility.output
+    from sourceSets.enterpriseCompatibility.output
 }
 
 gradlePlugin {
@@ -75,7 +100,6 @@ testing {
             dependencies {
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
-                implementation('com.tngtech.archunit:archunit-junit5:1.2.1')
             }
         }
 
@@ -84,6 +108,7 @@ testing {
 
             dependencies {
                 implementation(project())
+                implementation(sourceSets.enterpriseCompatibility.output)
                 implementation(testFixtures(project()))
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
@@ -100,6 +125,7 @@ testing {
 
             dependencies {
                 implementation(project())
+                implementation(sourceSets.develocityCompatibility.output)
                 implementation(testFixtures(project()))
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')

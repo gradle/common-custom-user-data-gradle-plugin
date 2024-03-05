@@ -30,7 +30,7 @@ class DevelocityConfigurationAdapterTest {
         buildScan = mock();
         configuration = mock();
         when(configuration.getBuildScan()).thenReturn(buildScan);
-        adapter = DevelocityAdapter.create(configuration);
+        adapter = new DevelocityConfigurationAdapter(configuration);
     }
 
     @Test

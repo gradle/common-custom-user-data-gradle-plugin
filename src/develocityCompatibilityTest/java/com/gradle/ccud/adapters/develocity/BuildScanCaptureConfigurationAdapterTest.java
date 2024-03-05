@@ -1,7 +1,7 @@
 package com.gradle.ccud.adapters.develocity;
 
 import com.gradle.ccud.adapters.BuildScanCaptureAdapter;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.develocity.agent.gradle.scan.BuildScanCaptureConfiguration;
 import org.gradle.api.provider.Property;
 import org.junit.jupiter.api.BeforeEach;

@@ -23,7 +23,7 @@ public class GradleEnterpriseBuildCacheAdapterTest {
     @BeforeEach
     void setup() {
         cache = mock();
-        adapter = BuildCacheAdapter.create(cache, GradleEnterpriseBuildCache.class);
+        adapter = new GradleEnterpriseBuildCacheAdapter(cache);
     }
 
     @Test

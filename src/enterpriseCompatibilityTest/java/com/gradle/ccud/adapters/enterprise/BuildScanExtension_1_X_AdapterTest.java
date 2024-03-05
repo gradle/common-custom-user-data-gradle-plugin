@@ -3,8 +3,6 @@ package com.gradle.ccud.adapters.enterprise;
 import com.gradle.ccud.adapters.BuildResultAdapter;
 import com.gradle.ccud.adapters.DevelocityAdapter;
 import com.gradle.ccud.adapters.PublishedBuildScanAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
 import com.gradle.cuud.adapters.ActionMockFixtures.ArgCapturingAction;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +33,7 @@ public class BuildScanExtension_1_X_AdapterTest {
     void setup() {
         extension = mock();
         // bypass Gradle version check
-        adapter = new BuildScanExtension_1_X_Adapter(ProxyFactory.createProxy(extension, BuildScanExtensionProxy.class));
+        adapter = new BuildScanExtension_1_X_Adapter(extension);
     }
 
     @Test

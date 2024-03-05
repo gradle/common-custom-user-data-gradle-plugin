@@ -1,8 +1,7 @@
 package com.gradle.ccud.adapters.enterprise;
 
 import com.gradle.ccud.adapters.BuildScanObfuscationAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanDataObfuscationProxy;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.scan.plugin.BuildScanDataObfuscation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +33,7 @@ class BuildScanDataObfuscationAdapterTest {
     @BeforeEach
     void setup() {
         obfuscation = mock();
-        adapter = new BuildScanDataObfuscationAdapter(ProxyFactory.createProxy(obfuscation, BuildScanDataObfuscationProxy.class));
+        adapter = new BuildScanDataObfuscationAdapter(ProxyFactory.createProxy(obfuscation, BuildScanDataObfuscation.class));
     }
 
     @Test

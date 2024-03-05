@@ -3,8 +3,7 @@ package com.gradle.ccud.adapters.enterprise;
 import com.gradle.ccud.adapters.BuildResultAdapter;
 import com.gradle.ccud.adapters.BuildScanAdapter;
 import com.gradle.ccud.adapters.PublishedBuildScanAdapter;
-import com.gradle.ccud.adapters.enterprise.proxies.BuildScanExtensionProxy;
-import com.gradle.ccud.adapters.reflection.ProxyFactory;
+import com.gradle.ccud.adapters.ProxyFactory;
 import com.gradle.cuud.adapters.ActionMockFixtures;
 import com.gradle.cuud.adapters.ActionMockFixtures.ArgCapturingAction;
 import com.gradle.scan.plugin.BuildResult;
@@ -37,7 +36,7 @@ class BuildScanExtensionAdapterTest {
     @BeforeEach
     void setup() {
         extension = mock();
-        adapter = new BuildScanExtensionAdapter(ProxyFactory.createProxy(extension, BuildScanExtensionProxy.class));
+        adapter = new BuildScanExtensionAdapter(ProxyFactory.createProxy(extension, BuildScanExtension.class));
     }
 
     @Test
@@ -198,7 +197,7 @@ class BuildScanExtensionAdapterTest {
         when(extension.getObfuscation()).thenReturn(obfuscation);
 
         // and
-        adapter = new BuildScanExtensionAdapter(ProxyFactory.createProxy(extension, BuildScanExtensionProxy.class));
+        adapter = new BuildScanExtensionAdapter(ProxyFactory.createProxy(extension, BuildScanExtension.class));
 
         // when
         adapter.obfuscation(o -> {
@@ -219,7 +218,7 @@ class BuildScanExtensionAdapterTest {
         when(extension.getCapture()).thenReturn(capture);
 
         // and
-        adapter = new BuildScanExtensionAdapter(ProxyFactory.createProxy(extension, BuildScanExtensionProxy.class));
+        adapter = new BuildScanExtensionAdapter(ProxyFactory.createProxy(extension, BuildScanExtension.class));
 
         // when
         adapter.capture(c -> {
