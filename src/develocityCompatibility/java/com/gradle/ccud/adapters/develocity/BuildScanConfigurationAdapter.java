@@ -71,25 +71,25 @@ class BuildScanConfigurationAdapter implements BuildScanAdapter {
     }
 
     @Override
-    public void setTermsOfServiceUrl(String termsOfServiceUrl) {
-        buildScan.getTermsOfServiceUrl().set(termsOfServiceUrl);
+    public void setTermsOfUseUrl(String termsOfServiceUrl) {
+        buildScan.getTermsOfUseUrl().set(termsOfServiceUrl);
     }
 
     @Nullable
     @Override
-    public String getTermsOfServiceUrl() {
-        return buildScan.getTermsOfServiceUrl().getOrNull();
+    public String getTermsOfUseUrl() {
+        return buildScan.getTermsOfUseUrl().getOrNull();
     }
 
     @Override
-    public void setTermsOfServiceAgree(@Nullable String agree) {
-        buildScan.getTermsOfServiceAgree().set(agree);
+    public void setTermsOfUseAgree(@Nullable String agree) {
+        buildScan.getTermsOfUseAgree().set(agree);
     }
 
     @Nullable
     @Override
-    public String getTermsOfServiceAgree() {
-        return buildScan.getTermsOfServiceAgree().getOrNull();
+    public String getTermsOfUseAgree() {
+        return buildScan.getTermsOfUseAgree().getOrNull();
     }
 
     @Override

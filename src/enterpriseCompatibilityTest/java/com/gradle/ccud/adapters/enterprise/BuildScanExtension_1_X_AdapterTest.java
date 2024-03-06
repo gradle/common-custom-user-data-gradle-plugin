@@ -139,13 +139,13 @@ public class BuildScanExtension_1_X_AdapterTest {
         String value = "https://value.com";
 
         // when
-        adapter.getBuildScan().setTermsOfServiceUrl(value);
+        adapter.getBuildScan().setTermsOfUseUrl(value);
 
         // then
         verify(extension).setTermsOfServiceUrl(value);
 
         // and
-        assertNull(adapter.getBuildScan().getTermsOfServiceUrl());
+        assertNull(adapter.getBuildScan().getTermsOfUseUrl());
     }
 
     @Test
@@ -155,11 +155,11 @@ public class BuildScanExtension_1_X_AdapterTest {
         String value = "yes";
 
         // when
-        adapter.getBuildScan().setTermsOfServiceAgree(value);
+        adapter.getBuildScan().setTermsOfUseAgree(value);
 
         // then
         verify(extension).setTermsOfServiceAgree(value);
-        assertNull(adapter.getBuildScan().getTermsOfServiceAgree());
+        assertNull(adapter.getBuildScan().getTermsOfUseAgree());
     }
 
     @Test
@@ -178,8 +178,8 @@ public class BuildScanExtension_1_X_AdapterTest {
     void testBuildScanAction() {
         // when
         adapter.buildScan(b -> {
-            b.setTermsOfServiceUrl("value");
-            b.setTermsOfServiceAgree("yes");
+            b.setTermsOfUseUrl("value");
+            b.setTermsOfUseAgree("yes");
         });
 
         // then
@@ -195,8 +195,8 @@ public class BuildScanExtension_1_X_AdapterTest {
 
         // when
         adapter.getBuildScan().background(b -> {
-            b.setTermsOfServiceUrl("value");
-            b.setTermsOfServiceAgree("yes");
+            b.setTermsOfUseUrl("value");
+            b.setTermsOfUseAgree("yes");
         });
 
         // then

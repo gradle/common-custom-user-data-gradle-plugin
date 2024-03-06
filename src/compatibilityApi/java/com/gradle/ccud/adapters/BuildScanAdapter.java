@@ -21,15 +21,15 @@ public interface BuildScanAdapter {
 
     void buildScanPublished(Action<? super PublishedBuildScanAdapter> action);
 
-    void setTermsOfServiceUrl(String termsOfServiceUrl);
+    void setTermsOfUseUrl(String termsOfServiceUrl);
 
     @Nullable
-    String getTermsOfServiceUrl();
+    String getTermsOfUseUrl();
 
-    void setTermsOfServiceAgree(@Nullable String agree);
+    void setTermsOfUseAgree(@Nullable String agree);
 
     @Nullable
-    String getTermsOfServiceAgree();
+    String getTermsOfUseAgree();
 
     void setUploadInBackground(boolean uploadInBackground);
 

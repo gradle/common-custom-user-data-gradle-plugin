@@ -119,7 +119,7 @@ class GradleEnterpriseExtensionAdapterTest {
         // when
         adapter.buildScan(buildScan -> {
             buildScan.setUploadInBackground(true);
-            buildScan.setTermsOfServiceUrl("server");
+            buildScan.setTermsOfUseUrl("server");
         });
 
         // then
