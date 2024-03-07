@@ -111,18 +111,18 @@ class DevelocityConfigurationAdapterTest {
     void testBuildScanAction() {
         // given
         when(buildScan.getUploadInBackground()).thenReturn(mockProperty());
-        when(buildScan.getTermsOfServiceUrl()).thenReturn(mockProperty());
+        when(buildScan.getTermsOfUseUrl()).thenReturn(mockProperty());
 
 
         // when
         adapter.buildScan(buildScan -> {
             buildScan.setUploadInBackground(true);
-            buildScan.setTermsOfServiceUrl("server");
+            buildScan.setTermsOfUseUrl("server");
         });
 
         // then
         verify(buildScan.getUploadInBackground()).set(true);
-        verify(buildScan.getTermsOfServiceUrl()).set("server");
+        verify(buildScan.getTermsOfUseUrl()).set("server");
     }
 
 }

@@ -94,14 +94,14 @@ public class BuildScanConfigurationAdapterTest {
         //given
         String value = "https://value.com";
         Property<String> prop = mockPropertyReturning(value);
-        when(configuration.getTermsOfServiceUrl()).thenReturn(prop);
+        when(configuration.getTermsOfUseUrl()).thenReturn(prop);
 
         // when
-        adapter.setTermsOfServiceUrl(value);
+        adapter.setTermsOfUseUrl(value);
 
         // then
         verify(prop).set(value);
-        assertEquals(value, adapter.getTermsOfServiceUrl());
+        assertEquals(value, adapter.getTermsOfUseUrl());
     }
 
     @Test
@@ -110,14 +110,14 @@ public class BuildScanConfigurationAdapterTest {
         //given
         String value = "no";
         Property<String> prop = mockPropertyReturning(value);
-        when(configuration.getTermsOfServiceAgree()).thenReturn(prop);
+        when(configuration.getTermsOfUseAgree()).thenReturn(prop);
 
         // when
-        adapter.setTermsOfServiceAgree(value);
+        adapter.setTermsOfUseAgree(value);
 
         // then
         verify(prop).set(value);
-        assertEquals(value, adapter.getTermsOfServiceAgree());
+        assertEquals(value, adapter.getTermsOfUseAgree());
     }
 
     @Test
@@ -147,18 +147,18 @@ public class BuildScanConfigurationAdapterTest {
         doExecuteActionWith(configuration).when(configuration).background(any());
 
         // and
-        when(configuration.getTermsOfServiceUrl()).thenReturn(mockProperty());
-        when(configuration.getTermsOfServiceAgree()).thenReturn(mockProperty());
+        when(configuration.getTermsOfUseUrl()).thenReturn(mockProperty());
+        when(configuration.getTermsOfUseAgree()).thenReturn(mockProperty());
 
         // when
         adapter.background(b -> {
-            b.setTermsOfServiceUrl("other url");
-            b.setTermsOfServiceAgree("no");
+            b.setTermsOfUseUrl("other url");
+            b.setTermsOfUseAgree("no");
         });
 
         // then
-        verify(configuration.getTermsOfServiceUrl()).set("other url");
-        verify(configuration.getTermsOfServiceAgree()).set("no");
+        verify(configuration.getTermsOfUseUrl()).set("other url");
+        verify(configuration.getTermsOfUseAgree()).set("no");
     }
 
     @Test

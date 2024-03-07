@@ -72,24 +72,24 @@ class BuildScanExtensionAdapter implements BuildScanAdapter {
     }
 
     @Override
-    public void setTermsOfServiceUrl(String termsOfServiceUrl) {
+    public void setTermsOfUseUrl(String termsOfServiceUrl) {
         buildScan.setTermsOfServiceUrl(termsOfServiceUrl);
     }
 
     @Nullable
     @Override
-    public String getTermsOfServiceUrl() {
+    public String getTermsOfUseUrl() {
         return buildScan.getTermsOfServiceUrl();
     }
 
     @Override
-    public void setTermsOfServiceAgree(@Nullable String agree) {
+    public void setTermsOfUseAgree(@Nullable String agree) {
         buildScan.setTermsOfServiceAgree(agree);
     }
 
     @Nullable
     @Override
-    public String getTermsOfServiceAgree() {
+    public String getTermsOfUseAgree() {
         return buildScan.getTermsOfServiceAgree();
     }
 

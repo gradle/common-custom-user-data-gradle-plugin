@@ -76,7 +76,7 @@ class BuildScanExtensionAdapterTest {
         String url = "https://terms-of-service.com";
 
         // when
-        adapter.setTermsOfServiceUrl(url);
+        adapter.setTermsOfUseUrl(url);
 
         // then
         verify(extension).setTermsOfServiceUrl(url);
@@ -85,7 +85,7 @@ class BuildScanExtensionAdapterTest {
         when(extension.getTermsOfServiceUrl()).thenReturn(url);
 
         // then
-        assertEquals(url, adapter.getTermsOfServiceUrl());
+        assertEquals(url, adapter.getTermsOfUseUrl());
     }
 
     @Test
@@ -95,7 +95,7 @@ class BuildScanExtensionAdapterTest {
         String agree = "yes";
 
         // when
-        adapter.setTermsOfServiceAgree(agree);
+        adapter.setTermsOfUseAgree(agree);
 
         // then
         verify(extension).setTermsOfServiceAgree(agree);
@@ -104,7 +104,7 @@ class BuildScanExtensionAdapterTest {
         when(extension.getTermsOfServiceAgree()).thenReturn(agree);
 
         // then
-        assertEquals(agree, adapter.getTermsOfServiceAgree());
+        assertEquals(agree, adapter.getTermsOfUseAgree());
     }
 
     @Test
@@ -148,7 +148,7 @@ class BuildScanExtensionAdapterTest {
         // when
         adapter.background(buildScan -> {
             buildScan.setUploadInBackground(true);
-            buildScan.setTermsOfServiceUrl("server");
+            buildScan.setTermsOfUseUrl("server");
         });
 
         // then

@@ -79,25 +79,25 @@ public class BuildScanExtension_1_X_Adapter implements DevelocityAdapter, BuildS
     }
 
     @Override
-    public void setTermsOfServiceUrl(String termsOfServiceUrl) {
+    public void setTermsOfUseUrl(String termsOfServiceUrl) {
         extension.setTermsOfServiceUrl(termsOfServiceUrl);
     }
 
     @Nullable
     @Override
-    public String getTermsOfServiceUrl() {
+    public String getTermsOfUseUrl() {
         warnAboutUnsupportedOperation("getTermsOfServiceUrl()");
         return null;
     }
 
     @Override
-    public void setTermsOfServiceAgree(@Nullable String agree) {
+    public void setTermsOfUseAgree(@Nullable String agree) {
         extension.setTermsOfServiceAgree(agree);
     }
 
     @Nullable
     @Override
-    public String getTermsOfServiceAgree() {
+    public String getTermsOfUseAgree() {
         warnAboutUnsupportedOperation("getTermsOfServiceAgree()");
         return null;
     }
