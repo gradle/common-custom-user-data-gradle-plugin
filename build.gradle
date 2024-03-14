@@ -47,7 +47,7 @@ dependencies {
     implementation(sourceSets.develocityCompatibility.output)
     implementation(sourceSets.enterpriseCompatibility.output)
 
-    testFixturesImplementation('org.mockito:mockito-core:4.11.0')
+    testFixturesImplementation('org.mockito:mockito-core:5.11.0')
 }
 
 wrapperUpgrade {
@@ -112,7 +112,7 @@ testing {
                 implementation(testFixtures(project()))
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
-                implementation('org.mockito:mockito-core:4.11.0')
+                implementation('org.mockito:mockito-core:5.11.0')
                 implementation('org.mockito:mockito-junit-jupiter:4.11.0')
                 implementation('com.gradle:gradle-enterprise-gradle-plugin:3.16.2') {
                     because("Verify that reflective proxies and adapters work with actual plugin classes")
@@ -129,7 +129,7 @@ testing {
                 implementation(testFixtures(project()))
                 implementation(platform('org.junit:junit-bom:5.10.2'))
                 implementation('org.junit.jupiter:junit-jupiter')
-                implementation('org.mockito:mockito-core:4.11.0')
+                implementation('org.mockito:mockito-core:5.11.0')
                 implementation('org.mockito:mockito-junit-jupiter:4.11.0')
                 implementation('com.gradle:develocity-gradle-plugin:3.17-rc-4') {
                     because("Verify that reflective proxies and adapters work with actual plugin classes")
