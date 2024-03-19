@@ -1,7 +1,7 @@
 package com.gradle;
 
-import com.gradle.ccud.adapters.BuildScanAdapter;
-import com.gradle.ccud.adapters.DevelocityAdapter;
+import com.gradle.develocity.agent.gradle.adapters.BuildScanAdapter;
+import com.gradle.develocity.agent.gradle.adapters.DevelocityAdapter;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 
 /**
