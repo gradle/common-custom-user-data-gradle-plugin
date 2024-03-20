@@ -1,7 +1,9 @@
 package com.gradle;
 
-import com.gradle.ccud.adapters.BuildCacheAdapter;
-import com.gradle.ccud.adapters.DevelocityAdapter;
+import com.gradle.develocity.agent.gradle.adapters.BuildCacheAdapter;
+import com.gradle.develocity.agent.gradle.adapters.DevelocityAdapter;
+import com.gradle.develocity.agent.gradle.adapters.develocity.DevelocityBuildCacheAdapter;
+import com.gradle.develocity.agent.gradle.adapters.enterprise.GradleEnterpriseBuildCacheAdapter;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.AbstractBuildCache;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
@@ -9,8 +11,6 @@ import org.gradle.caching.http.HttpBuildCache;
 
 import java.time.Duration;
 import java.util.Optional;
-
-import static com.gradle.AdapterFactory.createBuildCacheAdapter;
 
 /**
  * Provide standardized Develocity configuration. By applying the plugin, these settings will automatically be applied.
@@ -80,6 +80,14 @@ final class Overrides {
                 booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(adapter::setPush);
             });
         }
+    }
+
+    private static BuildCacheAdapter createBuildCacheAdapter(AbstractBuildCache cache, Class<? extends AbstractBuildCache> reportedCacheClass) {
+        if (reportedCacheClass.getName().toLowerCase().contains("develocity")) {
+            return new DevelocityBuildCacheAdapter(cache);
+        }
+
+        return new GradleEnterpriseBuildCacheAdapter(cache);
     }
 
     static Optional<String> firstAvailableSysPropertyOrEnvVariable(ProviderFactory providers, String... sysPropertyNames) {

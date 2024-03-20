@@ -1,8 +1,8 @@
 package com.gradle;
 
-import com.gradle.ccud.adapters.BuildResultAdapter;
-import com.gradle.ccud.adapters.BuildScanAdapter;
-import com.gradle.ccud.adapters.DevelocityAdapter;
+import com.gradle.develocity.agent.gradle.adapters.BuildResultAdapter;
+import com.gradle.develocity.agent.gradle.adapters.BuildScanAdapter;
+import com.gradle.develocity.agent.gradle.adapters.DevelocityAdapter;
 import org.gradle.api.Action;
 import org.gradle.api.file.Directory;
 import org.gradle.api.invocation.Gradle;
