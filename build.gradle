@@ -2,8 +2,6 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'signing'
-    id 'jvm-test-suite'
-    id 'java-test-fixtures'
     id 'com.gradle.plugin-publish' version '1.2.1'
     id 'com.github.breadmoirai.github-release' version '2.5.2'
     id 'org.gradle.wrapper-upgrade' version '0.11.4'
@@ -29,6 +27,9 @@ repositories {
 
 dependencies {
     implementation("com.gradle:develocity-gradle-plugin-adapters:1.0")
+
+    testImplementation(platform('org.junit:junit-bom:5.10.2'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
 }
 
 wrapperUpgrade {
@@ -45,13 +46,10 @@ java {
     }
 }
 
+jar.enabled = false
 shadowJar {
     // required by the plugin-publish-plugin
     archiveClassifier = ''
-}
-
-build {
-    dependsOn(shadowJar)
 }
 
 gradlePlugin {
@@ -76,17 +74,9 @@ tasks.withType(ValidatePlugins).configureEach {
     enableStricterValidation = true
 }
 
-testing {
-    suites {
-        test {
-            useJUnitJupiter()
-
-            dependencies {
-                implementation(platform('org.junit:junit-bom:5.10.2'))
-                implementation('org.junit.jupiter:junit-jupiter')
-            }
-        }
-    }
+test {
+    useJUnitPlatform()
+    dependsOn(shadowJar)
 }
 
 /*
