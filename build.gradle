@@ -77,7 +77,7 @@ tasks.withType(ValidatePlugins).configureEach {
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
-    dependsOn(shadowJar)
+    dependsOn(tasks.named('shadowJar'))
 }
 
 /*
