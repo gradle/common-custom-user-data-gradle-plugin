@@ -46,8 +46,9 @@ java {
     }
 }
 
-jar.enabled = false
-shadowJar {
+tasks.named('jar') { enabled = false }
+
+tasks.named('shadowJar') {
     // required by the plugin-publish-plugin
     archiveClassifier = ''
 }
@@ -74,9 +75,9 @@ tasks.withType(ValidatePlugins).configureEach {
     enableStricterValidation = true
 }
 
-test {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
-    dependsOn(shadowJar)
+    dependsOn(tasks.named('shadowJar'))
 }
 
 /*
@@ -118,7 +119,7 @@ tasks.named('githubRelease').configure {
     dependsOn(createReleaseTag)
 }
 
-tasks.withType(com.gradle.publish.PublishTask) {
+tasks.withType(com.gradle.publish.PublishTask).configureEach {
     notCompatibleWithConfigurationCache("$name task does not support configuration caching")
 }
 
