@@ -295,7 +295,7 @@ final class CustomBuildScanEnhancements {
                     addCustomValueAndSearchLink(develocity, "CI workflow", value));
                 envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
                     addCustomValueAndSearchLink(develocity, "CI run", value));
-                envVariable("GITHUB_HEAD_REF", providers).ifPresent(value ->
+                envVariable("GITHUB_HEAD_REF", providers).filter(value -> !value.isEmpty()).ifPresent(value ->
                     buildScan.value("PR branch", value));
             }
 
