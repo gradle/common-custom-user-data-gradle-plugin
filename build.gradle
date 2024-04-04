@@ -17,12 +17,6 @@ description = 'A Gradle plugin to capture common custom user data used for Gradl
 
 repositories {
     gradlePluginPortal()
-    maven {
-        url = uri("https://repo.grdev.net/artifactory/public")
-        content {
-            includeVersion("com.gradle", "develocity-gradle-plugin", "3.17-rc-4")
-        }
-    }
 }
 
 dependencies {
