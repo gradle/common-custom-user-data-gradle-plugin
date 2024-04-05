@@ -4,29 +4,29 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-def isCI = System.getenv("GITHUB_ACTIONS") != null
+val isCI = System.getenv("GITHUB_ACTIONS") != null
 
 develocity {
     server = "https://ge.solutions-team.gradle.com"
     buildScan {
         uploadInBackground = !isCI
-        publishing.onlyIf { it.isAuthenticated() }
+        publishing.onlyIf { it.isAuthenticated }
         obfuscation {
-            ipAddresses { addresses -> addresses.collect { address -> "0.0.0.0"} }
+            ipAddresses { addresses -> addresses.map { _ -> "0.0.0.0" } }
         }
     }
 }
 
 buildCache {
     local {
-        enabled = true
+        isEnabled = true
     }
 
     remote(develocity.buildCache) {
-        enabled = true
+        isEnabled = true
         // Check access key presence to avoid build cache errors on PR builds when access key is not present
-        def accessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY")
-        push = isCI && accessKey != null
+        val accessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY")
+        isPush = isCI && accessKey != null
     }
 }
 
