@@ -8,8 +8,8 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-def releaseVersion = releaseVersion()
-def releaseNotes = releaseNotes()
+val releaseVersion = releaseVersion()
+val releaseNotes = releaseNotes()
 
 group = "com.gradle"
 version = releaseVersion.get()
@@ -40,9 +40,9 @@ java {
     }
 }
 
-tasks.named("jar") { enabled = false }
+tasks.jar { enabled = false }
 
-tasks.named("shadowJar") {
+tasks.shadowJar {
     // required by the plugin-publish-plugin
     archiveClassifier = ""
 }
@@ -51,7 +51,7 @@ gradlePlugin {
     website = "https://github.com/gradle/common-custom-user-data-gradle-plugin"
     vcsUrl = "https://github.com/gradle/common-custom-user-data-gradle-plugin.git"
 
-    automatedPublishing = true
+    isAutomatedPublishing = true
 
     plugins {
         register("commonCustomUserData") {
@@ -64,12 +64,12 @@ gradlePlugin {
     }
 }
 
-tasks.withType(ValidatePlugins).configureEach {
+tasks.withType<ValidatePlugins>().configureEach {
     failOnWarning = true
     enableStricterValidation = true
 }
 
-tasks.withType(Test).configureEach {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     dependsOn(tasks.named("shadowJar"))
 }
@@ -82,7 +82,7 @@ You may also remove `plugin-publish` and `signing` from the `plugins {}` block a
 
 signing {
     // Require publications to be signed on CI. Otherwise, publication will be signed only if keys are provided.
-    required = providers.environmentVariable("CI").isPresent()
+    isRequired = providers.environmentVariable("CI").isPresent
 
     useInMemoryPgpKeys(
         providers.environmentVariable("PGP_SIGNING_KEY").orNull,
@@ -103,26 +103,26 @@ githubRelease {
     body = releaseNotes
 }
 
-def createReleaseTag = tasks.register("createReleaseTag", CreateGitTag) {
+val createReleaseTag by tasks.registering(CreateGitTag::class) {
     // Ensure tag is created only after a successful publishing
     mustRunAfter("publishPlugins")
     tagName = githubRelease.tagName.map { it.toString() }
 }
 
-tasks.named("githubRelease").configure {
+tasks.githubRelease {
     dependsOn(createReleaseTag)
 }
 
-tasks.withType(com.gradle.publish.PublishTask).configureEach {
+tasks.withType<com.gradle.publish.PublishTask>().configureEach {
     notCompatibleWithConfigurationCache("$name task does not support configuration caching")
 }
 
-def releaseVersion() {
-    def releaseVersionFile = layout.projectDirectory.file("release/version.txt")
-    return providers.fileContents(releaseVersionFile).asText.map { it -> it.trim() }
+fun releaseVersion(): Provider<String> {
+    val releaseVersionFile = layout.projectDirectory.file("release/version.txt")
+    return providers.fileContents(releaseVersionFile).asText.map(String::trim)
 }
 
-def releaseNotes() {
-    def releaseNotesFile = layout.projectDirectory.file("release/changes.md")
-    return providers.fileContents(releaseNotesFile).asText.map { it -> it.trim() }
+fun releaseNotes(): Provider<String> {
+    val releaseNotesFile = layout.projectDirectory.file("release/changes.md")
+    return providers.fileContents(releaseNotesFile).asText.map(String::trim)
 }
