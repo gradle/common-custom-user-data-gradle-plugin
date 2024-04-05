@@ -1,19 +1,19 @@
 plugins {
-    id 'java-gradle-plugin'
-    id 'maven-publish'
-    id 'signing'
-    id 'com.gradle.plugin-publish' version '1.2.1'
-    id 'com.github.breadmoirai.github-release' version '2.5.2'
-    id 'org.gradle.wrapper-upgrade' version '0.11.4'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id("java-gradle-plugin")
+    id("maven-publish")
+    id("signing")
+    id("com.gradle.plugin-publish") version "1.2.1"
+    id("com.github.breadmoirai.github-release") version "2.5.2"
+    id("org.gradle.wrapper-upgrade") version "0.11.4"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 def releaseVersion = releaseVersion()
 def releaseNotes = releaseNotes()
 
-group = 'com.gradle'
+group = "com.gradle"
 version = releaseVersion.get()
-description = 'A Gradle plugin to capture common custom user data used for Gradle Build Scans in Develocity'
+description = "A Gradle plugin to capture common custom user data used for Gradle Build Scans in Develocity"
 
 repositories {
     gradlePluginPortal()
@@ -22,14 +22,14 @@ repositories {
 dependencies {
     implementation("com.gradle:develocity-gradle-plugin-adapters:1.0")
 
-    testImplementation(platform('org.junit:junit-bom:5.10.2'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 wrapperUpgrade {
     gradle {
-        'common-custom-user-data-gradle-plugin' {
-            repo = 'gradle/common-custom-user-data-gradle-plugin'
+        register("common-custom-user-data-gradle-plugin") {
+            repo = "gradle/common-custom-user-data-gradle-plugin"
         }
     }
 }
@@ -40,26 +40,26 @@ java {
     }
 }
 
-tasks.named('jar') { enabled = false }
+tasks.named("jar") { enabled = false }
 
-tasks.named('shadowJar') {
+tasks.named("shadowJar") {
     // required by the plugin-publish-plugin
-    archiveClassifier = ''
+    archiveClassifier = ""
 }
 
 gradlePlugin {
-    website = 'https://github.com/gradle/common-custom-user-data-gradle-plugin'
-    vcsUrl = 'https://github.com/gradle/common-custom-user-data-gradle-plugin.git'
+    website = "https://github.com/gradle/common-custom-user-data-gradle-plugin"
+    vcsUrl = "https://github.com/gradle/common-custom-user-data-gradle-plugin.git"
 
     automatedPublishing = true
 
     plugins {
-        commonCustomUserData {
-            id = 'com.gradle.common-custom-user-data-gradle-plugin'
-            displayName = 'Develocity Common Custom User Data Gradle Plugin'
+        register("commonCustomUserData") {
+            id = "com.gradle.common-custom-user-data-gradle-plugin"
+            displayName = "Develocity Common Custom User Data Gradle Plugin"
             description = releaseNotes.get()
-            implementationClass = 'com.gradle.CommonCustomUserDataGradlePlugin'
-            tags.addAll('android', 'java', 'develocity')
+            implementationClass = "com.gradle.CommonCustomUserDataGradlePlugin"
+            tags.addAll("android", "java", "develocity")
         }
     }
 }
@@ -71,7 +71,7 @@ tasks.withType(ValidatePlugins).configureEach {
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
-    dependsOn(tasks.named('shadowJar'))
+    dependsOn(tasks.named("shadowJar"))
 }
 
 /*
@@ -82,19 +82,19 @@ You may also remove `plugin-publish` and `signing` from the `plugins {}` block a
 
 signing {
     // Require publications to be signed on CI. Otherwise, publication will be signed only if keys are provided.
-    required providers.environmentVariable('CI').isPresent()
+    required = providers.environmentVariable("CI").isPresent()
 
     useInMemoryPgpKeys(
-        providers.environmentVariable('PGP_SIGNING_KEY').orNull,
-        providers.environmentVariable('PGP_SIGNING_KEY_PASSPHRASE').orNull
+        providers.environmentVariable("PGP_SIGNING_KEY").orNull,
+        providers.environmentVariable("PGP_SIGNING_KEY_PASSPHRASE").orNull
     )
 }
 
 githubRelease {
-    token = System.getenv('CCUD_GIT_TOKEN') ?: ''
-    owner = 'gradle'
-    repo = 'common-custom-user-data-gradle-plugin'
-    targetCommitish = 'main'
+    token(System.getenv("CCUD_GIT_TOKEN") ?: "")
+    owner = "gradle"
+    repo = "common-custom-user-data-gradle-plugin"
+    targetCommitish = "main"
     releaseName = releaseVersion
     tagName = releaseVersion.map { "v$it" }
     prerelease = false
@@ -103,13 +103,13 @@ githubRelease {
     body = releaseNotes
 }
 
-def createReleaseTag = tasks.register('createReleaseTag', CreateGitTag) {
+def createReleaseTag = tasks.register("createReleaseTag", CreateGitTag) {
     // Ensure tag is created only after a successful publishing
-    mustRunAfter('publishPlugins')
+    mustRunAfter("publishPlugins")
     tagName = githubRelease.tagName.map { it.toString() }
 }
 
-tasks.named('githubRelease').configure {
+tasks.named("githubRelease").configure {
     dependsOn(createReleaseTag)
 }
 
@@ -118,11 +118,11 @@ tasks.withType(com.gradle.publish.PublishTask).configureEach {
 }
 
 def releaseVersion() {
-    def releaseVersionFile = layout.projectDirectory.file('release/version.txt')
+    def releaseVersionFile = layout.projectDirectory.file("release/version.txt")
     return providers.fileContents(releaseVersionFile).asText.map { it -> it.trim() }
 }
 
 def releaseNotes() {
-    def releaseNotesFile = layout.projectDirectory.file('release/changes.md')
+    def releaseNotesFile = layout.projectDirectory.file("release/changes.md")
     return providers.fileContents(releaseNotesFile).asText.map { it -> it.trim() }
 }
