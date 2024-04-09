@@ -91,7 +91,7 @@ signing {
 }
 
 githubRelease {
-    token(System.getenv("CCUD_GIT_TOKEN") ?: "")
+    token(providers.environmentVariable("CCUD_GIT_TOKEN"))
     owner = "gradle"
     repo = "common-custom-user-data-gradle-plugin"
     targetCommitish = "main"
