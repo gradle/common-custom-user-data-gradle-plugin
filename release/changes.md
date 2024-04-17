@@ -1,0 +1,1 @@
+- [NEW] Use `develocity-gradle-plugin-adapters` version 1.0.2
