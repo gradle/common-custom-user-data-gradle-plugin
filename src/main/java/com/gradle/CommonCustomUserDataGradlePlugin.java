@@ -10,6 +10,8 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
+import org.gradle.api.plugins.ExtensionAware;
+import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
 
@@ -92,12 +94,12 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         AtomicBoolean somePluginAlreadyConfigured = new AtomicBoolean(false);
         settings.getPluginManager().withPlugin("com.gradle.develocity", __ -> {
             if (somePluginAlreadyConfigured.compareAndSet(false, true)) {
-                applySettingsPlugin(new DevelocityConfigurationAdapter(settings.getExtensions().getByName("develocity")), providers, settings);
+                applySettingsPlugin(createDevelocityAdapter(settings), providers, settings);
             }
         });
         settings.getPluginManager().withPlugin("com.gradle.enterprise", __ -> {
             if (somePluginAlreadyConfigured.compareAndSet(false, true)) {
-                applySettingsPlugin(new GradleEnterpriseExtensionAdapter(settings.getExtensions().getByName("gradleEnterprise")), providers, settings);
+                applySettingsPlugin(createDevelocityAdapter(settings), providers, settings);
             }
         });
     }
@@ -107,14 +109,25 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         AtomicBoolean somePluginAlreadyConfigured = new AtomicBoolean(false);
         project.getPluginManager().withPlugin("com.gradle.develocity", __ -> {
             if (somePluginAlreadyConfigured.compareAndSet(false, true)) {
-                applyProjectPlugin(project, new DevelocityConfigurationAdapter(project.getExtensions().getByName("develocity")));
+                applyProjectPlugin(project, createDevelocityAdapter(project));
             }
         });
         project.getPluginManager().withPlugin("com.gradle.build-scan", __ -> {
             if (somePluginAlreadyConfigured.compareAndSet(false, true)) {
-                applyProjectPlugin(project, new GradleEnterpriseExtensionAdapter(project.getExtensions().getByName("gradleEnterprise")));
+                applyProjectPlugin(project, createDevelocityAdapter(project));
             }
         });
+    }
+
+    private static <T extends ExtensionAware> DevelocityAdapter createDevelocityAdapter(T target) {
+        ExtensionContainer extensions = target.getExtensions();
+
+        Object develocityExtension = extensions.findByName("develocity");
+        if (develocityExtension != null) {
+            return new DevelocityConfigurationAdapter(develocityExtension);
+        }
+
+        return new GradleEnterpriseExtensionAdapter(extensions.getByName("gradleEnterprise"));
     }
 
     private void applyProjectPluginGradle4(Project project) {
