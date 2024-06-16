@@ -1,0 +1,1 @@
+- [FIX] Deprecation warnings are printed when applied before the Develocity Gradle plugin
