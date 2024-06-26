@@ -16,7 +16,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
       - name: Build with Gradle
         run: ./gradlew build -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
-        env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_SOLUTIONS_ACCESS_TOKEN }}
