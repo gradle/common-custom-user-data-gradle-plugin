@@ -4,7 +4,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-val isCI = System.getenv("GITHUB_ACTIONS") != null
+val isCI = providers.environmentVariable("CI").isPresent
 
 develocity {
     server = "https://ge.solutions-team.gradle.com"
@@ -25,8 +25,8 @@ buildCache {
     remote(develocity.buildCache) {
         isEnabled = true
         // Check access key presence to avoid build cache errors on PR builds when access key is not present
-        val accessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY")
-        isPush = isCI && accessKey != null
+        val accessKey = providers.environmentVariable("GRADLE_ENTERPRISE_ACCESS_KEY").isPresent
+        isPush = isCI && accessKey
     }
 }
 
