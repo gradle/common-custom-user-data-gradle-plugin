@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.gradle:develocity-gradle-plugin-adapters:1.0.2")
+    implementation("com.gradle:develocity-gradle-plugin-adapters:1.0.3")
 
     testImplementation(platform("org.junit:junit-bom:5.11.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
