@@ -47,6 +47,13 @@ tasks.shadowJar {
     archiveClassifier = ""
 }
 
+tasks.withType<Jar>().configureEach {
+    into(".") {
+        from(layout.projectDirectory.file("LICENSE"))
+        from(layout.projectDirectory.dir("release/distribution"))
+    }
+}
+
 gradlePlugin {
     website = "https://github.com/gradle/common-custom-user-data-gradle-plugin"
     vcsUrl = "https://github.com/gradle/common-custom-user-data-gradle-plugin.git"
