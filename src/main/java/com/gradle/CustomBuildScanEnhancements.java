@@ -62,6 +62,7 @@ final class CustomBuildScanEnhancements {
     private static final String PROJECT_PROP_ANDROID_STUDIO_VERSION = "android.studio.version";
     private static final String SYSTEM_PROP_ECLIPSE_BUILD_ID = "eclipse.buildId";
     private static final String SYSTEM_PROP_IDEA_SYNC_ACTIVE = "idea.sync.active";
+    private static final String SYSTEM_PROP_IDEA_DEBUGGER_PORT = "idea.debugger.dispatch.port";
 
     private final DevelocityAdapter develocity;
     private final BuildScanAdapter buildScan;
@@ -98,6 +99,7 @@ final class CustomBuildScanEnhancements {
             ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, firstOrElseSecond(providers, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers), gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY, gradle, providers)));
             ideProperties.put(SYSTEM_PROP_ECLIPSE_BUILD_ID, systemPropertyProvider(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers));
             ideProperties.put(SYSTEM_PROP_IDEA_SYNC_ACTIVE, systemPropertyProvider(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers));
+            ideProperties.put(SYSTEM_PROP_IDEA_DEBUGGER_PORT, systemPropertyProvider(SYSTEM_PROP_IDEA_DEBUGGER_PORT, providers));
 
             // Process data at execution time to ensure property initialization
             buildScan.buildFinished(new CaptureIdeMetadataAction(buildScan, ideProperties));
@@ -138,6 +140,10 @@ final class CustomBuildScanEnhancements {
 
             if (props.get(SYSTEM_PROP_IDEA_SYNC_ACTIVE).isPresent()) {
                 buildScan.tag("IDE sync");
+            }
+
+            if (props.get(SYSTEM_PROP_IDEA_DEBUGGER_PORT).isPresent()) {
+                buildScan.tag("IDE debugging");
             }
         }
 
