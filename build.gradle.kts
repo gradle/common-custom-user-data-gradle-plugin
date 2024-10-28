@@ -151,7 +151,6 @@ tasks.githubRelease {
 
 tasks.withType<com.gradle.publish.PublishTask>().configureEach {
     notCompatibleWithConfigurationCache("$name task does not support configuration caching")
-    publishing
 }
 
 fun releaseVersion(): Provider<String> {
