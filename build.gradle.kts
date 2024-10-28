@@ -115,7 +115,7 @@ publishing {
         create<MavenPublication>("pluginMaven") {
             pom {
                 name.set("Common Custom User Data Gradle Plugin")
-                description.set("A Gradle Plugin to capture common custom user data used for Gradle Build Scans in Develocity")
+                description.set("A Gradle plugin to capture common custom user data used for Gradle Build Scans in Develocity")
                 url.set("https://github.com/gradle/common-custom-user-data-gradle-plugin")
                 licenses {
                     license {
