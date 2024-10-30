@@ -110,6 +110,35 @@ githubRelease {
     body = releaseNotes
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("pluginMaven") {
+            pom {
+                name.set("Common Custom User Data Gradle Plugin")
+                description.set("A Gradle plugin to capture common custom user data used for Gradle Build Scans in Develocity")
+                url.set("https://github.com/gradle/common-custom-user-data-gradle-plugin")
+                licenses {
+                    license {
+                        name.set("Apache-2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        name.set("The Gradle team")
+                        organization.set("Gradle Inc.")
+                        organizationUrl.set("https://gradle.com")
+                    }
+                }
+                scm {
+                    developerConnection.set("scm:git:https://github.com/gradle/common-custom-user-data-gradle-plugin.git")
+                    url.set("https://github.com/gradle/common-custom-user-data-gradle-plugin")
+                }
+            }
+        }
+    }
+}
+
 val createReleaseTag by tasks.registering(CreateGitTag::class) {
     // Ensure tag is created only after a successful publishing
     mustRunAfter("publishPlugins")
