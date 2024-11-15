@@ -4,7 +4,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-val isCI = System.getenv("GITHUB_ACTIONS") != null
+val isCI = System.getenv("CI") != null
 
 develocity {
     server = "https://ge.solutions-team.gradle.com"
