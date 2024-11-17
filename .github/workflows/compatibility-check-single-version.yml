@@ -12,6 +12,9 @@ on:
       apply-plugin-script:
         required: true
         type: string
+      build-ccud-plugin:
+        required: true
+        type: boolean
       expect-failure:
         required: true
         type: boolean
@@ -32,6 +35,19 @@ jobs:
           sparse-checkout: 'sample-projects/gradle'
           path: 'dv-solutions'
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
+
+      - name: Download local CCUD plugin repository
+        if: ${{ inputs.build-ccud-plugin }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ccud-plugin-repository
+          path: build/local-plugin-repository
+
+      - name: Make local plugin repository available to samples
+        if: ${{ inputs.build-ccud-plugin }}
+        working-directory: dv-solutions/sample-projects/gradle
+        run: |
+          find . -type f -name "settings.gradle" -exec sed -i '1i pluginManagement {\n  repositories {\n    maven { url "${{ github.workspace }}/build/local-plugin-repository" }\n    gradlePluginPortal()\n  }\n}' {} +
 
       - name: Apply CCUD plugin to samples
         working-directory: dv-solutions/sample-projects/gradle
