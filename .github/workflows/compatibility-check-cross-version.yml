@@ -1,4 +1,4 @@
-name: CCUD cross-version compatibility test
+name: Check cross-version compatibility
 
 on:
   workflow_dispatch:
