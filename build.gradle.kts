@@ -89,7 +89,7 @@ You may also remove `plugin-publish` and `signing` from the `plugins {}` block a
 
 signing {
     // Require publications to be signed on CI. Otherwise, publication will be signed only if keys are provided.
-    isRequired = providers.environmentVariable("CI").isPresent
+    isRequired = false // providers.environmentVariable("CI").isPresent
 
     useInMemoryPgpKeys(
         providers.environmentVariable("PGP_SIGNING_KEY").orNull,
@@ -135,6 +135,12 @@ publishing {
                     url.set("https://github.com/gradle/common-custom-user-data-gradle-plugin")
                 }
             }
+        }
+    }
+    repositories {
+        maven {
+            name = "localPlugins"
+            url = uri("build/local-plugin-repository")
         }
     }
 }
