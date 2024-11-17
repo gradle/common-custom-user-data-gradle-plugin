@@ -1,4 +1,4 @@
-name: CCUD cross-version compatibility check for a single version
+name: Run single cross-version test
 description: |
   This reusable workflow tests compatibility of a single combination of CCUD plugin version, DV plugin version and Gradle version.
   The CCUD and DV versions are encoded in the 'apply-plugin-script' input.
