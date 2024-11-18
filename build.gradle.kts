@@ -88,8 +88,9 @@ You may also remove `plugin-publish` and `signing` from the `plugins {}` block a
  */
 
 signing {
-    // Require publications to be signed on CI. Otherwise, publication will be signed only if keys are provided.
-    isRequired = false // providers.environmentVariable("CI").isPresent
+    // Require publications to be signed for 'publishPlugins' on CI.
+    // Otherwise, publication will be signed only if keys are provided.
+    isRequired = gradle.taskGraph.hasTask("publishPlugins") && providers.environmentVariable("CI").isPresent
 
     useInMemoryPgpKeys(
         providers.environmentVariable("PGP_SIGNING_KEY").orNull,
@@ -137,6 +138,7 @@ publishing {
             }
         }
     }
+    // Allow the plugin to be published to a local repository
     repositories {
         maven {
             name = "localPlugins"
