@@ -36,7 +36,8 @@ This table details the version compatibility of the Common Custom User Data Grad
 | Common Custom User Data Gradle plugin versions | Develocity Gradle plugin versions        | Gradle version |
 | ---------------------------------------------- | ---------------------------------------- | -------------- |
 | `1.0+`                                         | `3.0+`                                   | `5.0+`         | 
-| `1.7+`                                         | `1.8+`                                   | `4.0+`         |
+| `1.7+`                                         | `1.15+`, `3.2+`                          | `4.0+`         |
+| `2.0+`                                         | `1.15+`, `3.11+`                         | `4.0+`         |
 
 ## Captured data
 
