@@ -1,13 +1,11 @@
 package com.gradle;
 
-import com.gradle.develocity.agent.gradle.adapters.BuildCacheAdapter;
+import com.gradle.develocity.agent.gradle.adapters.BuildCacheConfigurationAdapter;
+import com.gradle.develocity.agent.gradle.adapters.BuildCacheConfigurationAdapter.LocalBuildCacheAdapter;
+import com.gradle.develocity.agent.gradle.adapters.BuildCacheConfigurationAdapter.RemoteBuildCacheAdapter;
 import com.gradle.develocity.agent.gradle.adapters.DevelocityAdapter;
-import com.gradle.develocity.agent.gradle.adapters.develocity.DevelocityBuildCacheAdapter;
-import com.gradle.develocity.agent.gradle.adapters.enterprise.GradleEnterpriseBuildCacheAdapter;
+
 import org.gradle.api.provider.ProviderFactory;
-import org.gradle.caching.configuration.AbstractBuildCache;
-import org.gradle.caching.configuration.BuildCacheConfiguration;
-import org.gradle.caching.http.HttpBuildCache;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -51,43 +49,30 @@ final class Overrides {
         firstAvailableBooleanSysPropertyOrEnvVariable(providers, DEVELOCITY_ALLOW_UNTRUSTED_SERVER, GRADLE_ENTERPRISE_ALLOW_UNTRUSTED_SERVER).ifPresent(develocity::setAllowUntrustedServer);
     }
 
-    void configureBuildCache(BuildCacheConfiguration buildCache, Class<? extends AbstractBuildCache> develocityCacheClass) {
-        buildCache.local(local -> {
-            sysPropertyOrEnvVariable(LOCAL_CACHE_DIRECTORY, providers).ifPresent(local::setDirectory);
-            durationSysPropertyOrEnvVariable(LOCAL_CACHE_REMOVE_UNUSED_ENTRIES_AFTER_DAYS, providers).ifPresent(v -> local.setRemoveUnusedEntriesAfterDays((int) v.toDays()));
-            booleanSysPropertyOrEnvVariable(LOCAL_CACHE_ENABLED, providers).ifPresent(local::setEnabled);
-            booleanSysPropertyOrEnvVariable(LOCAL_CACHE_PUSH, providers).ifPresent(local::setPush);
-        });
+    void configureBuildCache(BuildCacheConfigurationAdapter buildCache) {
+        configureLocalBuildCache(buildCache.getLocal());
 
-        // Only touch remote build cache configuration if it is already present and of type HttpBuildCache or DevelocityBuildCache
-        // Do nothing in case of another build cache type like AWS S3 being used
-        if (buildCache.getRemote() instanceof HttpBuildCache) {
-            buildCache.remote(HttpBuildCache.class, remote -> {
-                sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setUrl);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(remote::setAllowInsecureProtocol);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
-            });
-        } else if (develocityCacheClass.isInstance(buildCache.getRemote())) {
-            buildCache.remote(develocityCacheClass, remote -> {
-                BuildCacheAdapter adapter = createBuildCacheAdapter(remote, develocityCacheClass);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_SERVER, providers).ifPresent(adapter::setServer);
-                sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(adapter::setPath);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(adapter::setAllowUntrustedServer);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(adapter::setAllowInsecureProtocol);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(adapter::setEnabled);
-                booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(adapter::setPush);
-            });
+        RemoteBuildCacheAdapter remote = buildCache.getRemote();
+        if (remote != null) {
+            configureRemoteBuildCache(remote);
         }
     }
 
-    private static BuildCacheAdapter createBuildCacheAdapter(AbstractBuildCache cache, Class<? extends AbstractBuildCache> reportedCacheClass) {
-        if (reportedCacheClass.getName().toLowerCase().contains("develocity")) {
-            return new DevelocityBuildCacheAdapter(cache);
-        }
+    private void configureLocalBuildCache(LocalBuildCacheAdapter local) {
+        sysPropertyOrEnvVariable(LOCAL_CACHE_DIRECTORY, providers).ifPresent(local::setDirectory);
+        durationSysPropertyOrEnvVariable(LOCAL_CACHE_REMOVE_UNUSED_ENTRIES_AFTER_DAYS, providers).ifPresent(v -> local.setRemoveUnusedEntriesAfterDays((int) v.toDays()));
+        booleanSysPropertyOrEnvVariable(LOCAL_CACHE_ENABLED, providers).ifPresent(local::setEnabled);
+        booleanSysPropertyOrEnvVariable(LOCAL_CACHE_PUSH, providers).ifPresent(local::setPush);
+    }
 
-        return new GradleEnterpriseBuildCacheAdapter(cache);
+    private void configureRemoteBuildCache(RemoteBuildCacheAdapter remote) {
+        sysPropertyOrEnvVariable(REMOTE_CACHE_URL, providers).ifPresent(remote::setUrl);
+        sysPropertyOrEnvVariable(REMOTE_CACHE_SERVER, providers).ifPresent(remote::setServer);
+        sysPropertyOrEnvVariable(REMOTE_CACHE_PATH, providers).ifPresent(remote::setPath);
+        booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_UNTRUSTED_SERVER, providers).ifPresent(remote::setAllowUntrustedServer);
+        booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ALLOW_INSECURE_PROTOCOL, providers).ifPresent(remote::setAllowInsecureProtocol);
+        booleanSysPropertyOrEnvVariable(REMOTE_CACHE_ENABLED, providers).ifPresent(remote::setEnabled);
+        booleanSysPropertyOrEnvVariable(REMOTE_CACHE_PUSH, providers).ifPresent(remote::setPush);
     }
 
     static Optional<String> firstAvailableSysPropertyOrEnvVariable(ProviderFactory providers, String... sysPropertyNames) {

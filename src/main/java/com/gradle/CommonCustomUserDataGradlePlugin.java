@@ -1,7 +1,9 @@
 package com.gradle;
 
+import com.gradle.develocity.agent.gradle.adapters.BuildCacheConfigurationAdapter;
 import com.gradle.develocity.agent.gradle.adapters.BuildScanAdapter;
 import com.gradle.develocity.agent.gradle.adapters.DevelocityAdapter;
+import com.gradle.develocity.agent.gradle.adapters.develocity.GradleBuildCacheConfigurationAdapter;
 import com.gradle.develocity.agent.gradle.adapters.develocity.DevelocityConfigurationAdapter;
 import com.gradle.develocity.agent.gradle.adapters.enterprise.BuildScanExtension_1_X_Adapter;
 import com.gradle.develocity.agent.gradle.adapters.enterprise.GradleEnterpriseExtensionAdapter;
@@ -71,14 +73,15 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         buildScanEnhancements.apply();
 
         BuildCacheConfiguration buildCache = settings.getBuildCache();
-        customDevelocityConfig.configureBuildCache(buildCache);
+        BuildCacheConfigurationAdapter buildCacheAdapter = new GradleBuildCacheConfigurationAdapter(buildCache);
+        customDevelocityConfig.configureBuildCache(buildCacheAdapter);
 
         // configuration changes applied in this block will override earlier configuration settings,
         // including those set in the settings.gradle(.kts)
         Action<Settings> settingsAction = __ -> {
             Overrides overrides = new Overrides(providers);
             overrides.configureDevelocity(develocity);
-            overrides.configureBuildCache(buildCache, develocity.getBuildCache());
+            overrides.configureBuildCache(buildCacheAdapter);
         };
 
         // it is possible that the settings have already been evaluated by now, in which case
