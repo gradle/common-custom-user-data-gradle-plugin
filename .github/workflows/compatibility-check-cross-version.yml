@@ -1,0 +1,121 @@
+name: Check cross-version compatibility
+run-name: Check compatibility for CCUD ${{ inputs.ccud-version || 'from sources' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ccud-version:
+        description: The CCUD version to test. Leave blank to build and test CCUD from sources.
+        required: false
+        type: string
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      dev-ccud-version: ${{ steps.determine-current-version.outputs.ccud-version }}
+      test-ccud-version: ${{ steps.determine-test-version.outputs.ccud-version }}
+    steps:
+      - name: Checkout local repo
+        uses: actions/checkout@v4
+
+      - name: Read current CCUD version from release/version.txt
+        id: determine-current-version
+        run: 
+          echo "ccud-version=$(cat release/version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Determine test CCUD version
+        id: determine-test-version
+        run: 
+          echo "ccud-version=${{ inputs.ccud-version || steps.determine-current-version.outputs.ccud-version }}" >> "$GITHUB_OUTPUT"
+
+      - name: Log current CCUD versions
+        run: |
+          echo "dev-ccud-version = ${{ steps.determine-current-version.outputs.ccud-version }}"
+          echo "test-ccud-version = ${{ steps.determine-test-version.outputs.ccud-version }}"
+
+      - name: Set up Java
+        if: ${{ steps.determine-current-version.outputs.ccud-version == steps.determine-test-version.outputs.ccud-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 8
+
+      - name: Build CCUD plugin
+        if: ${{ steps.determine-current-version.outputs.ccud-version == steps.determine-test-version.outputs.ccud-version }}
+        run: ./gradlew publish
+
+      - name: Save plugin repository as artifact
+        if: ${{ steps.determine-current-version.outputs.ccud-version == steps.determine-test-version.outputs.ccud-version }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ccud-plugin-repository
+          path: build/local-plugin-repository
+  
+  dv-plugins:
+    needs: [ prepare ]
+    strategy:
+      fail-fast: false
+      matrix:
+        ccud-plugin-version: ${{ fromJSON(format('[ ''{0}'' ]', needs.prepare.outputs.test-ccud-version )) }}
+        dv-plugin-version: ["3.19", "3.18.2", "3.17.6"]
+        gradle-version: [8, 5]
+    uses: ./.github/workflows/compatibility-check-single-version.yml
+    with:
+      gradle-version: ${{ matrix.gradle-version }}
+      apply-plugin-script: |
+          find . -type f -name "*.gradle" -exec sed -i '/id "com.gradle.develocity" version "3.19"/s/.*/id "com.gradle.develocity" version "${{ matrix.dv-plugin-version }}"\nid "com.gradle.common-custom-user-data-gradle-plugin" version "${{ matrix.ccud-plugin-version }}"/' {} +
+      build-ccud-plugin: ${{ matrix.ccud-plugin-version == needs.prepare.outputs.dev-ccud-version }}
+    secrets: inherit
+
+  ge-3x-plugins:
+    needs: [ prepare ]
+    strategy:
+      fail-fast: false
+      matrix:
+        ccud-plugin-version: ${{ fromJSON(format('[ ''{0}'' ]', needs.prepare.outputs.test-ccud-version )) }}
+        ge-plugin-version: ["3.19", "3.18.2", "3.17.6", "3.16.2", "3.15.1", "3.14.1", "3.13.4", "3.12.6", "3.11.4", "3.10.3", "3.9", "3.8.1", "3.7.2", "3.6.4", "3.5.2", "3.4.1", "3.3.4", "3.2.1", "3.1.1", "3.0"] ## Versions < 3.2.1 are unsupported ["3.1.1", "3.0"]
+        gradle-version: [8, 5]
+    uses: ./.github/workflows/compatibility-check-single-version.yml
+    with:
+      gradle-version: ${{ matrix.gradle-version }}
+      apply-plugin-script: |
+          find . -type f -name "settings.gradle" -exec sed -i '/id "com.gradle.develocity" version "3.19"/s/.*/id "com.gradle.enterprise" version "${{ matrix.ge-plugin-version }}"\nid "com.gradle.common-custom-user-data-gradle-plugin" version "${{ matrix.ccud-plugin-version }}"/' {} +
+          find . -type f -name "build.gradle" -exec sed -i '/id "com.gradle.develocity" version "3.19"/s/.*/id "com.gradle.build-scan" version "${{ matrix.ge-plugin-version }}"\nid "com.gradle.common-custom-user-data-gradle-plugin" version "${{ matrix.ccud-plugin-version }}"/' {} +
+          find . -type f -name "*.gradle" -exec sed -i '/develocity {/,/}/ { s/develocity {/\gradleEnterprise {\nbuildScan {\n  publishAlways()/; s/}/}\n}/; }' {} +
+      build-ccud-plugin: ${{ matrix.ccud-plugin-version == needs.prepare.outputs.dev-ccud-version }}
+    secrets: inherit
+
+  bs-2x-plugins:
+    needs: [ prepare ]
+    strategy:
+      fail-fast: false
+      matrix:
+        ccud-plugin-version: ${{ fromJSON(format('[ ''{0}'' ]', needs.prepare.outputs.test-ccud-version )) }}
+        bs-plugin-version: ["2.4.2"] # All versions unsupported, just test one: ["2.4.2", "2.3", "2.2.1", "2.1", "2.0.2"]
+        gradle-version: [5]
+    uses: ./.github/workflows/compatibility-check-single-version.yml
+    with:
+      gradle-version: ${{ matrix.gradle-version }}
+      apply-plugin-script: |
+          find . -type f -name "build.gradle" -exec sed -i '/id "com.gradle.develocity" version "3.19"/s/.*/id "com.gradle.build-scan" version "${{ matrix.bs-plugin-version }}"\nid "com.gradle.common-custom-user-data-gradle-plugin" version "${{ matrix.ccud-plugin-version }}"/' {} +
+          find . -type f -name "*.gradle" -exec sed -i '/develocity {/s/.*/gradleEnterprise {\n  buildScan { publishAlways() }/' {} +
+      build-ccud-plugin: ${{ matrix.ccud-plugin-version == needs.prepare.outputs.dev-ccud-version }}
+    secrets: inherit
+
+  bs-1x-plugins:
+    needs: [ prepare ]
+    strategy:
+      fail-fast: false
+      matrix:
+        ccud-plugin-version: ${{ fromJSON(format('[ ''{0}'' ]', needs.prepare.outputs.test-ccud-version )) }}
+        build-scan-plugin-version: ["1.16", "1.15.2", "1.14"] # Versions > 1.15 are unsupported: ["1.16", "1.15.2", "1.14", "1.13.4", "1.12.1", "1.11", "1.10.3", "1.9.1", "1.8"]
+        gradle-version: [4]
+    uses: ./.github/workflows/compatibility-check-single-version.yml
+    with:
+      gradle-version: ${{ matrix.gradle-version }}
+      apply-plugin-script: |
+          find . -type f -name "build.gradle" -exec sed -i '/id "com.gradle.build-scan" version "1.16"/s/.*/id "com.gradle.build-scan" version "${{ matrix.build-scan-plugin-version }}"\nid "com.gradle.common-custom-user-data-gradle-plugin" version "${{ matrix.ccud-plugin-version }}"/' {} +
+          find . -type f -name "build.gradle" -exec sed -i '/server = "https:\/\/ge.solutions-team.gradle.com"/s/.*/termsOfServiceUrl = "https:\/\/gradle.com\/terms-of-service"\ntermsOfServiceAgree = "yes"/' {} +
+      build-ccud-plugin: ${{ matrix.ccud-plugin-version == needs.prepare.outputs.dev-ccud-version }}
+    secrets: inherit
