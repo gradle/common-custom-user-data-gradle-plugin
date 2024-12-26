@@ -1,0 +1,79 @@
+name: Run single cross-version test
+description: |
+  This reusable workflow tests compatibility of a single combination of CCUD plugin version, DV plugin version and Gradle version.
+  The CCUD and DV versions are encoded in the 'apply-plugin-script' input.
+
+on:
+  workflow_call:
+    inputs:
+      gradle-version:
+        required: true
+        type: string
+      apply-plugin-script:
+        required: true
+        type: string
+      build-ccud-plugin:
+        required: true
+        type: boolean
+    secrets:
+      BOT_GITHUB_TOKEN:
+        required: true
+      DEVELOCITY_ACCESS_KEY:
+        required: true
+
+jobs:
+  compatibility-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dv-solutions sample projects
+        uses: actions/checkout@v4
+        with:
+          repository: 'gradle/dv-solutions'
+          sparse-checkout: 'sample-projects/gradle'
+          path: 'dv-solutions'
+          token: ${{ secrets.BOT_GITHUB_TOKEN }}
+
+      - name: Download local CCUD plugin repository
+        if: ${{ inputs.build-ccud-plugin }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ccud-plugin-repository
+          path: build/local-plugin-repository
+
+      - name: Make local plugin repository available to samples
+        if: ${{ inputs.build-ccud-plugin }}
+        working-directory: dv-solutions/sample-projects/gradle
+        run: |
+          find . -type f -name "settings.gradle" -exec sed -i '1i pluginManagement {\n  repositories {\n    maven { url "${{ github.workspace }}/build/local-plugin-repository" }\n    gradlePluginPortal()\n  }\n}' {} +
+
+      - name: Apply CCUD plugin to samples
+        working-directory: dv-solutions/sample-projects/gradle
+        run: ${{ inputs.apply-plugin-script }}
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 8
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@main
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
+      - name: Run Gradle
+        id: gradle
+        working-directory: dv-solutions/sample-projects/gradle/${{ inputs.gradle-version }}.x/dv
+        run: ./gradlew build --stacktrace
+  
+      - name: Check Build Scan url
+        env:
+          BUILD_SCAN_URL: ${{ steps.gradle.outputs.build-scan-url }}
+        shell: bash
+        run: |
+          if [ -z "$BUILD_SCAN_URL" ] ; then
+            echo "No Build Scan detected"
+            exit 1
+          else
+              echo "Got Build Scan URL: $BUILD_SCAN_URL"
+          fi
