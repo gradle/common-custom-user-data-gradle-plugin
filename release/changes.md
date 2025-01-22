@@ -1,1 +1,1 @@
-- [NEW] Improved compatibility with older Develocity plugin versions
+- [NEW] TBD
