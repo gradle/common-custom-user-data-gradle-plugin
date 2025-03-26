@@ -16,6 +16,7 @@ final class CustomDevelocityConfig {
         develocity.setServer("https://enterprise-samples.gradle.com");
         develocity.setAllowUntrustedServer(false);
 
+        develocity.setProjectId("ccud-injection");
         */
     }
 
@@ -25,15 +26,37 @@ final class CustomDevelocityConfig {
         boolean isCiServer = System.getenv().containsKey("CI");
 
         buildScan.publishAlways();
-        buildScan.capture(capture -> capture.setTaskInputFiles(true));
         buildScan.setUploadInBackground(!isCiServer);
 
-        */
+        buildScan.tag("CUSTOM_TAG");
+        buildScan.link("custom-link", "https://enterprise-samples.gradle.com/faq");
+        buildScan.value("Custom Value Key", "Custom value");
+
+        buildScan.capture(capture -> {
+            capture.setFileFingerprints(true);
+            capture.setBuildLogging(false);
+            capture.setTestLogging(false);
+        });
+
+        buildScan.obfuscation(obfuscation -> {
+            obfuscation.hostname(s -> "FIXED-HOSTNAME");
+            obfuscation.username(s -> "FIXED-USERNAME");
+        });
+
+        buildScan.background(adapter -> {
+            adapter.tag("BACKGROUND_TAG");
+        });
+
+        buildScan.buildFinished(adapter -> {
+            buildScan.tag("BUILD_FINISHED_TAG");
+        });
+
+         */
     }
 
     void configureBuildCache(BuildCacheConfigurationAdapter buildCache) {
-
         /* Example of build cache configuration
+
         boolean isCiServer = System.getenv().containsKey("CI");
 
         // Enable the local build cache for all local and CI builds
@@ -43,9 +66,9 @@ final class CustomDevelocityConfig {
         // Only permit store operations to the remote build cache for CI builds
         // Local builds will only read from the remote build cache
         buildCache.getRemote().setEnabled(true);
-        buildCache.getRemote().setStoreEnabled(isCiServer);
+        buildCache.getRemote().setPush(isCiServer);
 
-        */
+         */
     }
 
 }
