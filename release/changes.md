@@ -1,1 +1,1 @@
-- [FIX] Use latest release of develocity-agent-adapters. This addresses classloader issues with DV injection.
+- [NEW] TBD
