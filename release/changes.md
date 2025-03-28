@@ -1,1 +1,2 @@
-- [NEW] TBD
+- [FIX] Error when applying plugin with Gradle 7.6.4 and config-cache enabled (#379)
+- [FIX] WARNING: Error invoking build scan buildFinished action (#378)
