@@ -67,12 +67,14 @@ final class CustomBuildScanEnhancements {
     private final BuildScanAdapter buildScan;
     private final ProviderFactory providers;
     private final Gradle gradle;
+    private final String rootPath;
 
-    CustomBuildScanEnhancements(DevelocityAdapter develocity, ProviderFactory providers, Gradle gradle) {
+    CustomBuildScanEnhancements(DevelocityAdapter develocity, ProviderFactory providers, Gradle gradle, String rootPath) {
         this.develocity = develocity;
         this.buildScan = develocity.getBuildScan();
         this.providers = providers;
         this.gradle = gradle;
+        this.rootPath = rootPath;
     }
 
     // Apply all build scan enhancements via custom tags, links, and values
@@ -395,17 +397,19 @@ final class CustomBuildScanEnhancements {
 
     private void captureGitMetadata() {
         // Run expensive computation in background
-        buildScan.background(new CaptureGitMetadataAction(providers, develocity));
+        buildScan.background(new CaptureGitMetadataAction(providers, develocity, rootPath));
     }
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanAdapter> {
 
         private final ProviderFactory providers;
         private final DevelocityAdapter develocity;
+        private final String rootPath;
 
-        private CaptureGitMetadataAction(ProviderFactory providers, DevelocityAdapter develocity) {
+        private CaptureGitMetadataAction(ProviderFactory providers, DevelocityAdapter develocity, String rootPath) {
             this.providers = providers;
             this.develocity = develocity;
+            this.rootPath = rootPath;
         }
 
         @Override
@@ -414,11 +418,11 @@ final class CustomBuildScanEnhancements {
                 return;
             }
 
-            String gitRepo = execAndGetStdOut("git", "config", "--get", "remote.origin.url");
-            String gitCommitId = execAndGetStdOut("git", "rev-parse", "--verify", "HEAD");
-            String gitCommitShortId = execAndGetStdOut("git", "rev-parse", "--short=8", "--verify", "HEAD");
-            String gitBranchName = getGitBranchName(() -> execAndGetStdOut("git", "rev-parse", "--abbrev-ref", "HEAD"));
-            String gitStatus = execAndGetStdOut("git", "status", "--porcelain");
+             String gitRepo = execAndGetStdOut("git", "-C", rootPath, "config", "--get", "remote.origin.url");
+             String gitCommitId = execAndGetStdOut("git", "-C", rootPath, "rev-parse", "--verify", "HEAD");
+             String gitCommitShortId = execAndGetStdOut("git", "-C", rootPath, "rev-parse", "--short=8", "--verify", "HEAD");
+             String gitBranchName = getGitBranchName(() -> execAndGetStdOut("git", "-C", rootPath, "rev-parse", "--abbrev-ref", "HEAD"));
+             String gitStatus = execAndGetStdOut("git", "-C", rootPath, "status", "--porcelain");
 
             if (isNotEmpty(gitRepo)) {
                 buildScan.value("Git repository", redactUserInfo(gitRepo));
