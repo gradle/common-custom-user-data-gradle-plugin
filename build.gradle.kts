@@ -83,6 +83,35 @@ tasks.withType<Test>().configureEach {
     dependsOn(tasks.named("shadowJar"))
 }
 
+tasks.register("printout") {
+    doLast {
+        // Print all env vars
+        println("===================================")
+        println("=== Environment variables: ===")
+        println("===================================")
+        System.getenv().toSortedMap().forEach { (key, value) ->
+            println("$key: $value")
+        }
+        println("===================================")
+        println("=== System properties: ===")
+        println("===================================")
+        // Print all system properties
+        System.getProperties().entries.sortedBy { it.key as String }.forEach { (key, value) ->
+            println("$key: $value")
+        }
+
+        println("===================================")
+        println("=== Project properties: ===")
+        println("===================================")
+        // Print all project properties
+        project.properties.entries.sortedBy { it.key }.forEach { (key, value) ->
+            if (key != "properties") {
+                println("$key: $value")
+            }
+        }
+    }
+}
+
 /*
 The rest of the build logic in this file is only required for publishing to the Gradle Plugin Portal.
 When using this project as a template for your own plugin to publish internally, you should delete all code following this comment.
