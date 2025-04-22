@@ -135,7 +135,7 @@ final class CustomBuildScanEnhancements {
             } else if (props.get(SYSTEM_PROP_ECLIPSE_BUILD_ID).isPresent()) {
                 tagIde("Eclipse", props.get(SYSTEM_PROP_ECLIPSE_BUILD_ID).get());
             } else if (props.get(ENV_VAR_VSCODE_PID).isPresent()) {
-                tagIde("VSCode", "");
+                tagIde("VS Code", "");
             } else {
                 buildScan.tag("Cmd Line");
             }
