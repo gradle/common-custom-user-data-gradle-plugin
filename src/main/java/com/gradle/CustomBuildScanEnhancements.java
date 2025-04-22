@@ -9,6 +9,7 @@ import org.gradle.api.invocation.Gradle;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 
+import java.io.File;
 import java.net.URI;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -67,14 +68,14 @@ final class CustomBuildScanEnhancements {
     private final BuildScanAdapter buildScan;
     private final ProviderFactory providers;
     private final Gradle gradle;
-    private final String rootPath;
+    private final File projectDir;
 
-    CustomBuildScanEnhancements(DevelocityAdapter develocity, ProviderFactory providers, Gradle gradle, String rootPath) {
+    CustomBuildScanEnhancements(DevelocityAdapter develocity, ProviderFactory providers, Gradle gradle, File projectDir) {
         this.develocity = develocity;
         this.buildScan = develocity.getBuildScan();
         this.providers = providers;
         this.gradle = gradle;
-        this.rootPath = rootPath;
+        this.projectDir = projectDir;
     }
 
     // Apply all build scan enhancements via custom tags, links, and values
@@ -397,19 +398,19 @@ final class CustomBuildScanEnhancements {
 
     private void captureGitMetadata() {
         // Run expensive computation in background
-        buildScan.background(new CaptureGitMetadataAction(providers, develocity, rootPath));
+        buildScan.background(new CaptureGitMetadataAction(projectDir, providers, develocity));
     }
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanAdapter> {
 
         private final ProviderFactory providers;
         private final DevelocityAdapter develocity;
-        private final String rootPath;
+        private final File projectDir;
 
-        private CaptureGitMetadataAction(ProviderFactory providers, DevelocityAdapter develocity, String rootPath) {
+        private CaptureGitMetadataAction(File projectDir, ProviderFactory providers, DevelocityAdapter develocity) {
+            this.projectDir = projectDir;
             this.providers = providers;
             this.develocity = develocity;
-            this.rootPath = rootPath;
         }
 
         @Override
@@ -418,11 +419,11 @@ final class CustomBuildScanEnhancements {
                 return;
             }
 
-             String gitRepo = execAndGetStdOut("git", "-C", rootPath, "config", "--get", "remote.origin.url");
-             String gitCommitId = execAndGetStdOut("git", "-C", rootPath, "rev-parse", "--verify", "HEAD");
-             String gitCommitShortId = execAndGetStdOut("git", "-C", rootPath, "rev-parse", "--short=8", "--verify", "HEAD");
-             String gitBranchName = getGitBranchName(() -> execAndGetStdOut("git", "-C", rootPath, "rev-parse", "--abbrev-ref", "HEAD"));
-             String gitStatus = execAndGetStdOut("git", "-C", rootPath, "status", "--porcelain");
+             String gitRepo = execAndGetStdOut(projectDir, "git", "config", "--get", "remote.origin.url");
+             String gitCommitId = execAndGetStdOut(projectDir, "git", "rev-parse", "--verify", "HEAD");
+             String gitCommitShortId = execAndGetStdOut(projectDir, "git", "rev-parse", "--short=8", "--verify", "HEAD");
+             String gitBranchName = getGitBranchName(projectDir, () -> execAndGetStdOut(projectDir, "git", "rev-parse", "--abbrev-ref", "HEAD"));
+             String gitStatus = execAndGetStdOut(projectDir, "git", "status", "--porcelain");
 
             if (isNotEmpty(gitRepo)) {
                 buildScan.value("Git repository", redactUserInfo(gitRepo));
@@ -463,7 +464,7 @@ final class CustomBuildScanEnhancements {
             return execAndCheckSuccess("git", "--version");
         }
 
-        private String getGitBranchName(Supplier<String> gitCommand) {
+        private String getGitBranchName(File projectDir, Supplier<String> gitCommand) {
             if (isJenkins(providers) || isHudson(providers)) {
                 Optional<String> branchName = envVariable("BRANCH_NAME", providers);
                 if (branchName.isPresent()) {
@@ -472,7 +473,7 @@ final class CustomBuildScanEnhancements {
 
                 Optional<String> gitBranch = envVariable("GIT_BRANCH", providers);
                 if (gitBranch.isPresent()) {
-                    Optional<String> localBranch = getLocalBranch(gitBranch.get());
+                    Optional<String> localBranch = getLocalBranch(projectDir, gitBranch.get());
                     if (localBranch.isPresent()) {
                         return localBranch.get();
                     }
@@ -501,7 +502,7 @@ final class CustomBuildScanEnhancements {
             return gitCommand.get();
         }
 
-        private static Optional<String> getLocalBranch(String remoteBranch) {
+        private static Optional<String> getLocalBranch(File projectDir, String remoteBranch) {
             // This finds the longest matching remote name. This is because, for example, a local git clone could have
             // two remotes named `origin` and `origin/two`. In this scenario, we would want a remote branch of
             // `origin/two/main` to match to the `origin/two` remote, not to `origin`
@@ -509,7 +510,7 @@ final class CustomBuildScanEnhancements {
                 .filter(remote -> remoteBranch.startsWith(remote + "/"))
                 .max(Comparator.comparingInt(String::length));
 
-            return Optional.ofNullable(execAndGetStdOut("git", "remote"))
+            return Optional.ofNullable(execAndGetStdOut(projectDir, "git", "remote"))
                 .filter(Utils::isNotEmpty)
                 .flatMap(findLongestMatchingRemote)
                 .map(remote -> remoteBranch.replaceFirst("^" + remote + "/", ""));
