@@ -398,19 +398,19 @@ final class CustomBuildScanEnhancements {
 
     private void captureGitMetadata() {
         // Run expensive computation in background
-        buildScan.background(new CaptureGitMetadataAction(projectDir, providers, develocity));
+        buildScan.background(new CaptureGitMetadataAction(develocity, providers, projectDir));
     }
 
     private static final class CaptureGitMetadataAction implements Action<BuildScanAdapter> {
 
-        private final ProviderFactory providers;
         private final DevelocityAdapter develocity;
+        private final ProviderFactory providers;
         private final File projectDir;
 
-        private CaptureGitMetadataAction(File projectDir, ProviderFactory providers, DevelocityAdapter develocity) {
-            this.projectDir = projectDir;
-            this.providers = providers;
+        private CaptureGitMetadataAction(DevelocityAdapter develocity, ProviderFactory providers, File projectDir) {
             this.develocity = develocity;
+            this.providers = providers;
+            this.projectDir = projectDir;
         }
 
         @Override
@@ -419,11 +419,11 @@ final class CustomBuildScanEnhancements {
                 return;
             }
 
-             String gitRepo = execAndGetStdOut(projectDir, "git", "config", "--get", "remote.origin.url");
-             String gitCommitId = execAndGetStdOut(projectDir, "git", "rev-parse", "--verify", "HEAD");
-             String gitCommitShortId = execAndGetStdOut(projectDir, "git", "rev-parse", "--short=8", "--verify", "HEAD");
-             String gitBranchName = getGitBranchName(projectDir, () -> execAndGetStdOut(projectDir, "git", "rev-parse", "--abbrev-ref", "HEAD"));
-             String gitStatus = execAndGetStdOut(projectDir, "git", "status", "--porcelain");
+            String gitRepo = execAndGetStdOut(projectDir, "git", "config", "--get", "remote.origin.url");
+            String gitCommitId = execAndGetStdOut(projectDir, "git", "rev-parse", "--verify", "HEAD");
+            String gitCommitShortId = execAndGetStdOut(projectDir, "git", "rev-parse", "--short=8", "--verify", "HEAD");
+            String gitBranchName = getGitBranchName(projectDir, () -> execAndGetStdOut(projectDir, "git", "rev-parse", "--abbrev-ref", "HEAD"));
+            String gitStatus = execAndGetStdOut(projectDir, "git", "status", "--porcelain");
 
             if (isNotEmpty(gitRepo)) {
                 buildScan.value("Git repository", redactUserInfo(gitRepo));
