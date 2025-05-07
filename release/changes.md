@@ -1,1 +1,1 @@
-- [NEW] TBD
+- [FIX] Retreiving git metadata when an altenate project path is given
