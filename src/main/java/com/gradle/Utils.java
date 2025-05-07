@@ -8,6 +8,7 @@ import org.gradle.util.GradleVersion;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -140,11 +141,17 @@ public final class Utils {
         }
     }
 
-    static String execAndGetStdOut(String... args) {
+    /**
+     * Executes a command and returns the standard output as a string.
+     * @param dir the working directory of the subprocess, or null if the subprocess should inherit the working directory of the current process.
+     * @param args array containing the command to call and its arguments.
+     * @return the standard output of the command, or null if the command failed.
+     */
+    static String execAndGetStdOut(File dir, String... args) {
         Runtime runtime = Runtime.getRuntime();
         Process process;
         try {
-            process = runtime.exec(args);
+            process = runtime.exec(args, null, dir);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
