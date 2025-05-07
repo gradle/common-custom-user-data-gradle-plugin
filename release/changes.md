@@ -1,1 +1,2 @@
+- [NEW] Added tagging VS Code builds
 - [FIX] Retreiving git metadata when an altenate project path is given
