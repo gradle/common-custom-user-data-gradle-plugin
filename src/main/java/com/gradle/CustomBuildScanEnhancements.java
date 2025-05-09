@@ -63,6 +63,7 @@ final class CustomBuildScanEnhancements {
     private static final String PROJECT_PROP_ANDROID_STUDIO_VERSION = "android.studio.version";
     private static final String SYSTEM_PROP_ECLIPSE_BUILD_ID = "eclipse.buildId";
     private static final String SYSTEM_PROP_IDEA_SYNC_ACTIVE = "idea.sync.active";
+    private static final String ENV_VAR_VSCODE_PID = "VSCODE_PID";
 
     private final DevelocityAdapter develocity;
     private final BuildScanAdapter buildScan;
@@ -101,6 +102,7 @@ final class CustomBuildScanEnhancements {
             ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, firstOrElseSecond(providers, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers), gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY, gradle, providers)));
             ideProperties.put(SYSTEM_PROP_ECLIPSE_BUILD_ID, systemPropertyProvider(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers));
             ideProperties.put(SYSTEM_PROP_IDEA_SYNC_ACTIVE, systemPropertyProvider(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers));
+            ideProperties.put(ENV_VAR_VSCODE_PID, environmentPropertyProvider(ENV_VAR_VSCODE_PID, providers));
 
             // Process data at execution time to ensure property initialization
             buildScan.buildFinished(new CaptureIdeMetadataAction(buildScan, ideProperties));
@@ -135,6 +137,8 @@ final class CustomBuildScanEnhancements {
                 tagIde("IntelliJ IDEA", props.get(SYSTEM_PROP_IDEA_VERSION).get());
             } else if (props.get(SYSTEM_PROP_ECLIPSE_BUILD_ID).isPresent()) {
                 tagIde("Eclipse", props.get(SYSTEM_PROP_ECLIPSE_BUILD_ID).get());
+            } else if (props.get(ENV_VAR_VSCODE_PID).isPresent()) {
+                tagIde("VS Code", "");
             } else {
                 buildScan.tag("Cmd Line");
             }
@@ -567,6 +571,14 @@ final class CustomBuildScanEnhancements {
             return overrideProperty.orElse(mainProperty);
         } else {
             return providers.provider(() -> overrideProperty.isPresent() ? overrideProperty.get() : mainProperty.getOrNull());
+        }
+    }
+
+    private static Provider<String> environmentPropertyProvider(String name, ProviderFactory providers) {
+        if (isGradle61OrNewer()) {
+            return providers.environmentVariable(name);
+        } else {
+            return providers.provider(() -> System.getenv(name));
         }
     }
 
