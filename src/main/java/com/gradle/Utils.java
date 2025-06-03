@@ -221,6 +221,10 @@ public final class Utils {
         return isGradleNewerThan("7.4");
     }
 
+    static boolean isGradle9OrNewer() {
+        return isGradleNewerThan("9.0");
+    }
+
     private static boolean isGradleNewerThan(String version) {
         return GradleVersion.current().compareTo(GradleVersion.version(version)) >= 0;
     }

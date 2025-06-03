@@ -1,2 +1,3 @@
 - [NEW] Added tagging VS Code builds
-- [FIX] Retreiving git metadata when an altenate project path is given
+- [FIX] Retrieving git metadata when an alternate project path is given
+- [FIX] Applying cache entry retention override fails build with Gradle 9
