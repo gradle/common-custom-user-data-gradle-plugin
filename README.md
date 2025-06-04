@@ -87,6 +87,8 @@ to modify the build scripts. For example, to disable the local build cache when 
 | buildCache.local.setDirectory                    | gradle.cache.local.directory                    | GRADLE_CACHE_LOCAL_DIRECTORY                    |
 | buildCache.local.setRemoveUnusedEntriesAfterDays | gradle.cache.local.removeUnusedEntriesAfterDays | GRADLE_CACHE_LOCAL_REMOVEUNUSEDENTRIESAFTERDAYS |
 
+> :warning: The `gradle.cache.local.removeUnusedEntriesAfterDays` system property override is unsupported with Gradle 9 or later, as cache entry retention settings can only be configured from an init script.
+
 ### HTTP Build Cache settings
 
 | HTTP Build Cache API                       | System property                           | Environment variable                      |
