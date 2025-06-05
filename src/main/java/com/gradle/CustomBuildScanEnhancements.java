@@ -432,7 +432,7 @@ final class CustomBuildScanEnhancements {
             String gitStatus = execAndGetStdOut(projectDir, "git", "status", "--porcelain");
 
             if (isNotEmpty(gitRepo)) {
-                buildScan.value("Git repository", redactUserInfo(gitRepo));
+                redactUserInfo(gitRepo).ifPresent(redactedGitRepo -> buildScan.value("Git repository", redactedGitRepo));
             }
             if (isNotEmpty(gitCommitId)) {
                 buildScan.value("Git commit id", gitCommitId);

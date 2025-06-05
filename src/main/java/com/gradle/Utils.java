@@ -95,14 +95,24 @@ public final class Utils {
         }
     }
 
-    static String redactUserInfo(String url) {
+    static Optional<String> redactUserInfo(String url) {
+        if (!url.startsWith("http")) {
+            return Optional.of(url);
+        }
+
         try {
-            String userInfo = new URI(url).getUserInfo();
-            return userInfo == null
-                ? url
-                : url.replace(userInfo + '@', "******@");
+            URI uri = new URI(url);
+            URI redactedUri = new URI(
+                    uri.getScheme(),
+                    uri.getUserInfo() == null || uri.getUserInfo().isEmpty() ? null : "******",
+                    uri.getHost(),
+                    uri.getPort(),
+                    uri.getRawPath(),
+                    uri.getRawQuery(),
+                    uri.getRawFragment());
+            return Optional.of(redactedUri.toString());
         } catch (URISyntaxException e) {
-            return url;
+            return Optional.empty();
         }
     }
 
