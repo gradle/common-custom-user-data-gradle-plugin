@@ -1,3 +1,4 @@
 - [NEW] Added tagging VS Code builds
 - [FIX] Retrieving git metadata when an alternate project path is given
 - [FIX] Applying cache entry retention override fails build with Gradle 9
+- [FiX] Redact user info from git urls when the user info contains a URL-encoded character
