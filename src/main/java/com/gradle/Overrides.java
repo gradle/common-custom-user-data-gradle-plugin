@@ -5,6 +5,8 @@ import com.gradle.develocity.agent.gradle.adapters.BuildCacheConfigurationAdapte
 import com.gradle.develocity.agent.gradle.adapters.BuildCacheConfigurationAdapter.RemoteBuildCacheAdapter;
 import com.gradle.develocity.agent.gradle.adapters.DevelocityAdapter;
 
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.ProviderFactory;
 
 import java.time.Duration;
@@ -14,6 +16,8 @@ import java.util.Optional;
  * Provide standardized Develocity configuration. By applying the plugin, these settings will automatically be applied.
  */
 final class Overrides {
+
+    private static final Logger logger = Logging.getLogger(Overrides.class);
 
     // system properties to override Develocity configuration
     static final String DEVELOCITY_URL = "develocity.url";
@@ -60,7 +64,13 @@ final class Overrides {
 
     private void configureLocalBuildCache(LocalBuildCacheAdapter local) {
         sysPropertyOrEnvVariable(LOCAL_CACHE_DIRECTORY, providers).ifPresent(local::setDirectory);
-        durationSysPropertyOrEnvVariable(LOCAL_CACHE_REMOVE_UNUSED_ENTRIES_AFTER_DAYS, providers).ifPresent(v -> local.setRemoveUnusedEntriesAfterDays((int) v.toDays()));
+        durationSysPropertyOrEnvVariable(LOCAL_CACHE_REMOVE_UNUSED_ENTRIES_AFTER_DAYS, providers).ifPresent(v -> {
+            if (!Utils.isGradle9OrNewer()) {
+                local.setRemoveUnusedEntriesAfterDays((int) v.toDays());
+            } else {
+                logger.warn("{} override unsupported. As of Gradle 9.0, entry retention can only be changed in an init script", LOCAL_CACHE_REMOVE_UNUSED_ENTRIES_AFTER_DAYS);
+            }
+        });
         booleanSysPropertyOrEnvVariable(LOCAL_CACHE_ENABLED, providers).ifPresent(local::setEnabled);
         booleanSysPropertyOrEnvVariable(LOCAL_CACHE_PUSH, providers).ifPresent(local::setPush);
     }
