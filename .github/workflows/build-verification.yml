@@ -37,11 +37,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-      - name: Disable signing on CI
-        run: sed -i 's/isRequired = providers.environmentVariable("CI").isPresent/isRequired = false/' build.gradle.kts
       - name: Publish to maven local
-        id: publish_to_maven_local
+        id: publish-to-maven-local
         run: ./gradlew clean publishToMavenLocal -Dgradle.cache.remote.push=false
+        env:
+          DISABLE_REQUIRED_SIGNING: true
       - name: Modify the project to use the locally published plugin
         run: |
           sed -i '1i\
@@ -55,5 +55,5 @@ jobs:
           sed -i -E 's/(id\("com.gradle.common-custom-user-data-gradle-plugin"\) version )"2[0-9\.]*"/\1"2+"/' settings.gradle.kts
 
       - name: Run a build with the locally published plugin
-        id: build_with_local_plugin
+        id: build-with-local-plugin
         run: ./gradlew clean build -i -Dgradle.cache.remote.push=false
