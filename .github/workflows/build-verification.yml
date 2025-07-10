@@ -42,18 +42,30 @@ jobs:
         run: ./gradlew clean publishToMavenLocal -Dgradle.cache.remote.push=false
         env:
           DISABLE_REQUIRED_SIGNING: true
-      - name: Modify the project to use the locally published plugin
+      - name: Create a test project
         run: |
-          sed -i '1i\
-            pluginManagement {\
-            repositories {\
-            mavenLocal()\
-            gradlePluginPortal()\
-            mavenCentral()\
-          }}\
-          ' settings.gradle.kts
-          sed -i -E 's/(id\("com.gradle.common-custom-user-data-gradle-plugin"\) version )"2[0-9\.]*"/\1"2+"/' settings.gradle.kts
+          mkdir test-project
+          echo """
+            pluginManagement {
+              repositories {
+                mavenLocal()
+                gradlePluginPortal()
+              }
+            }
+              
+            plugins {
+              id(\"com.gradle.develocity\") version \"4+\"
+              id(\"com.gradle.common-custom-user-data-gradle-plugin\") version \"2+\"
+            }
+              
+            develocity {
+              server = \"https://ge.solutions-team.gradle.com\"
+            }
+          
+            rootProject.name = \"ccud-gradle-integration-test\"
+          """ > test-project/settings.gradle.kts
 
       - name: Run a build with the locally published plugin
         id: build-with-local-plugin
-        run: ./gradlew clean build -i -Dgradle.cache.remote.push=false
+        run: gradle help
+        working-directory: test-project
