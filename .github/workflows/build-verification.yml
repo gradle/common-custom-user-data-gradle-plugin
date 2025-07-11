@@ -44,12 +44,19 @@ jobs:
           DISABLE_REQUIRED_SIGNING: true
       - name: Create a test project
         run: |
-          mkdir test-project
           echo """
             pluginManagement {
               repositories {
-                mavenLocal()
                 gradlePluginPortal()
+                exclusiveContent {
+                  forRepository {
+                    mavenLocal()
+                  }
+                  filter {
+                    includeModule(\"com.gradle\", \"common-custom-user-data-gradle-plugin\")
+                    includeModule(\"com.gradle.common-custom-user-data-gradle-plugin\", \"com.gradle.common-custom-user-data-gradle-plugin.gradle.plugin\")
+                  }
+                }
               }
             }
               
@@ -63,9 +70,9 @@ jobs:
             }
           
             rootProject.name = \"ccud-gradle-integration-test\"
-          """ > test-project/settings.gradle.kts
+          """ > ${{ runner.temp }}/settings.gradle.kts
 
       - name: Run a build with the locally published plugin
         id: build-with-local-plugin
         run: gradle help
-        working-directory: test-project
+        working-directory: ${{ runner.temp }}
