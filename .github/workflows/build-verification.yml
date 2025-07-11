@@ -18,11 +18,18 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-      - name: Build with Gradle
-        run: ./gradlew build -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
+      - name: Build and publish to Maven Local with Gradle
+        run: ./gradlew build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
+        env:
+          DISABLE_REQUIRED_SIGNING: true
+      - name: Upload published plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: common-custom-user-data-gradle-plugin
+          path: ~/.m2/repository/com/gradle
 
-  selftest:
-    name: Publish to Maven Local and Test with Locally Published Plugin
+  local-test:
+    name: Test with Locally Published Plugin
     runs-on: ubuntu-latest
     needs: verification
     steps:
@@ -37,11 +44,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-      - name: Publish to maven local
-        id: publish-to-maven-local
-        run: ./gradlew clean publishToMavenLocal -Dgradle.cache.remote.push=false
-        env:
-          DISABLE_REQUIRED_SIGNING: true
+      - name: Download plugin to maven local
+        uses: actions/download-artifact@v4
+        with:
+          name: common-custom-user-data-gradle-plugin
+          path: ~/.m2/repository/com/gradle
       - name: Create a test project
         run: |
           echo """
