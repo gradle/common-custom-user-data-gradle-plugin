@@ -91,7 +91,8 @@ You may also remove `plugin-publish` and `signing` from the `plugins {}` block a
 
 signing {
     // Require publications to be signed on CI. Otherwise, publication will be signed only if keys are provided.
-    isRequired = providers.environmentVariable("CI").isPresent
+    isRequired = providers.environmentVariable("CI").isPresent &&
+            providers.environmentVariable("DISABLE_REQUIRED_SIGNING").isPresent.not()
 
     useInMemoryPgpKeys(
         providers.environmentVariable("PGP_SIGNING_KEY").orNull,
