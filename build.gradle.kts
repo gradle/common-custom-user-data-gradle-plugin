@@ -5,7 +5,7 @@ plugins {
     id("com.gradle.plugin-publish") version "1.3.1"
     id("com.github.breadmoirai.github-release") version "2.5.2"
     id("org.gradle.wrapper-upgrade") version "0.12"
-    id("com.gradleup.shadow") version "8.3.7"
+    id("com.gradleup.shadow") version "8.3.8"
 }
 
 val releaseVersion = releaseVersion()
@@ -22,7 +22,7 @@ repositories {
 dependencies {
     implementation("com.gradle:develocity-gradle-plugin-adapters:1.2.1")
 
-    testImplementation(platform("org.junit:junit-bom:5.13.2"))
+    testImplementation(platform("org.junit:junit-bom:5.13.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -91,7 +91,8 @@ You may also remove `plugin-publish` and `signing` from the `plugins {}` block a
 
 signing {
     // Require publications to be signed on CI. Otherwise, publication will be signed only if keys are provided.
-    isRequired = providers.environmentVariable("CI").isPresent
+    isRequired = providers.environmentVariable("CI").isPresent &&
+            providers.environmentVariable("DISABLE_REQUIRED_SIGNING").isPresent.not()
 
     useInMemoryPgpKeys(
         providers.environmentVariable("PGP_SIGNING_KEY").orNull,
