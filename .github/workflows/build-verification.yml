@@ -18,5 +18,68 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-      - name: Build with Gradle
-        run: ./gradlew build -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
+      - name: Build and publish to Maven Local with Gradle
+        run: ./gradlew build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
+        env:
+          DISABLE_REQUIRED_SIGNING: true
+      - name: Upload published plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: common-custom-user-data-gradle-plugin
+          path: ~/.m2/repository/com/gradle
+
+  local-test:
+    name: Test with Locally Published Plugin
+    runs-on: ubuntu-latest
+    needs: verification
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+      - name: Download plugin to maven local
+        uses: actions/download-artifact@v4
+        with:
+          name: common-custom-user-data-gradle-plugin
+          path: ~/.m2/repository/com/gradle
+      - name: Create a test project
+        run: |
+          echo """
+            pluginManagement {
+              repositories {
+                gradlePluginPortal()
+                exclusiveContent {
+                  forRepository {
+                    mavenLocal()
+                  }
+                  filter {
+                    includeModule(\"com.gradle\", \"common-custom-user-data-gradle-plugin\")
+                    includeModule(\"com.gradle.common-custom-user-data-gradle-plugin\", \"com.gradle.common-custom-user-data-gradle-plugin.gradle.plugin\")
+                  }
+                }
+              }
+            }
+              
+            plugins {
+              id(\"com.gradle.develocity\") version \"4+\"
+              id(\"com.gradle.common-custom-user-data-gradle-plugin\") version \"2+\"
+            }
+              
+            develocity {
+              server = \"https://ge.solutions-team.gradle.com\"
+            }
+          
+            rootProject.name = \"ccud-gradle-integration-test\"
+          """ > ${{ runner.temp }}/settings.gradle.kts
+
+      - name: Run a build with the locally published plugin
+        id: build-with-local-plugin
+        run: gradle help
+        working-directory: ${{ runner.temp }}
