@@ -304,8 +304,12 @@ final class CustomBuildScanEnhancements {
                     addCustomValueAndSearchLink(develocity, "CI workflow", value));
                 envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
                     addCustomValueAndSearchLink(develocity, "CI run", value));
+                envVariable("GITHUB_ACTION", providers).ifPresent(value ->
+                        addCustomValueAndSearchLink(develocity, "CI step", value));
+                envVariable("GITHUB_JOB", providers).ifPresent(value ->
+                        addCustomValueAndSearchLink(develocity, "CI job", value));
                 envVariable("GITHUB_HEAD_REF", providers).filter(value -> !value.isEmpty()).ifPresent(value ->
-                    buildScan.value("PR branch", value));
+                        buildScan.value("PR branch", value));
             }
 
             if (isGitLab(providers)) {
