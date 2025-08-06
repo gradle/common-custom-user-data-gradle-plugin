@@ -5,7 +5,7 @@ plugins {
     id("com.gradle.plugin-publish") version "1.3.1"
     id("com.github.breadmoirai.github-release") version "2.5.2"
     id("org.gradle.wrapper-upgrade") version "0.12"
-    id("com.gradleup.shadow") version "8.3.8"
+    id("com.gradleup.shadow") version "8.3.9"
 }
 
 val releaseVersion = releaseVersion()
