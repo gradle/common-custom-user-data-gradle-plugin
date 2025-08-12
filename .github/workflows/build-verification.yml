@@ -36,22 +36,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - java-version: '8'
-            gradle-version: '4.0'
-          - java-version: '8'
-            gradle-version: '5.0'
-          - java-version: '8'
-            gradle-version: '6.0'
-          - java-version: '8'
-            gradle-version: '7.0'
-          - java-version: '8'
-            gradle-version: '8.0'
-          - java-version: '21'
-            gradle-version: '9.0'
-          - java-version: '21'
-            gradle-version: 'current'
-          - java-version: '21'
-            gradle-version: 'release-candidate'
+          - gradle-version: '5.0'
+            java-version: '8'
+          - gradle-version: '6.5'
+            java-version: '8'
+          - gradle-version: '7.0'
+            java-version: '8'
+          - gradle-version: '8.0'
+            java-version: '8'
+          - gradle-version: '9.0.0'
+            java-version: '21'
+          - gradle-version: 'current'
+            java-version: '21'
+          - gradle-version: 'release-candidate'
+            java-version: '21'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -70,7 +68,37 @@ jobs:
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
-      - name: Create a test project
+      - name: Create the test project for Gradle 5.0
+        if: matrix.gradle-version == '5.0'
+        run: |
+          echo """
+            buildscript {
+                repositories {
+                mavenLocal()
+                maven { url 'https://plugins.gradle.org/m2/' }
+              }
+                dependencies {
+                classpath 'com.gradle.develocity:com.gradle.develocity.gradle.plugin:4+'
+                classpath 'com.gradle.common-custom-user-data-gradle-plugin:com.gradle.common-custom-user-data-gradle-plugin.gradle.plugin:2+'
+              }
+            }
+            
+            apply plugin: 'com.gradle.develocity'
+            apply plugin: 'com.gradle.common-custom-user-data-gradle-plugin'
+              
+            develocity {
+              server = 'https://ge.solutions-team.gradle.com'
+            }
+          
+          """ > ${{ runner.temp }}/build.gradle
+          
+          echo """
+            rootProject.name = \"ccud-gradle-integration-test\"
+          
+          """ > ${{ runner.temp }}/settings.gradle
+
+      - name: Create the test project for Gradle 6.5 and above
+        if: matrix.gradle-version != '5.0'
         run: |
           echo """
             pluginManagement {
@@ -87,12 +115,12 @@ jobs:
                 }
               }
             }
-              
+          
             plugins {
               id(\"com.gradle.develocity\") version \"4+\"
               id(\"com.gradle.common-custom-user-data-gradle-plugin\") version \"2+\"
             }
-              
+          
             develocity {
               server = \"https://ge.solutions-team.gradle.com\"
             }
@@ -100,15 +128,20 @@ jobs:
             rootProject.name = \"ccud-gradle-integration-test\"
           """ > ${{ runner.temp }}/settings.gradle
           
+      - name: Create Gradle properties file
+        run: |
           echo """
-            org.gradle.vfs.watch=true
-            org.gradle.daemon=true
-            org.gradle.parallel=true
-            org.gradle.caching=true
-            org.gradle.configuration-cache=true
-            org.gradle.unsafe.configuration-cache=true
-            org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
+          org.gradle.vfs.watch=true
+          org.gradle.daemon=true
+          org.gradle.parallel=true
+          org.gradle.caching=true
+          org.gradle.configuration-cache=true
+          org.gradle.unsafe.configuration-cache=true
+          org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
+          
           """ > ${{ runner.temp }}/gradle.properties
+          
+          [ "${{ matrix.gradle-version }}" == "6.5" ] && echo "org.gradle.unsafe.configuration-cache=on" >> ${{ runner.temp }}/gradle.properties || echo ""
 
       - name: Run a build with the locally published plugin
         id: build-with-local-plugin
