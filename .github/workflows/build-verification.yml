@@ -45,7 +45,7 @@ jobs:
         with:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
       - name: Download plugin to maven local
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
