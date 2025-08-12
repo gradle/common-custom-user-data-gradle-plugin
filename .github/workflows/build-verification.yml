@@ -38,6 +38,8 @@ jobs:
         include:
           - gradle-version: '5.0'
             java-version: '8'
+          - gradle-version: '6.0'
+            java-version: '8'
           - gradle-version: '6.5'
             java-version: '8'
           - gradle-version: '7.0'
@@ -68,10 +70,10 @@ jobs:
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
-      - name: Create the test project for Gradle 5.0
-        if: matrix.gradle-version == '5.0'
+      - name: Create the test project for Gradle 5.0, 6.0 and 6.5
+        if: matrix.gradle-version == '5.0' || matrix.gradle-version == '6.0' || matrix.gradle-version == '6.5'
         run: |
-          echo """
+          { [ "${{ matrix.gradle-version }}" == "5.0" ] && output_file="build.gradle" || output_file="settings.gradle"; }; echo """
             buildscript {
                 repositories {
                 mavenLocal()
@@ -89,16 +91,22 @@ jobs:
             develocity {
               server = 'https://ge.solutions-team.gradle.com'
             }
-          
-          """ > ${{ runner.temp }}/build.gradle
+          """ > ${{ runner.temp }}/"$output_file"
           
           echo """
             rootProject.name = \"ccud-gradle-integration-test\"
+          """ >> ${{ runner.temp }}/settings.gradle
           
-          """ > ${{ runner.temp }}/settings.gradle
+          echo """
+            org.gradle.vfs.watch=true
+            org.gradle.daemon=true
+            org.gradle.parallel=true
+            org.gradle.caching=true
+            org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
+          """ > ${{ runner.temp }}/gradle.properties
 
-      - name: Create the test project for Gradle 6.5 and above
-        if: matrix.gradle-version != '5.0'
+      - name: Create the test project for Gradle 7.0 and above
+        if: matrix.gradle-version != '5.0' && matrix.gradle-version != '6.0' && matrix.gradle-version != '6.5'
         run: |
           echo """
             pluginManagement {
@@ -128,20 +136,15 @@ jobs:
             rootProject.name = \"ccud-gradle-integration-test\"
           """ > ${{ runner.temp }}/settings.gradle
           
-      - name: Create Gradle properties file
-        run: |
           echo """
-          org.gradle.vfs.watch=true
-          org.gradle.daemon=true
-          org.gradle.parallel=true
-          org.gradle.caching=true
-          org.gradle.configuration-cache=true
-          org.gradle.unsafe.configuration-cache=true
-          org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
-          
+            org.gradle.vfs.watch=true
+            org.gradle.daemon=true
+            org.gradle.parallel=true
+            org.gradle.caching=true
+            org.gradle.configuration-cache=true
+            org.gradle.unsafe.configuration-cache=true
+            org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
           """ > ${{ runner.temp }}/gradle.properties
-          
-          [ "${{ matrix.gradle-version }}" == "6.5" ] && echo "org.gradle.unsafe.configuration-cache=on" >> ${{ runner.temp }}/gradle.properties || echo ""
 
       - name: Run a build with the locally published plugin
         id: build-with-local-plugin
