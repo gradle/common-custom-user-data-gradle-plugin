@@ -50,7 +50,7 @@ public final class Utils {
 
     static Optional<String> envVariable(String name, ProviderFactory providers) {
         if (isGradle65OrNewer() && !isGradle74OrNewer()) {
-            Provider<String> variable = reflectionForUseAtConfigurationTime(providers.environmentVariable(name));
+            Provider<String> variable = forUseAtConfigurationTime(providers.environmentVariable(name));
             return Optional.ofNullable(variable.getOrNull());
         }
         return Optional.ofNullable(System.getenv(name));
@@ -66,7 +66,7 @@ public final class Utils {
 
     static Optional<String> sysProperty(String name, ProviderFactory providers) {
         if (isGradle65OrNewer() && !isGradle74OrNewer()) {
-            Provider<String> property = reflectionForUseAtConfigurationTime(providers.systemProperty(name));
+            Provider<String> property = forUseAtConfigurationTime(providers.systemProperty(name));
             return Optional.ofNullable(property.getOrNull());
         }
         return Optional.ofNullable(System.getProperty(name));
@@ -267,12 +267,12 @@ public final class Utils {
         }
     }
 
-    private static <T> Provider<T> reflectionForUseAtConfigurationTime(Provider<T> provider) {
+    private static Provider<String> forUseAtConfigurationTime(Provider<String> provider) {
         if (isGradle65OrNewer() && !isGradle74OrNewer()) {
             try {
                 // Use reflection to access the forUseAtConfigurationTime method as it was removed in Gradle 9.
                 Method method = Provider.class.getMethod("forUseAtConfigurationTime");
-                return (Provider<T>) method.invoke(provider);
+                return (Provider<String>) method.invoke(provider);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to invoke forUseAtConfigurationTime via reflection", e);
             }
