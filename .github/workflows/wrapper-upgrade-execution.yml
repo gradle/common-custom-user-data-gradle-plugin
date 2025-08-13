@@ -23,7 +23,7 @@ jobs:
           git_commit_gpgsign: true
           git_config_global: true
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -36,4 +36,4 @@ jobs:
       - name: Upgrade Wrappers
         run: ./gradlew clean upgradeGradleWrapperAll --continue -Porg.gradle.java.installations.auto-download=false
         env:
-          WRAPPER_UPGRADE_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WRAPPER_UPGRADE_GIT_TOKEN: ${{ secrets.GH_BOT_GITHUB_TOKEN }}
