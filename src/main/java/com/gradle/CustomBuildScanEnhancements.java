@@ -304,6 +304,10 @@ final class CustomBuildScanEnhancements {
                     addCustomValueAndSearchLink(develocity, "CI workflow", value));
                 envVariable("GITHUB_RUN_ID", providers).ifPresent(value ->
                     addCustomValueAndSearchLink(develocity, "CI run", value));
+                envVariable("GITHUB_RUN_ATTEMPT", providers).ifPresent(value ->
+                        buildScan.value("CI run attempt", value));
+                envVariable("GITHUB_RUN_NUMBER", providers).ifPresent(value ->
+                        buildScan.value("CI run number", value));
                 envVariable("GITHUB_ACTION", providers).ifPresent(value ->
                         addCustomValueAndSearchLink(develocity, "CI step", value));
                 envVariable("GITHUB_JOB", providers).ifPresent(value ->
