@@ -1,0 +1,81 @@
+name: Verify Build against future Gradle versions
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  push:
+    paths:
+      - ".github/workflows/rc-build-verification.yml"
+  workflow_dispatch:
+
+jobs:
+  verification:
+    name: Verification
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        gradle-version: ['release-candidate', 'nightly']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          gradle-version: '${{ matrix.gradle-version }}'
+
+      - name: Build and publish to Maven Local with Gradle
+        run: gradle build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
+        env:
+          DISABLE_REQUIRED_SIGNING: true
+
+      - name: Create the test project
+        run: |
+          echo """
+            pluginManagement {
+              repositories {
+                gradlePluginPortal()
+                exclusiveContent {
+                  forRepository {
+                    mavenLocal()
+                  }
+                  filter {
+                    includeModule(\"com.gradle\", \"common-custom-user-data-gradle-plugin\")
+                    includeModule(\"com.gradle.common-custom-user-data-gradle-plugin\", \"com.gradle.common-custom-user-data-gradle-plugin.gradle.plugin\")
+                  }
+                }
+              }
+            }
+
+            plugins {
+              id(\"com.gradle.develocity\") version \"4+\"
+              id(\"com.gradle.common-custom-user-data-gradle-plugin\") version \"2+\"
+            }
+
+            develocity {
+              server = \"https://ge.solutions-team.gradle.com\"
+            }
+
+            rootProject.name = \"ccud-gradle-rc-integration-test\"
+          """ > ${{ runner.temp }}/settings.gradle
+
+          echo """
+            org.gradle.vfs.watch=true
+            org.gradle.daemon=true
+            org.gradle.parallel=true
+            org.gradle.caching=true
+            org.gradle.configuration-cache=true
+            org.gradle.unsafe.configuration-cache=true
+            org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
+          """ > ${{ runner.temp }}/gradle.properties
+
+      - name: Run a build with the locally published plugin
+        run: gradle help
+        working-directory: ${{ runner.temp }}
