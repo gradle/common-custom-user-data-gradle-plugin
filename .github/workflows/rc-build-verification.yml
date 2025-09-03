@@ -1,4 +1,6 @@
 name: Verify Build against future Gradle versions
+permissions:
+  contents: read
 on:
   schedule:
     - cron: '0 4 * * *'
