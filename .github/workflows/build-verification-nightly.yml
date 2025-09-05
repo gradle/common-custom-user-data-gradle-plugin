@@ -1,4 +1,6 @@
 name: Verify Build (nightly)
+permissions:
+  contents: read
 on:
   schedule:
     - cron: '0 4 * * *'
