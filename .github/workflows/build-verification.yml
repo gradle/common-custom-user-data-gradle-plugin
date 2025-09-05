@@ -94,7 +94,7 @@ jobs:
           """ > ${{ runner.temp }}/"$output_file"
           
           echo """
-            rootProject.name = \"ccud-gradle-integration-test\"
+            rootProject.name = \"ccud-test-gradle-${{ matrix.gradle-version }}\"
           """ >> ${{ runner.temp }}/settings.gradle
           
           echo """
@@ -133,7 +133,7 @@ jobs:
               server = \"https://ge.solutions-team.gradle.com\"
             }
           
-            rootProject.name = \"ccud-gradle-integration-test\"
+            rootProject.name = \"ccud-test-gradle-${{ matrix.gradle-version }}\"
           """ > ${{ runner.temp }}/settings.gradle
           
           echo """
@@ -148,5 +148,5 @@ jobs:
 
       - name: Run a build with the locally published plugin
         id: build-with-local-plugin
-        run: gradle help
+        run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=${{ matrix.java-version }}"
         working-directory: ${{ runner.temp }}
