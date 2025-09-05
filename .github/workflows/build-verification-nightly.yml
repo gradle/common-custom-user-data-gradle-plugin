@@ -103,3 +103,15 @@ jobs:
       - name: Run a build with the locally published plugin
         run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=21"
         working-directory: ${{ runner.temp }}
+      - name: Get secrets
+        if: ${{ failure() && github.event_name == 'schedule' }}
+        uses: gradle/security/actions/gradle-secrets-action@master
+        with:
+          role-to-assume: arn:aws:iam::992382829881:role/GHASecrets_dv-solutions_all
+          secret-ids: |
+            DV_SOLUTIONS_SCHEDULED_WORKFLOWS_WEBHOOK_URL,gha/dv-solutions/_all/dv_solutions_scheduled_workflows_webhook_url
+      - name: Report scheduled workflow failure
+        uses: slackapi/slack-github-action@v2.1.1
+        if: ${{ failure() && github.event_name == 'schedule' }}
+        with:
+          webhook: ${{ env.DV_SOLUTIONS_SCHEDULED_WORKFLOWS_WEBHOOK_URL }}
