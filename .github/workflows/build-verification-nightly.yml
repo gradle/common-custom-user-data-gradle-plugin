@@ -1,4 +1,4 @@
-name: Verify Build (nightly)
+name: Verify Build (Nightly)
 permissions:
   contents: read
 on:
@@ -43,13 +43,14 @@ jobs:
       fail-fast: false
       matrix:
         gradle-version: ['current', 'release-candidate', 'nightly']
+        java-version: ['21']
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Set up JDK 21
+      - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          java-version: '21'
+          java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -101,5 +102,5 @@ jobs:
             org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
           """ > ${{ runner.temp }}/gradle.properties
       - name: Run a build with the locally published plugin
-        run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=21"
+        run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=${{ matrix.java-version }}"
         working-directory: ${{ runner.temp }}
