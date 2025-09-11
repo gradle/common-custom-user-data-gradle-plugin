@@ -1,7 +1,13 @@
-name: Verify Build
+name: Verify Build (Nightly)
 permissions:
   contents: read
-on: [ push, pull_request, workflow_dispatch ]
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  push:
+    paths:
+      - ".github/workflows/build-verification-nightly.yml"
+  workflow_dispatch:
 
 jobs:
   verification:
@@ -19,8 +25,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          gradle-version: 'release-candidate'
       - name: Build and publish to Maven Local with Gradle
-        run: ./gradlew build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
+        run: gradle build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
         env:
           DISABLE_REQUIRED_SIGNING: true
       - name: Upload published plugin
@@ -36,32 +43,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - gradle-version: '5.0'
-            java-version: '8'
-          - gradle-version: '6.0'
-            java-version: '8'
-          - gradle-version: '6.5'
-            java-version: '8'
-          - gradle-version: '7.0'
-            java-version: '8'
-          - gradle-version: '8.0'
-            java-version: '8'
-          - gradle-version: '9.0.0'
-            java-version: '21'
-          - gradle-version: 'current'
-            java-version: '21'
-          - gradle-version: 'release-candidate'
-            java-version: '21'
+        gradle-version: ['current', 'release-candidate', 'nightly']
+        java-version: ['21']
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Set up JDK ${{ matrix.java-version }}
+      - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          java-version: '${{ matrix.java-version }}'
+          java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
-      - name: Set up Gradle ${{ matrix.gradle-version }}
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
@@ -71,43 +63,7 @@ jobs:
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
-      - name: Create the test project for Gradle 5.0, 6.0 and 6.5
-        if: matrix.gradle-version == '5.0' || matrix.gradle-version == '6.0' || matrix.gradle-version == '6.5'
-        run: |
-          { [ "${{ matrix.gradle-version }}" == "5.0" ] && output_file="build.gradle" || output_file="settings.gradle"; }; echo """
-            buildscript {
-                repositories {
-                mavenLocal()
-                maven { url 'https://plugins.gradle.org/m2/' }
-              }
-                dependencies {
-                classpath 'com.gradle.develocity:com.gradle.develocity.gradle.plugin:4+'
-                classpath 'com.gradle.common-custom-user-data-gradle-plugin:com.gradle.common-custom-user-data-gradle-plugin.gradle.plugin:2+'
-              }
-            }
-            
-            apply plugin: 'com.gradle.develocity'
-            apply plugin: 'com.gradle.common-custom-user-data-gradle-plugin'
-              
-            develocity {
-              server = 'https://ge.solutions-team.gradle.com'
-            }
-          """ > ${{ runner.temp }}/"$output_file"
-          
-          echo """
-            rootProject.name = \"ccud-test-gradle-${{ matrix.gradle-version }}\"
-          """ >> ${{ runner.temp }}/settings.gradle
-          
-          echo """
-            org.gradle.vfs.watch=true
-            org.gradle.daemon=true
-            org.gradle.parallel=true
-            org.gradle.caching=true
-            org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
-          """ > ${{ runner.temp }}/gradle.properties
-
-      - name: Create the test project for Gradle 7.0 and above
-        if: matrix.gradle-version != '5.0' && matrix.gradle-version != '6.0' && matrix.gradle-version != '6.5'
+      - name: Create the test project
         run: |
           echo """
             pluginManagement {
@@ -124,19 +80,19 @@ jobs:
                 }
               }
             }
-          
+
             plugins {
               id(\"com.gradle.develocity\") version \"4+\"
               id(\"com.gradle.common-custom-user-data-gradle-plugin\") version \"2+\"
             }
-          
+
             develocity {
               server = \"https://ge.solutions-team.gradle.com\"
             }
-          
+
             rootProject.name = \"ccud-test-gradle-${{ matrix.gradle-version }}\"
           """ > ${{ runner.temp }}/settings.gradle
-          
+
           echo """
             org.gradle.vfs.watch=true
             org.gradle.daemon=true
@@ -146,8 +102,6 @@ jobs:
             org.gradle.unsafe.configuration-cache=true
             org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
           """ > ${{ runner.temp }}/gradle.properties
-
       - name: Run a build with the locally published plugin
-        id: build-with-local-plugin
         run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=${{ matrix.java-version }}"
         working-directory: ${{ runner.temp }}
