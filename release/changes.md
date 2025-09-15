@@ -1,1 +1,1 @@
-- [NEW] TBD
+- [NEW] Capture GitHub Actions run number and run attempt as custom values to precisely identify workflow runs
