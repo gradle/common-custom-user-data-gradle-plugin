@@ -13,7 +13,7 @@ final class CustomDevelocityConfig {
     void configureDevelocity(DevelocityAdapter develocity) {
         /* Example of Develocity configuration
 
-        develocity.setServer("https://enterprise-samples.gradle.com");
+        develocity.setServer("https://develocity.example.com");
         develocity.setAllowUntrustedServer(false);
 
         develocity.setProjectId("ccud-injection");
@@ -29,7 +29,7 @@ final class CustomDevelocityConfig {
         buildScan.setUploadInBackground(!isCiServer);
 
         buildScan.tag("CUSTOM_TAG");
-        buildScan.link("custom-link", "https://enterprise-samples.gradle.com/faq");
+        buildScan.link("custom-link", "https://develocity.example.com/faq");
         buildScan.value("Custom Value Key", "Custom value");
 
         buildScan.capture(capture -> {
