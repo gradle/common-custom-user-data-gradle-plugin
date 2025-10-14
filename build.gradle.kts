@@ -165,3 +165,19 @@ fun releaseNotes(): Provider<String> {
     val releaseNotesFile = layout.projectDirectory.file("release/changes.md")
     return providers.fileContents(releaseNotesFile).asText.map(String::trim)
 }
+
+val processReleaseNotes = tasks.register("processReleaseNotes") {
+    val releaseNotesFile = layout.projectDirectory.file("release/changes.md").toString()
+    inputs.property("releaseNotesFile", releaseNotesFile)
+    outputs.file(layout.buildDirectory.dir("release-notes"))
+    outputs.cacheIf { true }
+    doLast {
+        println("Processing release notes at: $releaseNotesFile")
+        TimeUnit.SECONDS.sleep(3)
+        println("Finished processing release notes")
+    }
+}
+
+tasks.named("assemble").configure {
+    dependsOn(processReleaseNotes)
+}
