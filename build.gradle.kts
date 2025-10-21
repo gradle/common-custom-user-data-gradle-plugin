@@ -38,8 +38,12 @@ wrapperUpgrade {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+tasks.compileJava {
+    options.release = 8
 }
 
 tasks.jar { enabled = false }
