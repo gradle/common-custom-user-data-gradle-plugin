@@ -125,7 +125,7 @@ project sources provide a good template to get started with your own plugin.
 
 Refer to the [Javadoc](https://docs.gradle.com/enterprise/gradle-plugin/api/) for more details on the key types available for use.
 
-See the [Gradle User Manual](https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html#custom-plugin-repositories) for more details on publishing Gradle plugins to an internal repository.
+See the [Gradle User Manual](https://docs.gradle.org/current/userguide/publishing_binary_plugin_advanced.html) for more details on publishing Gradle plugins to an internal repository.
 
 ## Changelog
 
