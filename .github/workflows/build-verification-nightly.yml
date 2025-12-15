@@ -60,7 +60,7 @@ jobs:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
       - name: Download plugin to maven local
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
