@@ -32,7 +32,7 @@ jobs:
         env:
           DISABLE_REQUIRED_SIGNING: true
       - name: Upload published plugin
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
