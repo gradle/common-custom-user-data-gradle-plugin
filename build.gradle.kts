@@ -4,7 +4,6 @@ plugins {
     id("signing")
     id("com.gradle.plugin-publish") version "2.0.0"
     id("com.github.breadmoirai.github-release") version "2.5.2"
-    id("org.gradle.wrapper-upgrade") version "0.12"
     id("com.gradleup.shadow") version "9.3.1"
 }
 
@@ -26,14 +25,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-wrapperUpgrade {
-    gradle {
-        register("common-custom-user-data-gradle-plugin") {
-            repo = "gradle/common-custom-user-data-gradle-plugin"
-        }
-    }
 }
 
 java {
