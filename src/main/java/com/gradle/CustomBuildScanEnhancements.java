@@ -87,6 +87,7 @@ final class CustomBuildScanEnhancements {
         captureCiOrLocal();
         captureCiMetadata();
         captureGitMetadata();
+        captureAgentMetadata();
     }
 
     private void captureOs() {
@@ -549,6 +550,41 @@ final class CustomBuildScanEnhancements {
                 .filter(Utils::isNotEmpty)
                 .flatMap(findLongestMatchingRemote)
                 .map(remote -> remoteBranch.replaceFirst("^" + remote + "/", ""));
+        }
+    }
+
+    private void captureAgentMetadata() {
+        buildScan.background(new CaptureAgentMetadataAction(buildScan, providers));
+    }
+
+    private static final class CaptureAgentMetadataAction implements Action<BuildScanAdapter> {
+
+        private final BuildScanAdapter buildScan;
+        private final ProviderFactory providers;
+
+        private CaptureAgentMetadataAction(BuildScanAdapter buildScan, ProviderFactory providers) {
+            this.buildScan = buildScan;
+            this.providers = providers;
+        }
+
+        @Override
+        public void execute(BuildScanAdapter buildScan) {
+            Optional<String> claudeCode = envVariable("CLAUDECODE", providers);
+            Optional<String> codexSandbox = envVariable("CODEX_SANDBOX", providers);
+            Optional<String> openCode = envVariable("OPENCODE", providers);
+
+            claudeCode.ifPresent( env -> {
+                buildScan.tag("Claude");
+                buildScan.value("AI Agent", "Claude");
+            });
+            codexSandbox.ifPresent( env -> {
+                buildScan.tag("Codex");
+                buildScan.value("AI Agent", "Codex");
+            });
+            openCode.ifPresent( env -> {
+                buildScan.tag("OpenCode");
+                buildScan.value("AI Agent", "OpenCode");
+            });
         }
     }
 
