@@ -21,7 +21,7 @@ repositories {
 dependencies {
     implementation("com.gradle:develocity-gradle-plugin-adapters:1.2.1")
 
-    testImplementation(platform("org.junit:junit-bom:6.0.2"))
+    testImplementation(platform("org.junit:junit-bom:6.0.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
