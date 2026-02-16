@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.gradle.CiUtils.isAzurePipelines;
@@ -304,6 +306,7 @@ final class CustomBuildScanEnhancements {
                 Optional<String> headRef = envVariable("GITHUB_HEAD_REF", providers).filter(value -> !value.isEmpty());
                 Optional<String> serverUrl = envVariable("GITHUB_SERVER_URL", providers);
                 Optional<String> gitRepository = envVariable("GITHUB_REPOSITORY", providers);
+                Optional<String> refName = envVariable("GITHUB_REF_NAME", providers);
 
                 workflow.ifPresent(value ->
                         addCustomValueAndSearchLink(develocity, "CI workflow", value));
@@ -327,6 +330,17 @@ final class CustomBuildScanEnhancements {
                             .append("/actions/runs/").append(runId.get());
                     runAttempt.ifPresent(value -> githubActionsBuild.append("/attempts/").append(value));
                     buildScan.link("GitHub Actions build", githubActionsBuild.toString());
+                }
+
+                boolean isPullRequestBuild = headRef.isPresent();
+                if (serverUrl.isPresent() && gitRepository.isPresent() && isPullRequestBuild && refName.isPresent()) {
+                    Matcher matcher = Pattern.compile("^(\\d+)/merge$").matcher(refName.get());
+                    if (matcher.matches()) {
+                        String githubPullRequest = serverUrl.get() +
+                                "/" + gitRepository.get() +
+                                "/pull/" + matcher.group(1);
+                        buildScan.link("GitHub pull request", githubPullRequest);
+                    }
                 }
 
                 if (runId.isPresent()) {
