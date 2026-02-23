@@ -333,6 +333,7 @@ final class CustomBuildScanEnhancements {
                 }
 
                 boolean isPullRequestBuild = headRef.isPresent();
+                buildScan.value("Debug", "'${serverUrl}'.isPresent() && '${gitRepository}'.isPresent() && ${isPullRequestBuild} && '${refName}'.isPresent()");
                 if (serverUrl.isPresent() && gitRepository.isPresent() && isPullRequestBuild && refName.isPresent()) {
                     Matcher matcher = Pattern.compile("^(\\d+)/merge$").matcher(refName.get());
                     if (matcher.matches()) {
