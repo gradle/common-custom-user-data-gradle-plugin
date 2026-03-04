@@ -2,7 +2,7 @@ plugins {
     id("java-gradle-plugin")
     id("maven-publish")
     id("signing")
-    id("com.gradle.plugin-publish") version "2.0.0"
+    id("com.gradle.plugin-publish") version "2.1.0"
     id("com.github.breadmoirai.github-release") version "2.5.2"
     id("com.gradleup.shadow") version "9.3.2"
 }
