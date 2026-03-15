@@ -4,7 +4,7 @@ plugins {
     id("signing")
     id("com.gradle.plugin-publish") version "2.1.0"
     id("com.github.breadmoirai.github-release") version "2.5.2"
-    id("com.gradleup.shadow") version "9.3.2"
+    id("com.gradleup.shadow") version "9.4.0"
 }
 
 val releaseVersion = releaseVersion()
