@@ -32,7 +32,7 @@ jobs:
         env:
           DISABLE_REQUIRED_SIGNING: true
       - name: Upload published plugin
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
@@ -60,7 +60,7 @@ jobs:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
       - name: Download plugin to maven local
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
@@ -122,7 +122,7 @@ jobs:
           secret-ids: |
             DV_SOLUTIONS_SCHEDULED_WORKFLOWS_WEBHOOK_URL,gha/common-custom-user-data-gradle-plugin/_all/dv_solutions_scheduled_workflows_webhook_url
       - name: Report scheduled workflow failure
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 # v3.0.1
         with:
           webhook: ${{ env.DV_SOLUTIONS_SCHEDULED_WORKFLOWS_WEBHOOK_URL }}
           webhook-type: webhook-trigger
