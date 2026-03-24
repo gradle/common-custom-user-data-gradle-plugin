@@ -1,3 +1,5 @@
+import org.gradle.plugin.compatibility.compatibility
+
 plugins {
     id("java-gradle-plugin")
     id("maven-publish")
@@ -64,6 +66,11 @@ gradlePlugin {
             description = releaseNotes.get()
             implementationClass = "com.gradle.CommonCustomUserDataGradlePlugin"
             tags.addAll("android", "java", "develocity")
+            compatibility {
+                features {
+                    configurationCache = true
+                }
+            }
         }
     }
 }
