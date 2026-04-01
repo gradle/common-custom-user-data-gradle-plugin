@@ -5,7 +5,7 @@ on: [ push, pull_request, workflow_dispatch ]
 
 env:
   # Artifact Cache Configuration
-  ARTIFACT_CACHE_CLI_VERSION: 1.0.0
+  ARTIFACT_CACHE_CLI_VERSION: 0.11.0
 
   # Develocity
   DV_SERVER: https://ge.solutions-team.gradle.com
