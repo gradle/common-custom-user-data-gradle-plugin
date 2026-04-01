@@ -20,9 +20,9 @@ env:
   ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli
 #  ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"
   ARTIFACT_CACHE_OPTS: "--disable-setup-cache"
-  ARTIFACT_CACHE_STORE: false
+  ARTIFACT_CACHE_STORE: true
 
-  GRADLE_ARGS: "-Dscan.tag.ac-step-2"
+  GRADLE_ARGS: "-Dscan.tag.ac-step-3"
 
 jobs:
   verification:
