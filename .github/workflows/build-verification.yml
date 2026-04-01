@@ -3,6 +3,20 @@ permissions:
   contents: read
 on: [ push, pull_request, workflow_dispatch ]
 
+env:
+  # Artifact Cache Configuration
+  ARTIFACT_CACHE_CLI_VERSION: 1.1.0
+
+  # Develocity
+  DV_SERVER: https://ge.solutions-team.gradle.com
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+
+  # Misc
+  ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli
+  ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"
+  ARTIFACT_CACHE_STORE: true
+
+
 jobs:
   verification:
     name: Verification
@@ -18,7 +32,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
         with:
+          cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+      - name: Setup and restore Artifact Cache
+        uses: ./.github/actions/setup-and-restore-artifact-cache
       - name: Build and publish to Maven Local with Gradle
         run: ./gradlew build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
         env:
@@ -28,6 +45,11 @@ jobs:
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
+      - name: Store Artifact Cache
+        uses: ./.github/actions/store-artifact-cache
+        if: env.ARTIFACT_CACHE_STORE == 'true'
+        with:
+          artifact-name: artifact-cache-${{ github.job }}.log
 
   local-test:
     name: Test with Locally Published Plugin
@@ -64,6 +86,7 @@ jobs:
       - name: Set up Gradle ${{ matrix.gradle-version }}
         uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
         with:
+          cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
       - name: Download plugin to maven local
