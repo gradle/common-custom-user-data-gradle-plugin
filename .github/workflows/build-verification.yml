@@ -22,7 +22,7 @@ env:
   ARTIFACT_CACHE_OPTS: "--disable-setup-cache"
   ARTIFACT_CACHE_STORE: true
 
-  GRADLE_ARGS: "-Dscan.tag.ac-step-4"
+  GRADLE_ARGS: "-Dscan.tag.ac-step-5"
 
 jobs:
   verification:
