@@ -16,7 +16,7 @@ env:
   ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle --disable-artifact-cache"
   ARTIFACT_CACHE_STORE: true
 
-  GRADLE_ARGS: "-Dscan.tag.sc-step-3"
+  GRADLE_ARGS: "-Dscan.tag.sc-step-4"
 
 jobs:
   verification:
