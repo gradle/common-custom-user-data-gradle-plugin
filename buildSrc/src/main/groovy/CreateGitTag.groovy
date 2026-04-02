@@ -43,6 +43,7 @@ abstract class CreateGitTag extends DefaultTask {
             args.add("--tags")
             execSpec.commandLine(args)
         }
+        logger.info("Done tagging")
     }
 
 }
