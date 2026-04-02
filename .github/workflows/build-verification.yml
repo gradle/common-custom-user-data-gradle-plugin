@@ -11,18 +11,12 @@ env:
   DV_SERVER: https://ge.solutions-team.gradle.com
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
-  # Artifact Cache CLI
-  ARTIFACT_CACHE_REPO_USERNAME: ${{ secrets.ARTIFACT_CACHE_REPO_USERNAME }}
-  ARTIFACT_CACHE_REPO_PASSWORD: ${{ secrets.ARTIFACT_CACHE_REPO_PASSWORD }}
-  ARTIFACT_CACHE_REPO: ${{ secrets.ARTIFACT_CACHE_REPO }}
-
   # Misc
   ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli
-#  ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"
-  ARTIFACT_CACHE_OPTS: "--disable-setup-cache"
+  ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle --disable-artifact-cache"
   ARTIFACT_CACHE_STORE: false
 
-  GRADLE_ARGS: "-Dscan.tag.ac-step-2"
+  GRADLE_ARGS: "-Dscan.tag.sc-step-2"
 
 jobs:
   verification:

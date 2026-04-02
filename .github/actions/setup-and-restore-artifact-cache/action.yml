@@ -5,7 +5,6 @@ runs:
   using: 'composite'
   steps:
     - name: Provision and configure Artifact Cache
-      if: env.ARTIFACT_CACHE_REPO_PASSWORD != ''
       shell: bash
       run: |
         TOOL_DIR="${{ runner.tool_cache }}/develocity/artifact-cache/${{ env.ARTIFACT_CACHE_CLI_VERSION }}"
@@ -36,12 +35,11 @@ runs:
         echo "ARTIFACT_CACHE_CMD_OPTS=$CMD_OPTS" >> $GITHUB_ENV
 
     - name: Restore from Artifact Cache
-      if: env.ARTIFACT_CACHE_REPO_PASSWORD != ''
       id: restore_cache
       shell: bash
       run: $ARTIFACT_CACHE_CMD restore $ARTIFACT_CACHE_CMD_OPTS
 
     - name: Warn on Cache Restore Failure
-      if: env.ARTIFACT_CACHE_REPO_PASSWORD != '' && steps.restore_cache.outcome == 'failure'
+      if: steps.restore_cache.outcome == 'failure'
       shell: bash
       run: 'echo "WARNING: Could not restore the Artifact Cache. The build will proceed but may be slower."'
