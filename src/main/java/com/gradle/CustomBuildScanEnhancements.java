@@ -63,6 +63,7 @@ final class CustomBuildScanEnhancements {
     private static final String PROJECT_PROP_ANDROID_INVOKED_FROM_IDE = "android.injected.invoked.from.ide";
     private static final String PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY = "android.injected.studio.version";
     private static final String PROJECT_PROP_ANDROID_STUDIO_VERSION = "android.studio.version";
+    private static final String PROJECT_PROP_ANDROID_STUDIO_AGENT = "android.studio.agent";
     private static final String SYSTEM_PROP_ECLIPSE_BUILD_ID = "eclipse.buildId";
     private static final String SYSTEM_PROP_IDEA_SYNC_ACTIVE = "idea.sync.active";
     private static final String ENV_VAR_VSCODE_PID = "VSCODE_PID";
@@ -89,6 +90,7 @@ final class CustomBuildScanEnhancements {
         captureCiOrLocal();
         captureCiMetadata();
         captureGitMetadata();
+        captureAgentMetadata();
     }
 
     private void captureOs() {
@@ -563,6 +565,56 @@ final class CustomBuildScanEnhancements {
                 .filter(Utils::isNotEmpty)
                 .flatMap(findLongestMatchingRemote)
                 .map(remote -> remoteBranch.replaceFirst("^" + remote + "/", ""));
+        }
+    }
+
+    private void captureAgentMetadata() {
+        Provider<String> androidStudioAgent = gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_AGENT, gradle, providers);
+        buildScan.background(new CaptureAgentMetadataAction(buildScan, providers, androidStudioAgent));
+    }
+
+    private static final class CaptureAgentMetadataAction implements Action<BuildScanAdapter> {
+
+        private final BuildScanAdapter buildScan;
+        private final ProviderFactory providers;
+        private final Provider<String> androidStudioAgent;
+
+        private CaptureAgentMetadataAction(BuildScanAdapter buildScan, ProviderFactory providers, Provider<String> androidStudioAgent) {
+            this.buildScan = buildScan;
+            this.providers = providers;
+            this.androidStudioAgent = androidStudioAgent;
+        }
+
+        @Override
+        public void execute(BuildScanAdapter buildScan) {
+            Optional<String> claudeCode = envVariable("CLAUDECODE", providers);
+            // Codex environment variables are not officially documented.
+            // This is best effort detection until something more official is implemented by Codex.
+            Optional<String> codexSandbox = envVariable("CODEX_SANDBOX_NETWORK_DISABLED", providers);
+            Optional<String> codexThreadId = envVariable("CODEX_THREAD_ID", providers);
+            Optional<String> openCode = envVariable("OPENCODE", providers);
+            Optional<String> gemini = envVariable("GEMINI_CLI", providers);
+
+            claudeCode.ifPresent(env -> {
+                buildScan.tag("AI Agent");
+                buildScan.value("AI Agent", "Claude Code");
+            });
+            if (codexSandbox.isPresent() || codexThreadId.isPresent()) {
+                buildScan.tag("AI Agent");
+                buildScan.value("AI Agent", "Codex");
+            }
+            openCode.ifPresent(env -> {
+                buildScan.tag("AI Agent");
+                buildScan.value("AI Agent", "OpenCode");
+            });
+            gemini.ifPresent(env -> {
+                buildScan.tag("AI Agent");
+                buildScan.value("AI Agent", "Gemini CLI");
+            });
+            if (androidStudioAgent.isPresent()) {
+                buildScan.tag("AI Agent");
+                buildScan.value("AI Agent", "Gemini in Android Studio");
+            }
         }
     }
 
