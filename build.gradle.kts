@@ -5,7 +5,6 @@ plugins {
     id("maven-publish")
     id("signing")
     id("com.gradle.plugin-publish") version "2.1.1"
-    id("com.github.breadmoirai.github-release") version "2.5.2"
     id("com.gradleup.shadow") version "9.4.1"
 }
 
@@ -102,19 +101,6 @@ signing {
     )
 }
 
-githubRelease {
-    token(providers.environmentVariable("CCUD_GIT_TOKEN"))
-    owner = "gradle"
-    repo = "common-custom-user-data-gradle-plugin"
-    targetCommitish = "main"
-    releaseName = releaseVersion
-    tagName = releaseVersion.map { "v$it" }
-    prerelease = false
-    overwrite = false
-    generateReleaseNotes = false
-    body = releaseNotes
-}
-
 publishing {
     publications {
         create<MavenPublication>("pluginMaven") {
@@ -142,16 +128,6 @@ publishing {
             }
         }
     }
-}
-
-val createReleaseTag by tasks.registering(CreateGitTag::class) {
-    // Ensure tag is created only after a successful publishing
-    mustRunAfter("publishPlugins")
-    tagName = githubRelease.tagName.map { it.toString() }
-}
-
-tasks.githubRelease {
-    dependsOn(createReleaseTag)
 }
 
 tasks.withType<com.gradle.publish.PublishTask>().configureEach {
