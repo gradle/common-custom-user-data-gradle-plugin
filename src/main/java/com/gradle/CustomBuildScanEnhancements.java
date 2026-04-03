@@ -555,19 +555,20 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureAgentMetadata() {
-        buildScan.background(new CaptureAgentMetadataAction(buildScan, gradle, providers));
+        Provider<String> androidStudioAgent = gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_AGENT, gradle, providers);
+        buildScan.background(new CaptureAgentMetadataAction(buildScan, providers, androidStudioAgent));
     }
 
     private static final class CaptureAgentMetadataAction implements Action<BuildScanAdapter> {
 
         private final BuildScanAdapter buildScan;
-        private final Gradle gradle;
         private final ProviderFactory providers;
+        private final Provider<String> androidStudioAgent;
 
-        private CaptureAgentMetadataAction(BuildScanAdapter buildScan, Gradle gradle, ProviderFactory providers) {
+        private CaptureAgentMetadataAction(BuildScanAdapter buildScan, ProviderFactory providers, Provider<String> androidStudioAgent) {
             this.buildScan = buildScan;
-            this.gradle = gradle;
             this.providers = providers;
+            this.androidStudioAgent = androidStudioAgent;
         }
 
         @Override
@@ -579,7 +580,6 @@ final class CustomBuildScanEnhancements {
             Optional<String> codexThreadId = envVariable("CODEX_THREAD_ID", providers);
             Optional<String> openCode = envVariable("OPENCODE", providers);
             Optional<String> gemini = envVariable("GEMINI_CLI", providers);
-            Provider<String> androidStudioAgent = gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_AGENT, gradle, providers);
 
             claudeCode.ifPresent(env -> {
                 buildScan.tag("AI Agent");
