@@ -573,31 +573,34 @@ final class CustomBuildScanEnhancements {
         @Override
         public void execute(BuildScanAdapter buildScan) {
             Optional<String> claudeCode = envVariable("CLAUDECODE", providers);
+            // Codex environment variables are not officially documented.
+            // This is best effort detection until something more official is implemented by Codex.
             Optional<String> codexSandbox = envVariable("CODEX_SANDBOX_NETWORK_DISABLED", providers);
+            Optional<String> codexThreadId = envVariable("CODEX_THREAD_ID", providers);
             Optional<String> openCode = envVariable("OPENCODE", providers);
             Optional<String> gemini = envVariable("GEMINI_CLI", providers);
             Provider<String> androidStudioAgent = gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_AGENT, gradle, providers);
 
-            claudeCode.ifPresent( env -> {
-                buildScan.tag("Claude Code");
+            claudeCode.ifPresent(env -> {
+                buildScan.tag("AI Agent");
                 buildScan.value("AI Agent", "Claude Code");
             });
-            codexSandbox.ifPresent( env -> {
-                buildScan.tag("Codex");
+            if (codexSandbox.isPresent() || codexThreadId.isPresent()) {
+                buildScan.tag("AI Agent");
                 buildScan.value("AI Agent", "Codex");
-            });
-            openCode.ifPresent( env -> {
-                buildScan.tag("OpenCode");
+            }
+            openCode.ifPresent(env -> {
+                buildScan.tag("AI Agent");
                 buildScan.value("AI Agent", "OpenCode");
             });
-            gemini.ifPresent( env -> {
-                buildScan.tag("Gemini CLI");
+            gemini.ifPresent(env -> {
+                buildScan.tag("AI Agent");
                 buildScan.value("AI Agent", "Gemini CLI");
             });
             if (androidStudioAgent.isPresent()) {
-                buildScan.tag("Gemini in Android Studio");
+                buildScan.tag("AI Agent");
                 buildScan.value("AI Agent", "Gemini in Android Studio");
-            };
+            }
         }
     }
 
