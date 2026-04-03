@@ -1,3 +1,1 @@
-- [NEW] Add `AI Agent` tag to the Build Scan when invoked by an AI Agent
-- [NEW] Add custom value to the Build Scan indicating which AI Agent invoked the build
-- [NEW] Add link in Build Scan to GitHub PR
+- [NEW] TBD
