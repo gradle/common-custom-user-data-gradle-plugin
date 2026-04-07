@@ -596,23 +596,23 @@ final class CustomBuildScanEnhancements {
             Optional<String> gemini = envVariable("GEMINI_CLI", providers);
 
             claudeCode.ifPresent(env -> {
-                buildScan.tag("AI Agent");
+                buildScan.tag("AI");
                 buildScan.value("AI Agent", "Claude Code");
             });
             if (codexSandbox.isPresent() || codexThreadId.isPresent()) {
-                buildScan.tag("AI Agent");
+                buildScan.tag("AI");
                 buildScan.value("AI Agent", "Codex");
             }
             openCode.ifPresent(env -> {
-                buildScan.tag("AI Agent");
+                buildScan.tag("AI");
                 buildScan.value("AI Agent", "OpenCode");
             });
             gemini.ifPresent(env -> {
-                buildScan.tag("AI Agent");
+                buildScan.tag("AI");
                 buildScan.value("AI Agent", "Gemini CLI");
             });
             if (androidStudioAgent.isPresent()) {
-                buildScan.tag("AI Agent");
+                buildScan.tag("AI");
                 buildScan.value("AI Agent", "Gemini in Android Studio");
             }
         }

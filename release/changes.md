@@ -1,1 +1,1 @@
-- [NEW] TBD
+- [FIX] Rename `AI Agent` tag to `AI`
