@@ -1,1 +1,2 @@
 - [FIX] Rename `AI Agent` tag to `AI`
+- [FIX] Rename `AI Agent` value key to `AI agent`
