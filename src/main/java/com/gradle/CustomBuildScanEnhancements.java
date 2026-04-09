@@ -306,6 +306,7 @@ final class CustomBuildScanEnhancements {
                 Optional<String> runAttempt = envVariable("GITHUB_RUN_ATTEMPT", providers);
                 Optional<String> runNumber = envVariable("GITHUB_RUN_NUMBER", providers);
                 Optional<String> headRef = envVariable("GITHUB_HEAD_REF", providers).filter(value -> !value.isEmpty());
+                Optional<String> baseRef = envVariable("GITHUB_BASE_REF", providers).filter(value -> !value.isEmpty());
                 Optional<String> serverUrl = envVariable("GITHUB_SERVER_URL", providers);
                 Optional<String> gitRepository = envVariable("GITHUB_REPOSITORY", providers);
                 Optional<String> refName = envVariable("GITHUB_REF_NAME", providers);
@@ -325,6 +326,8 @@ final class CustomBuildScanEnhancements {
                         buildScan.value("CI run number", value));
                 headRef.ifPresent(value ->
                         buildScan.value("PR branch", value));
+                baseRef.ifPresent(value ->
+                        buildScan.value("PR base branch", value));
 
                 if (serverUrl.isPresent() && gitRepository.isPresent() && runId.isPresent()) {
                     StringBuilder githubActionsBuild = new StringBuilder(serverUrl.get())
