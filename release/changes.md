@@ -1,2 +1,3 @@
 - [FIX] Rename `AI Agent` tag to `AI`
 - [FIX] Rename `AI Agent` value key to `AI agent`
+- [NEW] For GitHub PRs, capture `GITHUB_BASE_REF` as the value `PR base branch`
