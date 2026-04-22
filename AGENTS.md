@@ -1,8 +1,4 @@
-# Agent guidelines
-
-This file captures guidance for agents (and humans) contributing to this repository. It is intentionally narrow: its goal is to catch two things that are routinely missed during feature development — versioning and changelog entries — not to serve as a comprehensive contributor guide.
-
-## Versioning
+# Versioning
 
 - This plugin follows [Semantic Versioning](https://semver.org/).
 - The authoritative version lives in [`release/version.txt`](release/version.txt).
@@ -14,7 +10,7 @@ This file captures guidance for agents (and humans) contributing to this reposit
   - **Major** (e.g. `2.6.0` → `3.0.0`) — breaking changes to public behavior or consumer configuration.
 - If `release/version.txt` already reflects the required bump relative to the released version, leave it. Only raise it further if your change warrants a larger bump than what is already staged.
 
-## Changelog
+# Changelog
 
 - Every user-visible change must add an entry to [`release/changes.md`](release/changes.md) in the **same PR** that introduces the change. The contents of this file become the body of the GitHub release verbatim.
 - Format: a flat markdown bullet list, one line per change, each line tagged.
@@ -24,14 +20,18 @@ This file captures guidance for agents (and humans) contributing to this reposit
   - `[IMPROVEMENT]` — an enhancement to existing behavior that is not a bug fix and not a wholly new feature.
 - Use backticks around identifiers, tag names, value keys, environment variables, and branch-like strings.
 - Examples from recent releases:
-  - `` - [FIX] Rename `AI Agent` tag to `AI` ``
-  - `` - [NEW] For GitHub PRs, capture `GITHUB_BASE_REF` as the value `PR base branch` ``
-  - `- [NEW] Capture GitHub Actions run number and run attempt as custom values to precisely identify workflow runs`
+
+  ```markdown
+  - [FIX] Rename `AI Agent` tag to `AI`
+  - [NEW] For GitHub PRs, capture `GITHUB_BASE_REF` as the value `PR base branch`
+  - [NEW] Capture GitHub Actions run number and run attempt as custom values to precisely identify workflow runs
+  ```
+
 - After a release, the post-release workflow resets `release/changes.md` to `- [NEW] TBD`. Replace that placeholder on your first substantive change rather than appending below it.
 
-## Exceptions
+# Versioning and changelog exceptions
 
-The rules above target user-visible changes. They do **not** apply to:
+The versioning and changelog rules above target user-visible changes. They do **not** apply to:
 
 - Routine dependency updates (e.g. Renovate minor/patch bumps of build plugins, GitHub Actions, or transitive libraries) that do not alter plugin behavior for consumers. These may merge without a version bump or changelog entry.
 - Anything else that is strictly internal and invisible to plugin consumers (CI configuration, repo tooling, internal docs).
