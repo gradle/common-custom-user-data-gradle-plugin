@@ -20,7 +20,7 @@ env:
   ## Misc
   ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli
   ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"
-  ARTIFACT_CACHE_STORE: true
+  ARTIFACT_CACHE_STORE: "true"
 
 jobs:
   verification:
