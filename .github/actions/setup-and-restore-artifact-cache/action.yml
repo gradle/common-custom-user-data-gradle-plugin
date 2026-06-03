@@ -29,13 +29,14 @@ runs:
         fi
 
         CMD="${{ env[format('JAVA_HOME_21_{0}', runner.arch)] }}/bin/java -jar $JAR_PATH"
-        echo "ARTIFACT_CACHE_CMD=$CMD" >> $GITHUB_ENV
+        echo "ARTIFACT_CACHE_CMD=$CMD" >> "$GITHUB_ENV"
 
         CMD_OPTS="--dv-server=$DV_SERVER ${ARTIFACT_CACHE_IMAGE:+--image-name=$ARTIFACT_CACHE_IMAGE} $ARTIFACT_CACHE_OPTS"
-        echo "ARTIFACT_CACHE_CMD_OPTS=$CMD_OPTS" >> $GITHUB_ENV
+        echo "ARTIFACT_CACHE_CMD_OPTS=$CMD_OPTS" >> "$GITHUB_ENV"
 
     - name: Restore from Artifact Cache
       id: restore_cache
+      continue-on-error: true
       shell: bash
       run: $ARTIFACT_CACHE_CMD restore $ARTIFACT_CACHE_CMD_OPTS
 
