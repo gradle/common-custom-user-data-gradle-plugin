@@ -133,7 +133,7 @@ jobs:
         uses: ./.github/actions/store-artifact-cache
         if: env.ARTIFACT_CACHE_STORE == 'true'
         with:
-          artifact-name: artifact-cache-${{ github.job }}.log
+          artifact-name: artifact-cache-${{ github.job }}-${{ matrix.gradle-version }}.log
 
   failure-notification:
     name: Matrix failure notification
