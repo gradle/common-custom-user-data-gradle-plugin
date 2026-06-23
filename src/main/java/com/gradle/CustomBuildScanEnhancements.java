@@ -63,11 +63,46 @@ final class CustomBuildScanEnhancements {
     private static final String PROJECT_PROP_ANDROID_INVOKED_FROM_IDE = "android.injected.invoked.from.ide";
     private static final String PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY = "android.injected.studio.version";
     private static final String PROJECT_PROP_ANDROID_STUDIO_VERSION = "android.studio.version";
-    private static final String PROJECT_PROP_ANDROID_STUDIO_AGENT = "android.studio.agent";
     private static final String SYSTEM_PROP_ECLIPSE_BUILD_ID = "eclipse.buildId";
     private static final String SYSTEM_PROP_IDEA_SYNC_ACTIVE = "idea.sync.active";
     private static final String ENV_VAR_VSCODE_PID = "VSCODE_PID";
     private static final String ENV_VAR_VSCODE_INJECTION = "VSCODE_INJECTION";
+
+    private static final String AGENT_NAME_ANTIGRAVITY = "Antigravity";
+    private static final String AGENT_NAME_CLAUDE_CODE = "Claude Code";
+    private static final String AGENT_NAME_CLINE = "Cline";
+    private static final String AGENT_NAME_CODEX = "Codex CLI";
+    private static final String AGENT_NAME_COPILOT = "Github Copilot";
+    private static final String AGENT_NAME_CURSOR = "Cursor";
+    private static final String AGENT_NAME_GEMINI_CLI = "Gemini CLI";
+    private static final String AGENT_NAME_GEMINI_IN_ANDROID_STUDIO = "Gemini in Android Studio";
+    private static final String AGENT_NAME_OPENCODE = "OpenCode";
+    private static final Map<String, String[]> MAP_AGENT_FINGERPRINTS_ENV = new HashMap<>();
+    static {
+        // https://github.com/agentsmd/agents.md/issues/136
+        String[] ENVS_ANTIGRAVITY = {"ANTIGRAVITY_AGENT"};
+        String[] ENVS_CLAUDE_CODE = {"CLAUDECODE"};
+        String[] ENVS_CLINE = {"CLINE_ACTIVE"};
+        String[] ENVS_COPILOT = {"COPILOT_AGENT"};
+        String[] ENVS_CURSOR = {"CURSOR_AGENT"};
+        String[] ENVS_GEMINI_CLI = {"GEMINI_CLI"};
+        String[] ENVS_GEMINI_IN_ANDROID_STUDIO = {"ANDROID_STUDIO_AGENT"};
+        String[] ENVS_OPENCODE = {"OPENCODE_CLIENT"};
+
+        // Codex environment variables are not officially documented.
+        // This is best effort detection until something more official is implemented by Codex.
+        String[] ENVS_CODEX = {"CODEX_SANDBOX_NETWORK_DISABLED", "CODEX_THREAD_ID"};
+
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_ANTIGRAVITY, ENVS_ANTIGRAVITY);
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_CLAUDE_CODE, ENVS_CLAUDE_CODE);
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_CLINE, ENVS_CLINE);
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_CODEX, ENVS_CODEX);
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_CURSOR, ENVS_CURSOR);
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_GEMINI_CLI, ENVS_GEMINI_CLI);
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_GEMINI_IN_ANDROID_STUDIO, ENVS_GEMINI_IN_ANDROID_STUDIO);
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_COPILOT, ENVS_COPILOT);
+        MAP_AGENT_FINGERPRINTS_ENV.put(AGENT_NAME_OPENCODE, ENVS_OPENCODE);
+    }
 
     private final DevelocityAdapter develocity;
     private final BuildScanAdapter buildScan;
@@ -572,52 +607,28 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureAgentMetadata() {
-        Provider<String> androidStudioAgent = gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_AGENT, gradle, providers);
-        buildScan.background(new CaptureAgentMetadataAction(buildScan, providers, androidStudioAgent));
+        buildScan.background(new CaptureAgentMetadataAction(buildScan, providers));
     }
 
     private static final class CaptureAgentMetadataAction implements Action<BuildScanAdapter> {
 
         private final BuildScanAdapter buildScan;
         private final ProviderFactory providers;
-        private final Provider<String> androidStudioAgent;
 
-        private CaptureAgentMetadataAction(BuildScanAdapter buildScan, ProviderFactory providers, Provider<String> androidStudioAgent) {
+        private CaptureAgentMetadataAction(BuildScanAdapter buildScan, ProviderFactory providers) {
             this.buildScan = buildScan;
             this.providers = providers;
-            this.androidStudioAgent = androidStudioAgent;
         }
 
         @Override
         public void execute(BuildScanAdapter buildScan) {
-            Optional<String> claudeCode = envVariable("CLAUDECODE", providers);
-            // Codex environment variables are not officially documented.
-            // This is best effort detection until something more official is implemented by Codex.
-            Optional<String> codexSandbox = envVariable("CODEX_SANDBOX_NETWORK_DISABLED", providers);
-            Optional<String> codexThreadId = envVariable("CODEX_THREAD_ID", providers);
-            Optional<String> openCode = envVariable("OPENCODE", providers);
-            Optional<String> gemini = envVariable("GEMINI_CLI", providers);
-
-            claudeCode.ifPresent(env -> {
-                buildScan.tag("AI");
-                buildScan.value("AI agent", "Claude Code");
-            });
-            if (codexSandbox.isPresent() || codexThreadId.isPresent()) {
-                buildScan.tag("AI");
-                buildScan.value("AI agent", "Codex");
-            }
-            openCode.ifPresent(env -> {
-                buildScan.tag("AI");
-                buildScan.value("AI agent", "OpenCode");
-            });
-            gemini.ifPresent(env -> {
-                buildScan.tag("AI");
-                buildScan.value("AI agent", "Gemini CLI");
-            });
-            if (androidStudioAgent.isPresent()) {
-                buildScan.tag("AI");
-                buildScan.value("AI agent", "Gemini in Android Studio");
-            }
+            MAP_AGENT_FINGERPRINTS_ENV.forEach( (agentName, envs) -> {
+                    if (Arrays.stream(envs).anyMatch(env -> envVariable(env, providers).isPresent())) {
+                        buildScan.tag("AI");
+                        buildScan.value("AI agent", agentName);
+                    }
+                }
+            );
         }
     }
 
