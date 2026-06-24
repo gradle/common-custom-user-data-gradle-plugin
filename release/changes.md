@@ -1,3 +1,4 @@
 - [FIX] Rename `AI Agent` tag to `AI`
 - [FIX] Rename `AI Agent` value key to `AI agent`
+- [FIX] AI agent metadata is no longer captured as a configuration cache input (#499)
 - [NEW] For GitHub PRs, capture `GITHUB_BASE_REF` as the value `PR base branch`
