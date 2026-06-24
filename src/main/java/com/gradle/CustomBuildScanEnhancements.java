@@ -181,7 +181,7 @@ final class CustomBuildScanEnhancements {
             // Prepare project directory for use at execution time
             Provider<Directory> projectDirectory = providers.provider(() -> gradle.getRootProject().getLayout().getProjectDirectory());
 
-            // Process data at execution time not to have a CI environment variable (ie. build number) invalidates the configuration cache
+            // Process data at execution time so that CI metadata does not become a configuration cache input
             buildScan.buildFinished(new CaptureCiMetadataAction(develocity, providers, projectDirectory));
         }
     }
@@ -573,10 +573,12 @@ final class CustomBuildScanEnhancements {
 
     private void captureAgentMetadata() {
         Provider<String> androidStudioAgent = gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_AGENT, gradle, providers);
-        buildScan.background(new CaptureAgentMetadataAction(buildScan, providers, androidStudioAgent));
+
+        // Process data at execution time so that agent metadata does not become a configuration cache input
+        buildScan.buildFinished(new CaptureAgentMetadataAction(buildScan, providers, androidStudioAgent));
     }
 
-    private static final class CaptureAgentMetadataAction implements Action<BuildScanAdapter> {
+    private static final class CaptureAgentMetadataAction implements Action<BuildResultAdapter> {
 
         private final BuildScanAdapter buildScan;
         private final ProviderFactory providers;
@@ -589,7 +591,7 @@ final class CustomBuildScanEnhancements {
         }
 
         @Override
-        public void execute(BuildScanAdapter buildScan) {
+        public void execute(BuildResultAdapter buildResult) {
             Optional<String> claudeCode = envVariable("CLAUDECODE", providers);
             // Codex environment variables are not officially documented.
             // This is best effort detection until something more official is implemented by Codex.
