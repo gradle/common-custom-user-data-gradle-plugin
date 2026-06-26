@@ -597,6 +597,7 @@ final class CustomBuildScanEnhancements {
             // This is best effort detection until something more official is implemented by Codex.
             Optional<String> codexSandbox = envVariable("CODEX_SANDBOX_NETWORK_DISABLED", providers);
             Optional<String> codexThreadId = envVariable("CODEX_THREAD_ID", providers);
+            Optional<String> cursor = envVariable("CURSOR_AGENT", providers);
             Optional<String> openCode = envVariable("OPENCODE", providers);
             Optional<String> gemini = envVariable("GEMINI_CLI", providers);
 
@@ -608,6 +609,10 @@ final class CustomBuildScanEnhancements {
                 buildScan.tag("AI");
                 buildScan.value("AI agent", "Codex");
             }
+            cursor.ifPresent(env -> {
+                buildScan.tag("AI");
+                buildScan.value("AI agent", "Cursor");
+            });
             openCode.ifPresent(env -> {
                 buildScan.tag("AI");
                 buildScan.value("AI agent", "OpenCode");
