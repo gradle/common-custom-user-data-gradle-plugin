@@ -1,3 +1,1 @@
-- [NEW] Capture Cursor as an AI agent via the `CURSOR_AGENT` environment variable
-- [NEW] Capture Gemini in Android Studio as an AI agent via the `ANDROID_STUDIO_AGENT` environment variable
-- [FIX] Changes to AI agent metadata invalidate the configuration cache
+- [NEW] TBD
