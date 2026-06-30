@@ -1,0 +1,162 @@
+name: Verify Build (Nightly)
+permissions:
+  contents: read
+  id-token: write
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  push:
+    paths:
+      - ".github/workflows/build-verification-nightly.yml"
+  workflow_dispatch:
+env:
+  # Artifact Cache CLI Configuration
+  ARTIFACT_CACHE_CLI_VERSION: 1.2.0
+
+  ## Develocity
+  DV_SERVER: https://ge.solutions-team.gradle.com
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+
+  ## Misc
+  ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli
+  ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"
+  ARTIFACT_CACHE_STORE: "true"
+
+jobs:
+  verification:
+    name: Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
+        with:
+          cache-disabled: true
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          gradle-version: 'release-candidate'
+      - name: Setup and restore Universal Cache
+        uses: ./.github/actions/setup-and-restore-artifact-cache
+      - name: Build and publish to Maven Local with Gradle
+        run: gradle build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
+        env:
+          DISABLE_REQUIRED_SIGNING: true
+      - name: Store Universal Cache
+        uses: ./.github/actions/store-artifact-cache
+        if: env.ARTIFACT_CACHE_STORE == 'true'
+        with:
+          artifact-name: artifact-cache-${{ github.job }}.log
+      - name: Upload published plugin
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: common-custom-user-data-gradle-plugin
+          path: ~/.m2/repository/com/gradle
+
+  local-test:
+    name: Test with Locally Published Plugin
+    runs-on: ubuntu-latest
+    needs: verification
+    strategy:
+      fail-fast: false
+      matrix:
+        gradle-version: ['current', 'release-candidate', 'nightly']
+        java-version: ['21']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Set up JDK
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
+        with:
+          cache-disabled: true
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          gradle-version: '${{ matrix.gradle-version }}'
+      - name: Setup and restore Universal Cache
+        uses: ./.github/actions/setup-and-restore-artifact-cache
+      - name: Download plugin to maven local
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: common-custom-user-data-gradle-plugin
+          path: ~/.m2/repository/com/gradle
+      - name: Create the test project
+        run: |
+          echo """
+            pluginManagement {
+              repositories {
+                gradlePluginPortal()
+                exclusiveContent {
+                  forRepository {
+                    mavenLocal()
+                  }
+                  filter {
+                    includeModule(\"com.gradle\", \"common-custom-user-data-gradle-plugin\")
+                    includeModule(\"com.gradle.common-custom-user-data-gradle-plugin\", \"com.gradle.common-custom-user-data-gradle-plugin.gradle.plugin\")
+                  }
+                }
+              }
+            }
+
+            plugins {
+              id(\"com.gradle.develocity\") version \"4+\"
+              id(\"com.gradle.common-custom-user-data-gradle-plugin\") version \"2+\"
+            }
+
+            develocity {
+              server = \"https://ge.solutions-team.gradle.com\"
+            }
+
+            rootProject.name = \"ccud-test-gradle-${{ matrix.gradle-version }}\"
+          """ > ${{ runner.temp }}/settings.gradle
+
+          echo """
+            org.gradle.vfs.watch=true
+            org.gradle.daemon=true
+            org.gradle.parallel=true
+            org.gradle.caching=true
+            org.gradle.configuration-cache=true
+            org.gradle.unsafe.configuration-cache=true
+            org.gradle.jvmargs=-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8
+          """ > ${{ runner.temp }}/gradle.properties
+      - name: Run a build with the locally published plugin
+        run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=${{ matrix.java-version }}"
+        working-directory: ${{ runner.temp }}
+      - name: Store Universal Cache
+        uses: ./.github/actions/store-artifact-cache
+        if: env.ARTIFACT_CACHE_STORE == 'true'
+        with:
+          artifact-name: artifact-cache-${{ github.job }}-${{ matrix.gradle-version }}.log
+
+  failure-notification:
+    name: Matrix failure notification
+    runs-on: ubuntu-latest
+    needs:
+      - verification
+      - local-test
+    if: failure()
+    steps:
+      - name: Get secrets
+        uses: gradle/actions-internal/get-aws-secrets@13e203b1ec5f0fc7784cf0c7f518376c23713380 # v1
+        with:
+          role-to-assume: arn:aws:iam::992382829881:role/GHASecrets_common-custom-user-data-gradle-plugin_all
+          secret-ids: |
+            DV_SOLUTIONS_SCHEDULED_WORKFLOWS_WEBHOOK_URL,gha/common-custom-user-data-gradle-plugin/_all/dv_solutions_scheduled_workflows_webhook_url
+      - name: Report scheduled workflow failure
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        with:
+          webhook: ${{ env.DV_SOLUTIONS_SCHEDULED_WORKFLOWS_WEBHOOK_URL }}
+          webhook-type: webhook-trigger
+          payload-templated: true
+          payload: |
+            {
+              "workflow_name": "CCUD Gradle: Verify Build (Nightly)",
+              "workflow_run_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }

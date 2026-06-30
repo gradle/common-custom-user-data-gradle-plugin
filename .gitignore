@@ -1,0 +1,9 @@
+.idea/
+.gradle/
+.tmp/
+out/
+build/
+target/
+*.DS_Store
+.vscode/
+bin/
