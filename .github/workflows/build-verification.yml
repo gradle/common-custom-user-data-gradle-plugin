@@ -34,6 +34,10 @@ jobs:
         with:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+      - name: Capture runner info for build scans
+        uses: ./.github/actions/develocity-runner-info
+        # Runner VM size, CPU count and region are auto-detected at runtime; no need to
+        # hardcode a type. Pass runner-type only if you want an extra human-readable label.
       - name: Setup and restore Universal Cache
         uses: ./.github/actions/setup-and-restore-artifact-cache
       - name: Build and publish to Maven Local with Gradle
@@ -93,6 +97,9 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
+      - name: Capture runner info for build scans
+        if: matrix.universal-cache
+        uses: ./.github/actions/develocity-runner-info
       - name: Setup and restore Universal Cache
         if: matrix.universal-cache
         uses: ./.github/actions/setup-and-restore-artifact-cache

@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 env:
   # Artifact Cache CLI Configuration
-  ARTIFACT_CACHE_CLI_VERSION: 1.2.0
+  ARTIFACT_CACHE_CLI_VERSION: 1.4.0
 
   ## Develocity
   DV_SERVER: https://ge.solutions-team.gradle.com
@@ -40,6 +40,10 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: 'release-candidate'
+      - name: Capture runner info for build scans
+        uses: ./.github/actions/develocity-runner-info
+        # Runner VM size, CPU count and region are auto-detected at runtime; no need to
+        # hardcode a type. Pass runner-type only if you want an extra human-readable label.
       - name: Setup and restore Universal Cache
         uses: ./.github/actions/setup-and-restore-artifact-cache
       - name: Build and publish to Maven Local with Gradle
@@ -80,6 +84,8 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
+      - name: Capture runner info for build scans
+        uses: ./.github/actions/develocity-runner-info
       - name: Setup and restore Universal Cache
         uses: ./.github/actions/setup-and-restore-artifact-cache
       - name: Download plugin to maven local

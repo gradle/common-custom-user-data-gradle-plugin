@@ -14,6 +14,21 @@ develocity {
         obfuscation {
             ipAddresses { addresses -> addresses.map { _ -> "0.0.0.0" } }
         }
+
+        // Runner metadata, populated on CI by the develocity-runner-info action.
+        // Captured as custom values (not tags) so each dimension stays named and
+        // independently queryable when correlating Artifact Cache overhead with the
+        // runner hardware/region. Guarded so local builds emit nothing, and a runner
+        // without Azure IMDS (self-hosted) simply omits what it can't detect.
+        mapOf(
+            "Runner Type" to "DV_RUNNER_TYPE",               // optional human label, if the CI step set one
+            "Runner Environment" to "DV_RUNNER_ENVIRONMENT", // github-hosted vs self-hosted (runner context)
+            "Runner VM Size" to "DV_RUNNER_VM_SIZE",         // authoritative Azure SKU from IMDS
+            "Runner CPU Count" to "DV_RUNNER_CPU_COUNT",     // from nproc; works everywhere
+            "Runner Region" to "DV_RUNNER_REGION",           // Azure region from IMDS
+        ).forEach { (name, envVar) ->
+            System.getenv(envVar)?.takeIf { it.isNotBlank() }?.let { value(name, it) }
+        }
     }
 }
 

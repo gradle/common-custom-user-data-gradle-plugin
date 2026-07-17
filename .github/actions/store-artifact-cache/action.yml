@@ -27,3 +27,15 @@ runs:
         name: ${{ inputs.artifact-name }}
         path: '~/.develocity/artifact-cache/artifact-cache.log'
         retention-days: 7
+
+    # DIAGNOSTIC (do not merge): upload the JFR recordings produced by the restore and
+    # store invocations. Store is the final AC step, so both files are collected in one
+    # artifact. Open the .jfr files in JDK Mission Control.
+    - name: Persist Artifact Cache JFR recordings
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: jfr-${{ inputs.artifact-name }}
+        path: '${{ runner.temp }}/ac-cache-*.jfr'
+        if-no-files-found: warn
+        retention-days: 7

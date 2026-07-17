@@ -28,7 +28,12 @@ runs:
         rm "$JAR_PATH.sha256"
         fi
 
-        CMD="${{ env[format('JAVA_HOME_21_{0}', runner.arch)] }}/bin/java -jar $JAR_PATH"
+        # DIAGNOSTIC (do not merge): record a Java Flight Recorder profile of each AC CLI
+        # invocation so we can see where the restore/store wall-clock goes (network socket
+        # waits vs CPU vs unpack/disk). %p keeps restore and store in separate files; the
+        # flag is scoped to the CLI JVM only, so the much larger Gradle JVM is not profiled.
+        JFR_OPTS="-XX:StartFlightRecording=filename=$RUNNER_TEMP/ac-cache-%p.jfr,dumponexit=true,settings=profile,name=ac-cache"
+        CMD="${{ env[format('JAVA_HOME_21_{0}', runner.arch)] }}/bin/java $JFR_OPTS -jar $JAR_PATH"
         echo "ARTIFACT_CACHE_CMD=$CMD" >> "$GITHUB_ENV"
 
         CMD_OPTS="--dv-server=$DV_SERVER ${ARTIFACT_CACHE_IMAGE:+--image-name=$ARTIFACT_CACHE_IMAGE} $ARTIFACT_CACHE_OPTS"
