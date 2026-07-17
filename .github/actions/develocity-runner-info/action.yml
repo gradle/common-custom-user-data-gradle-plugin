@@ -55,3 +55,18 @@ runs:
         if [ -z "$VM_SIZE$REGION" ]; then
           echo "::notice::Azure IMDS unavailable (self-hosted or restricted runner); only CPU count captured."
         fi
+
+    - name: Capture full runner context
+      shell: bash
+      env:
+        # Passed through the env, not interpolated into the script, so the JSON is
+        # never re-parsed by the shell (no quoting/escaping surprises).
+        RUNNER_CONTEXT: ${{ toJSON(runner) }}
+      run: |
+        # Capture the entire GitHub Actions runner context verbatim as one custom value.
+        # toJSON emits multi-line JSON, so use a heredoc delimiter when writing GITHUB_ENV.
+        {
+          echo "DV_RUNNER_CONTEXT<<__RUNNER_CTX_EOF__"
+          echo "$RUNNER_CONTEXT"
+          echo "__RUNNER_CTX_EOF__"
+        } >> "$GITHUB_ENV"

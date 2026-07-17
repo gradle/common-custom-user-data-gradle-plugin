@@ -26,6 +26,7 @@ develocity {
             "Runner VM Size" to "DV_RUNNER_VM_SIZE",         // authoritative Azure SKU from IMDS
             "Runner CPU Count" to "DV_RUNNER_CPU_COUNT",     // from nproc; works everywhere
             "Runner Region" to "DV_RUNNER_REGION",           // Azure region from IMDS
+            "Runner Context" to "DV_RUNNER_CONTEXT",         // entire GitHub Actions runner context (toJSON)
         ).forEach { (name, envVar) ->
             System.getenv(envVar)?.takeIf { it.isNotBlank() }?.let { value(name, it) }
         }
