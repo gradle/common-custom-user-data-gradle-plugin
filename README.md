@@ -124,7 +124,7 @@ This approach has a number of benefits:
 If your customized plugin provides all required Develocity configuration, then a consumer project will get all the benefits of Develocity simply by applying the plugin. The
 project sources provide a good template to get started with your own plugin.
 
-Refer to the [Javadoc](https://docs.gradle.com/enterprise/gradle-plugin/api/) for more details on the key types available for use.
+Refer to the [Javadoc](https://docs.develocity.ai/downloads/gradle-plugin-javadoc/4.5.0/) for more details on the key types available for use.
 
 See the [Gradle User Manual](https://docs.gradle.org/current/userguide/publishing_binary_plugin_advanced.html) for more details on publishing Gradle plugins to an internal repository.
 
@@ -148,5 +148,5 @@ The Develocity Common Custom User Data Gradle plugin is open-source software rel
 [develocity-build-validation-scripts]: https://github.com/gradle/develocity-build-validation-scripts
 [develocity-oss-projects]: https://github.com/gradle/develocity-oss-projects
 [quarkus-build-caching-extension]: https://github.com/gradle/quarkus-build-caching-extension
-[develocity]: https://gradle.com/develocity
+[develocity]: https://develocity.ai
 [apache-license]: https://www.apache.org/licenses/LICENSE-2.0.html
