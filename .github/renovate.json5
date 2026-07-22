@@ -5,6 +5,20 @@
     "github>gradle/renovate-agent//presets/dv-automerge-minor.json5",
     ":disableDependencyDashboard"
   ],
+  "customManagers": [
+    {
+      // Keep the Develocity Gradle plugin Javadoc link in README.md pointed at the
+      // latest published version, tracked via the plugin marker on the Gradle Plugin Portal.
+      "customType": "regex",
+      "fileMatch": ["^README\\.md$"],
+      "matchStrings": [
+        "docs\\.develocity\\.ai/downloads/gradle-plugin-javadoc/(?<currentValue>\\d+\\.\\d+\\.\\d+)/"
+      ],
+      "depNameTemplate": "com.gradle.develocity:com.gradle.develocity.gradle.plugin",
+      "datasourceTemplate": "maven",
+      "registryUrlTemplate": "https://plugins.gradle.org/m2/"
+    }
+  ],
   "packageRules": [
     {
       "matchManagers": ["gradle"],
