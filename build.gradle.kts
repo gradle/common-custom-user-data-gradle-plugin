@@ -5,7 +5,7 @@ plugins {
     id("maven-publish")
     id("signing")
     id("com.gradle.plugin-publish") version "2.1.1"
-    id("com.gradleup.shadow") version "9.6.0"
+    id("com.gradleup.shadow") version "9.6.1"
 }
 
 val releaseVersion = releaseVersion()
