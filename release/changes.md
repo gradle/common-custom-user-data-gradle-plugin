@@ -1,1 +1,1 @@
-- [NEW] TBD
+- [NEW] Detect GitHub Copilot CLI via the `COPILOT_CLI` environment variable, capturing the `AI` tag and `AI agent` value `Copilot CLI`
