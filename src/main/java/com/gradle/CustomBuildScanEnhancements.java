@@ -600,7 +600,8 @@ final class CustomBuildScanEnhancements {
             Optional<String> cursor = envVariable("CURSOR_AGENT", providers);
             Optional<String> openCode = envVariable("OPENCODE", providers);
             Optional<String> gemini = envVariable("GEMINI_CLI", providers);
-            Optional<String> copilot = envVariable("COPILOT_CLI", providers);
+            Optional<String> copilotCli = envVariable("COPILOT_CLI", providers);
+            Optional<String> copilotAgent = envVariable("COPILOT_AGENT", providers);
             Optional<String> androidStudioAgentEnv = envVariable("ANDROID_STUDIO_AGENT", providers);
 
             claudeCode.ifPresent(env -> {
@@ -623,10 +624,10 @@ final class CustomBuildScanEnhancements {
                 buildScan.tag("AI");
                 buildScan.value("AI agent", "Gemini CLI");
             });
-            copilot.ifPresent(env -> {
+            if (copilotCli.isPresent() || copilotAgent.isPresent()) {
                 buildScan.tag("AI");
-                buildScan.value("AI agent", "Copilot CLI");
-            });
+                buildScan.value("AI agent", "Copilot");
+            }
             if (androidStudioAgent.isPresent() || androidStudioAgentEnv.isPresent()) {
                 buildScan.tag("AI");
                 buildScan.value("AI agent", "Gemini in Android Studio");
