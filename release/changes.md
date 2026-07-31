@@ -1,1 +1,1 @@
-- [NEW] Detect Copilot via the `COPILOT_CLI` and `COPILOT_AGENT` environment variables, capturing the `AI` tag and `AI agent` value `Copilot`
+- [NEW] TBD
