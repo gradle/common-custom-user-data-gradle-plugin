@@ -4,17 +4,26 @@ permissions:
 on: [ push, pull_request, workflow_dispatch ]
 
 env:
+  # --- MIGRATION: the standalone AC CLI config below is superseded by the
+  #     Develocity Artifact Cache GitHub Action. These vars only supported the
+  #     custom CLI actions, so they are commented out; their values are reused
+  #     directly in the action's `with:` block (see the migrated steps below).
   # Artifact Cache CLI Configuration
-  ARTIFACT_CACHE_CLI_VERSION: 1.4.0
+  # ARTIFACT_CACHE_CLI_VERSION: 1.4.0    -> action input: ac-cli-version
+  #   (bumped to 1.5.0, the latest AC CLI, as part of this migration)
+  #
+  ## Develocity
+  # DV_SERVER: https://ge.solutions-team.gradle.com   -> action input: develocity-url
+  #
+  ## Misc
+  # ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli   (action downloads the JAR itself)
+  # ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"    -> action input: additional-cli-args
+  # ARTIFACT_CACHE_STORE: "true"    (store now runs automatically in the action's post step)
 
   ## Develocity
-  DV_SERVER: https://ge.solutions-team.gradle.com
+  # Kept live: the Develocity access key is also used for Build Scan publishing,
+  # not only the AC CLI. The action also reads it (passed explicitly below).
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-
-  ## Misc
-  ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli
-  ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"
-  ARTIFACT_CACHE_STORE: "true"
 
 
 jobs:
@@ -34,8 +43,21 @@ jobs:
         with:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-      - name: Setup and restore Universal Cache
-        uses: ./.github/actions/setup-and-restore-artifact-cache
+      # MIGRATION: the custom restore action is replaced by the Develocity
+      # Artifact Cache GitHub Action, added ONCE. Its main step restores the
+      # cache here; its post step stores it automatically at job end, so the
+      # separate "Store Universal Cache" step below is no longer needed.
+      # - name: Setup and restore Universal Cache
+      #   uses: ./.github/actions/setup-and-restore-artifact-cache
+      - name: Develocity Artifact Cache
+        # TODO(migration): pending publication of the distribution repo + a v1
+        # release tag (gradle/dv#70557 make-public, first release). Not resolvable yet.
+        uses: gradle/develocity-artifact-cache-github-action@v0
+        with:
+          develocity-url: https://ge.solutions-team.gradle.com
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          ac-cli-version: 1.5.0
+          additional-cli-args: --gradle-home=/home/runner/.gradle
       - name: Build and publish to Maven Local with Gradle
         run: ./gradlew build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
         env:
@@ -45,11 +67,15 @@ jobs:
         with:
           name: common-custom-user-data-gradle-plugin
           path: ~/.m2/repository/com/gradle
-      - name: Store Universal Cache
-        uses: ./.github/actions/store-artifact-cache
-        if: env.ARTIFACT_CACHE_STORE == 'true'
-        with:
-          artifact-name: artifact-cache-${{ github.job }}.log
+      # MIGRATION: store now runs automatically in the Develocity Artifact Cache
+      # GitHub Action's post step (added above). The custom store action — which
+      # also uploaded ~/.develocity/artifact-cache/artifact-cache.log as an
+      # artifact — is commented out; see migration notes about the log artifact.
+      # - name: Store Universal Cache
+      #   uses: ./.github/actions/store-artifact-cache
+      #   if: env.ARTIFACT_CACHE_STORE == 'true'
+      #   with:
+      #     artifact-name: artifact-cache-${{ github.job }}.log
 
   local-test:
     name: Test with Locally Published Plugin
@@ -93,9 +119,23 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
-      - name: Setup and restore Universal Cache
+      # MIGRATION: custom restore -> Develocity Artifact Cache GitHub Action.
+      # `matrix` is passed so the action warns that these jobs differ only by
+      # gradle-version (an axis the auto cache name does not isolate) and thus
+      # share one cache — see migration notes on isolating per gradle-version.
+      # - name: Setup and restore Universal Cache
+      #   if: matrix.universal-cache
+      #   uses: ./.github/actions/setup-and-restore-artifact-cache
+      - name: Develocity Artifact Cache
         if: matrix.universal-cache
-        uses: ./.github/actions/setup-and-restore-artifact-cache
+        # TODO(migration): pending publication + v1 release tag (see notes).
+        uses: gradle/develocity-artifact-cache-github-action@v0
+        with:
+          develocity-url: https://ge.solutions-team.gradle.com
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          ac-cli-version: 1.5.0
+          additional-cli-args: --gradle-home=/home/runner/.gradle
+          matrix: ${{ toJSON(matrix) }}
       - name: Download plugin to maven local
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
@@ -181,8 +221,9 @@ jobs:
         id: build-with-local-plugin
         run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=${{ matrix.java-version }}"
         working-directory: ${{ runner.temp }}
-      - name: Store Universal Cache
-        uses: ./.github/actions/store-artifact-cache
-        if: matrix.universal-cache && env.ARTIFACT_CACHE_STORE == 'true'
-        with:
-          artifact-name: artifact-cache-${{ github.job }}-${{ matrix.gradle-version }}.log
+      # MIGRATION: store handled by the action's post step (added above).
+      # - name: Store Universal Cache
+      #   uses: ./.github/actions/store-artifact-cache
+      #   if: matrix.universal-cache && env.ARTIFACT_CACHE_STORE == 'true'
+      #   with:
+      #     artifact-name: artifact-cache-${{ github.job }}-${{ matrix.gradle-version }}.log
