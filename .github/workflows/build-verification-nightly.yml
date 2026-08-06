@@ -35,6 +35,7 @@ jobs:
         uses: gradle/develocity-artifact-cache-github-action@v0
         with:
           develocity-url: https://ge.solutions-team.gradle.com
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           ac-cli-version: 1.5.0
           additional-cli-args: --gradle-home=/home/runner/.gradle
       - name: Build and publish to Maven Local with Gradle
@@ -77,6 +78,7 @@ jobs:
         uses: gradle/develocity-artifact-cache-github-action@v0
         with:
           develocity-url: https://ge.solutions-team.gradle.com
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           ac-cli-version: 1.5.0
           additional-cli-args: --gradle-home=/home/runner/.gradle
           matrix: ${{ toJSON(matrix) }}
