@@ -10,23 +10,7 @@ on:
       - ".github/workflows/build-verification-nightly.yml"
   workflow_dispatch:
 env:
-  # --- MIGRATION: superseded by the Develocity Artifact Cache GitHub Action.
-  #     These vars only supported the custom CLI actions; values reused in the
-  #     action's `with:` block on the migrated steps below.
-  # Artifact Cache CLI Configuration
-  # ARTIFACT_CACHE_CLI_VERSION: 1.2.0    -> action input: ac-cli-version
-  #   (bumped to 1.5.0, the latest AC CLI, as part of this migration)
-  #
-  ## Develocity
-  # DV_SERVER: https://ge.solutions-team.gradle.com   -> action input: develocity-url
-  #
-  ## Misc
-  # ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli   (action downloads the JAR itself)
-  # ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"    -> action input: additional-cli-args
-  # ARTIFACT_CACHE_STORE: "true"    (store now runs automatically in the action's post step)
-
-  ## Develocity
-  # Kept live: also used for Build Scan publishing, not only the AC CLI.
+  # Also used for Build Scan publishing, not only the Artifact Cache action.
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
 jobs:
@@ -47,12 +31,7 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: 'release-candidate'
-      # MIGRATION: custom restore -> Develocity Artifact Cache GitHub Action
-      # (added once; post step stores automatically at job end).
-      # - name: Setup and restore Universal Cache
-      #   uses: ./.github/actions/setup-and-restore-artifact-cache
       - name: Develocity Artifact Cache
-        # TODO(migration): pending publication + v1 release tag (see notes).
         uses: gradle/develocity-artifact-cache-github-action@v0
         with:
           develocity-url: https://ge.solutions-team.gradle.com
@@ -62,12 +41,6 @@ jobs:
         run: gradle build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
         env:
           DISABLE_REQUIRED_SIGNING: true
-      # MIGRATION: store handled by the action's post step (added above).
-      # - name: Store Universal Cache
-      #   uses: ./.github/actions/store-artifact-cache
-      #   if: env.ARTIFACT_CACHE_STORE == 'true'
-      #   with:
-      #     artifact-name: artifact-cache-${{ github.job }}.log
       - name: Upload published plugin
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -97,12 +70,10 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
-      # MIGRATION: custom restore -> Develocity Artifact Cache GitHub Action.
-      # `matrix` passed for the shared-cache warning across gradle-version.
-      # - name: Setup and restore Universal Cache
-      #   uses: ./.github/actions/setup-and-restore-artifact-cache
+      # `matrix` is passed so the action warns that these gradle-version legs
+      # share one auto-generated cache. See build-verification.yml for the
+      # ac-image-names pattern that isolates each gradle-version.
       - name: Develocity Artifact Cache
-        # TODO(migration): pending publication + v1 release tag (see notes).
         uses: gradle/develocity-artifact-cache-github-action@v0
         with:
           develocity-url: https://ge.solutions-team.gradle.com
@@ -156,12 +127,6 @@ jobs:
       - name: Run a build with the locally published plugin
         run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=${{ matrix.java-version }}"
         working-directory: ${{ runner.temp }}
-      # MIGRATION: store handled by the action's post step (added above).
-      # - name: Store Universal Cache
-      #   uses: ./.github/actions/store-artifact-cache
-      #   if: env.ARTIFACT_CACHE_STORE == 'true'
-      #   with:
-      #     artifact-name: artifact-cache-${{ github.job }}-${{ matrix.gradle-version }}.log
 
   failure-notification:
     name: Matrix failure notification
