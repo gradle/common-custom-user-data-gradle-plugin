@@ -32,7 +32,7 @@ jobs:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: 'release-candidate'
       - name: Develocity Artifact Cache
-        uses: gradle/develocity-artifact-cache-github-action@v0
+        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-1
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
@@ -75,7 +75,7 @@ jobs:
       # share one auto-generated cache. See build-verification.yml for the
       # ac-image-names pattern that isolates each gradle-version.
       - name: Develocity Artifact Cache
-        uses: gradle/develocity-artifact-cache-github-action@v0
+        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-1
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
