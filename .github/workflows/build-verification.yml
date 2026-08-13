@@ -26,7 +26,7 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
       - name: Develocity Artifact Cache
-        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-1
+        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-2
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
@@ -93,7 +93,7 @@ jobs:
       # shared-cache warning, which an ac-image-names override already suppresses.
       - name: Develocity Artifact Cache
         if: matrix.universal-cache
-        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-1
+        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-2
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
