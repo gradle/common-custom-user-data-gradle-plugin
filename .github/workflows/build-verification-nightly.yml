@@ -32,11 +32,11 @@ jobs:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: 'release-candidate'
       - name: Develocity Artifact Cache
-        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-2
+        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-          ac-cli-version: 1.5.0
+          cli-version: 1.5.0
           additional-cli-args: --gradle-home=/home/runner/.gradle
       - name: Build and publish to Maven Local with Gradle
         run: gradle build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
@@ -73,13 +73,13 @@ jobs:
           gradle-version: '${{ matrix.gradle-version }}'
       # `matrix` is passed so the action warns that these gradle-version legs
       # share one auto-generated cache. See build-verification.yml for the
-      # ac-image-names pattern that isolates each gradle-version.
+      # image-names pattern that isolates each gradle-version.
       - name: Develocity Artifact Cache
-        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-2
+        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-          ac-cli-version: 1.5.0
+          cli-version: 1.5.0
           additional-cli-args: --gradle-home=/home/runner/.gradle
           matrix: ${{ toJSON(matrix) }}
       - name: Download plugin to maven local
