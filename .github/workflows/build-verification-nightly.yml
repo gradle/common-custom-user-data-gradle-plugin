@@ -10,7 +10,6 @@ on:
       - ".github/workflows/build-verification-nightly.yml"
   workflow_dispatch:
 env:
-  # Also used for Build Scan publishing, not only the Artifact Cache action.
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
 jobs:
@@ -31,7 +30,7 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: 'release-candidate'
-      - name: Develocity Artifact Cache
+      - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
         with:
           develocity-url: https://ge.solutions-team.gradle.com
@@ -71,17 +70,13 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
-      # `matrix` is passed so the action warns that these gradle-version legs
-      # share one auto-generated cache. See build-verification.yml for the
-      # image-names pattern that isolates each gradle-version.
-      - name: Develocity Artifact Cache
+      - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           cli-version: 1.5.0
           additional-cli-args: --gradle-home=/home/runner/.gradle
-          matrix: ${{ toJSON(matrix) }}
       - name: Download plugin to maven local
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:

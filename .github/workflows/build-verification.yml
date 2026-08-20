@@ -25,7 +25,7 @@ jobs:
         with:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-      - name: Develocity Artifact Cache
+      - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
         with:
           develocity-url: https://ge.solutions-team.gradle.com
@@ -89,9 +89,8 @@ jobs:
       # the same for every matrix leg). Different Gradle versions resolve
       # different artifact sets, so a shared cache image would thrash on save
       # (last writer wins). image-names gives each gradle-version its own
-      # cache image. No `matrix` input is passed here: it only drives the
-      # shared-cache warning, which an image-names override already suppresses.
-      - name: Develocity Artifact Cache
+      # cache image.
+      - name: Setup Develocity Artifact Cache
         if: matrix.universal-cache
         uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
         with:
