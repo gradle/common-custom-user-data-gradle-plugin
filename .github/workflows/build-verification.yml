@@ -30,7 +30,6 @@ jobs:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           cli-version: 1.5.0
-          additional-cli-args: --gradle-home=/home/runner/.gradle
       - name: Build and publish to Maven Local with Gradle
         run: ./gradlew build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
         env:
@@ -96,7 +95,6 @@ jobs:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           cli-version: 1.5.0
-          additional-cli-args: --gradle-home=/home/runner/.gradle
           image-names: ccud-gradle-${{ matrix.gradle-version }}
       - name: Download plugin to maven local
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
