@@ -10,17 +10,7 @@ on:
       - ".github/workflows/build-verification-nightly.yml"
   workflow_dispatch:
 env:
-  # Artifact Cache CLI Configuration
-  ARTIFACT_CACHE_CLI_VERSION: 1.2.0
-
-  ## Develocity
-  DV_SERVER: https://ge.solutions-team.gradle.com
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-
-  ## Misc
-  ARTIFACT_CACHE_CLI_FILENAME: develocity-artifact-cache-cli
-  ARTIFACT_CACHE_OPTS: "--gradle-home=/home/runner/.gradle"
-  ARTIFACT_CACHE_STORE: "true"
 
 jobs:
   verification:
@@ -40,17 +30,16 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: 'release-candidate'
-      - name: Setup and restore Universal Cache
-        uses: ./.github/actions/setup-and-restore-artifact-cache
+      - name: Setup Develocity Artifact Cache
+        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
+        with:
+          develocity-url: https://ge.solutions-team.gradle.com
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          cli-version: 1.5.0
       - name: Build and publish to Maven Local with Gradle
         run: gradle build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
         env:
           DISABLE_REQUIRED_SIGNING: true
-      - name: Store Universal Cache
-        uses: ./.github/actions/store-artifact-cache
-        if: env.ARTIFACT_CACHE_STORE == 'true'
-        with:
-          artifact-name: artifact-cache-${{ github.job }}.log
       - name: Upload published plugin
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -80,8 +69,16 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
-      - name: Setup and restore Universal Cache
-        uses: ./.github/actions/setup-and-restore-artifact-cache
+      # These legs differ only by gradle-version, which the auto-generated cache
+      # name does not isolate, so a shared cache image would thrash on save
+      # (last writer wins). image-names gives each gradle-version its own image.
+      - name: Setup Develocity Artifact Cache
+        uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
+        with:
+          develocity-url: https://ge.solutions-team.gradle.com
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          cli-version: 1.5.0
+          image-names: ccud-gradle-nightly-${{ matrix.gradle-version }}
       - name: Download plugin to maven local
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
@@ -129,11 +126,6 @@ jobs:
       - name: Run a build with the locally published plugin
         run: gradle help "-Dscan.value.gradle-version=${{ matrix.gradle-version }}" "-Dscan.value.java-version=${{ matrix.java-version }}"
         working-directory: ${{ runner.temp }}
-      - name: Store Universal Cache
-        uses: ./.github/actions/store-artifact-cache
-        if: env.ARTIFACT_CACHE_STORE == 'true'
-        with:
-          artifact-name: artifact-cache-${{ github.job }}-${{ matrix.gradle-version }}.log
 
   failure-notification:
     name: Matrix failure notification
