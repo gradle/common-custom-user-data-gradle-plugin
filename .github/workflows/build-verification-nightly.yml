@@ -70,6 +70,9 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
+      # These legs differ only by gradle-version, which the auto-generated cache
+      # name does not isolate, so a shared cache image would thrash on save
+      # (last writer wins). image-names gives each gradle-version its own image.
       - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
         with:
@@ -77,6 +80,7 @@ jobs:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           cli-version: 1.5.0
           additional-cli-args: --gradle-home=/home/runner/.gradle
+          image-names: ccud-gradle-${{ matrix.gradle-version }}
       - name: Download plugin to maven local
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:

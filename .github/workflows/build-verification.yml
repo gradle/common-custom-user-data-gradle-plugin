@@ -4,7 +4,6 @@ permissions:
 on: [ push, pull_request, workflow_dispatch ]
 
 env:
-  # Also used for Build Scan publishing, not only the Artifact Cache action.
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
 
