@@ -69,9 +69,6 @@ jobs:
           cache-disabled: true
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
-      # These legs differ only by gradle-version, which the auto-generated cache
-      # name does not isolate, so a shared cache image would thrash on save
-      # (last writer wins). image-names gives each gradle-version its own image.
       - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@v0.0.5-rc-3
         with:
