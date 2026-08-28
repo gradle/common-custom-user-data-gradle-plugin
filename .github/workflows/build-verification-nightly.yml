@@ -31,7 +31,7 @@ jobs:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: 'release-candidate'
       - name: Setup Develocity Artifact Cache
-        uses: gradle/develocity-artifact-cache-github-action@v1
+        uses: gradle/develocity-artifact-cache-github-action@3acc1be80162f5e988ee1c3dbed8fe22e5732ff8 # v1
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
@@ -70,7 +70,7 @@ jobs:
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
       - name: Setup Develocity Artifact Cache
-        uses: gradle/develocity-artifact-cache-github-action@v1
+        uses: gradle/develocity-artifact-cache-github-action@3acc1be80162f5e988ee1c3dbed8fe22e5732ff8 # v1
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
