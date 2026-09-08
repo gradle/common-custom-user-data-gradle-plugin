@@ -9,8 +9,6 @@ on:
     paths:
       - ".github/workflows/build-verification-nightly.yml"
   workflow_dispatch:
-env:
-  DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
 jobs:
   verification:

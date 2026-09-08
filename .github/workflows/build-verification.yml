@@ -3,10 +3,6 @@ permissions:
   contents: read
 on: [ push, pull_request, workflow_dispatch ]
 
-env:
-  DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-
-
 jobs:
   verification:
     name: Verification
