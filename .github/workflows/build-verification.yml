@@ -3,10 +3,6 @@ permissions:
   contents: read
 on: [ push, pull_request, workflow_dispatch ]
 
-env:
-  DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-
-
 jobs:
   verification:
     name: Verification
@@ -20,9 +16,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0-rc.1
         with:
-          cache-disabled: true
+          cache-provider: external
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
       - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@3acc1be80162f5e988ee1c3dbed8fe22e5732ff8 # v1
@@ -77,9 +73,9 @@ jobs:
           java-version: '${{ matrix.java-version }}'
           distribution: 'temurin'
       - name: Set up Gradle ${{ matrix.gradle-version }}
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0-rc.1
         with:
-          cache-disabled: true
+          cache-provider: external
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           gradle-version: '${{ matrix.gradle-version }}'
       - name: Setup Develocity Artifact Cache
