@@ -94,7 +94,25 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureOs() {
-        sysProperty("os.name", providers).ifPresent(buildScan::tag);
+        // Process data at execution time so that the OS name does not become a configuration cache input
+        buildScan.buildFinished(new CaptureOsAction(buildScan, providers));
+    }
+
+    private static final class CaptureOsAction implements Action<BuildResultAdapter> {
+
+        private final BuildScanAdapter buildScan;
+        private final ProviderFactory providers;
+
+        private CaptureOsAction(BuildScanAdapter buildScan, ProviderFactory providers) {
+            this.buildScan = buildScan;
+            this.providers = providers;
+        }
+
+        @Override
+        public void execute(BuildResultAdapter buildResult) {
+            sysProperty("os.name", providers).ifPresent(buildScan::tag);
+        }
+
     }
 
     private void captureIde() {
