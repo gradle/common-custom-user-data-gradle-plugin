@@ -34,50 +34,40 @@ public final class Utils {
     private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile("^(?:(?:https://|git://)(?:.+:.+@)?|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$");
 
     static Optional<String> sysPropertyOrEnvVariable(String sysPropertyName, String envVarName, ProviderFactory providers) {
-        Optional<String> sysProperty = sysProperty(sysPropertyName, providers);
-        return sysProperty.isPresent() ? sysProperty : envVariable(envVarName, providers);
+        Optional<String> sysProperty = sysPropertyAtConfigurationTime(sysPropertyName, providers);
+        return sysProperty.isPresent() ? sysProperty : envVariableAtConfigurationTime(envVarName, providers);
     }
 
     static Optional<Boolean> booleanSysPropertyOrEnvVariable(String sysPropertyName, String envVarName, ProviderFactory providers) {
-        Optional<Boolean> sysProperty = booleanSysProperty(sysPropertyName, providers);
-        return sysProperty.isPresent() ? sysProperty : booleanEnvVariable(envVarName, providers);
+        return sysPropertyOrEnvVariable(sysPropertyName, envVarName, providers).map(Boolean::parseBoolean);
     }
 
     static Optional<Duration> durationSysPropertyOrEnvVariable(String sysPropertyName, String envVarName, ProviderFactory providers) {
-        Optional<Duration> sysProperty = durationSysProperty(sysPropertyName, providers);
-        return sysProperty.isPresent() ? sysProperty : durationEnvVariable(envVarName, providers);
+        return sysPropertyOrEnvVariable(sysPropertyName, envVarName, providers).map(Duration::parse);
     }
 
-    static Optional<String> envVariable(String name, ProviderFactory providers) {
+    static Optional<String> envVariable(String name) {
+        return Optional.ofNullable(System.getenv(name));
+    }
+
+    static Optional<String> sysProperty(String name) {
+        return Optional.ofNullable(System.getProperty(name));
+    }
+
+    static Optional<String> envVariableAtConfigurationTime(String name, ProviderFactory providers) {
         if (isGradle65OrNewer() && !isGradle74OrNewer()) {
             Provider<String> variable = forUseAtConfigurationTime(providers.environmentVariable(name));
             return Optional.ofNullable(variable.getOrNull());
         }
-        return Optional.ofNullable(System.getenv(name));
+        return envVariable(name);
     }
 
-    static Optional<Boolean> booleanEnvVariable(String name, ProviderFactory providers) {
-        return envVariable(name, providers).map(Boolean::parseBoolean);
-    }
-
-    static Optional<Duration> durationEnvVariable(String name, ProviderFactory providers) {
-        return envVariable(name, providers).map(Duration::parse);
-    }
-
-    static Optional<String> sysProperty(String name, ProviderFactory providers) {
+    static Optional<String> sysPropertyAtConfigurationTime(String name, ProviderFactory providers) {
         if (isGradle65OrNewer() && !isGradle74OrNewer()) {
             Provider<String> property = forUseAtConfigurationTime(providers.systemProperty(name));
             return Optional.ofNullable(property.getOrNull());
         }
-        return Optional.ofNullable(System.getProperty(name));
-    }
-
-    static Optional<Boolean> booleanSysProperty(String name, ProviderFactory providers) {
-        return sysProperty(name, providers).map(Boolean::parseBoolean);
-    }
-
-    static Optional<Duration> durationSysProperty(String name, ProviderFactory providers) {
-        return sysProperty(name, providers).map(Duration::parse);
+        return sysProperty(name);
     }
 
     static boolean isNotEmpty(String value) {
@@ -214,10 +204,6 @@ public final class Utils {
 
     static boolean isGradle6OrNewer() {
         return isGradleNewerThan("6.0");
-    }
-
-    static boolean isGradle61OrNewer() {
-        return isGradleNewerThan("6.1");
     }
 
     static boolean isGradle62OrNewer() {
