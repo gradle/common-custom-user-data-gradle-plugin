@@ -44,7 +44,6 @@ import static com.gradle.Utils.execAndCheckSuccess;
 import static com.gradle.Utils.execAndGetStdOut;
 import static com.gradle.Utils.isGradle43rNewer;
 import static com.gradle.Utils.isGradle56OrNewer;
-import static com.gradle.Utils.isGradle61OrNewer;
 import static com.gradle.Utils.isGradle62OrNewer;
 import static com.gradle.Utils.isNotEmpty;
 import static com.gradle.Utils.readPropertiesFile;
@@ -114,30 +113,25 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureIde() {
-        // Prepare relevant properties for use at execution time
-        Map<String, Provider<String>> ideProperties = new HashMap<>();
-        ideProperties.put(SYSTEM_PROP_IDEA_VENDOR_NAME, systemPropertyProvider(SYSTEM_PROP_IDEA_VENDOR_NAME, providers));
-        ideProperties.put(SYSTEM_PROP_IDEA_VERSION, systemPropertyProvider(SYSTEM_PROP_IDEA_VERSION, providers));
-        ideProperties.put(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradlePropertyProvider(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradle, providers));
-        ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, firstOrElseSecond(providers, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers), gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY, gradle, providers)));
-        ideProperties.put(SYSTEM_PROP_ECLIPSE_BUILD_ID, systemPropertyProvider(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers));
-        ideProperties.put(SYSTEM_PROP_IDEA_SYNC_ACTIVE, systemPropertyProvider(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers));
-        ideProperties.put(ENV_VAR_VSCODE_PID, environmentPropertyProvider(ENV_VAR_VSCODE_PID, providers));
-        ideProperties.put(ENV_VAR_VSCODE_INJECTION, environmentPropertyProvider(ENV_VAR_VSCODE_INJECTION, providers));
+        // Gradle properties are only reachable through the Provider API, so prepare them for use at execution time
+        Provider<String> androidInvokedFromIde = gradlePropertyProvider(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradle, providers);
+        Provider<String> androidStudioVersion = firstOrElseSecond(providers, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers), gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY, gradle, providers));
 
         // Process data at execution time to ensure property initialization, and so that CI detection
         // does not become a configuration cache input
-        buildScan.buildFinished(new CaptureIdeMetadataAction(buildScan, ideProperties));
+        buildScan.buildFinished(new CaptureIdeMetadataAction(buildScan, androidInvokedFromIde, androidStudioVersion));
     }
 
     private static final class CaptureIdeMetadataAction implements Action<BuildResultAdapter> {
 
         private final BuildScanAdapter buildScan;
-        private final Map<String, Provider<String>> props;
+        private final Provider<String> androidInvokedFromIde;
+        private final Provider<String> androidStudioVersion;
 
-        private CaptureIdeMetadataAction(BuildScanAdapter buildScan, Map<String, Provider<String>> props) {
+        private CaptureIdeMetadataAction(BuildScanAdapter buildScan, Provider<String> androidInvokedFromIde, Provider<String> androidStudioVersion) {
             this.buildScan = buildScan;
-            this.props = props;
+            this.androidInvokedFromIde = androidInvokedFromIde;
+            this.androidStudioVersion = androidStudioVersion;
         }
 
         @Override
@@ -146,29 +140,36 @@ final class CustomBuildScanEnhancements {
                 return;
             }
 
-            if (props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).isPresent()) {
-                String ideaVendorNameValue = props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).get();
+            Optional<String> ideaVendorName = sysProperty(SYSTEM_PROP_IDEA_VENDOR_NAME);
+            Optional<String> ideaVersion = sysProperty(SYSTEM_PROP_IDEA_VERSION);
+            Optional<String> eclipseBuildId = sysProperty(SYSTEM_PROP_ECLIPSE_BUILD_ID);
+            Optional<String> ideaSyncActive = sysProperty(SYSTEM_PROP_IDEA_SYNC_ACTIVE);
+            Optional<String> vscodePid = envVariable(ENV_VAR_VSCODE_PID);
+            Optional<String> vscodeInjection = envVariable(ENV_VAR_VSCODE_INJECTION);
+
+            if (ideaVendorName.isPresent()) {
+                String ideaVendorNameValue = ideaVendorName.get();
                 if ("Google".equals(ideaVendorNameValue)) {
                     // using androidStudioVersion instead of ideaVersion for compatibility reasons, those can be different (e.g. 2020.3.1 Patch 3 instead of 2020.3)
-                    tagIde("Android Studio", getOrEmpty(props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION)));
+                    tagIde("Android Studio", getOrEmpty(androidStudioVersion));
                 } else if ("JetBrains".equals(ideaVendorNameValue)) {
-                    tagIde("IntelliJ IDEA", getOrEmpty(props.get(SYSTEM_PROP_IDEA_VERSION)));
+                    tagIde("IntelliJ IDEA", ideaVersion.orElse(""));
                 }
-            } else if (props.get(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE).isPresent()) {
+            } else if (androidInvokedFromIde.isPresent()) {
                 // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
-                tagIde("Android Studio", getOrEmpty(props.get(PROJECT_PROP_ANDROID_STUDIO_VERSION)));
-            } else if (props.get(SYSTEM_PROP_IDEA_VERSION).isPresent()) {
+                tagIde("Android Studio", getOrEmpty(androidStudioVersion));
+            } else if (ideaVersion.isPresent()) {
                 // this case should be handled by the ideaVendorName condition but keeping it for compatibility reason (ideaVendorName started with 2020.1)
-                tagIde("IntelliJ IDEA", props.get(SYSTEM_PROP_IDEA_VERSION).get());
-            } else if (props.get(SYSTEM_PROP_ECLIPSE_BUILD_ID).isPresent()) {
-                tagIde("Eclipse", props.get(SYSTEM_PROP_ECLIPSE_BUILD_ID).get());
-            } else if (props.get(ENV_VAR_VSCODE_PID).isPresent() || props.get(ENV_VAR_VSCODE_INJECTION).isPresent()) {
+                tagIde("IntelliJ IDEA", ideaVersion.get());
+            } else if (eclipseBuildId.isPresent()) {
+                tagIde("Eclipse", eclipseBuildId.get());
+            } else if (vscodePid.isPresent() || vscodeInjection.isPresent()) {
                 tagIde("VS Code", "");
             } else {
                 buildScan.tag("Cmd Line");
             }
 
-            if (props.get(SYSTEM_PROP_IDEA_SYNC_ACTIVE).isPresent()) {
+            if (ideaSyncActive.isPresent()) {
                 buildScan.tag("IDE sync");
             }
         }
@@ -693,14 +694,6 @@ final class CustomBuildScanEnhancements {
         }
     }
 
-    private static Provider<String> systemPropertyProvider(String name, ProviderFactory providers) {
-        if (isGradle61OrNewer()) {
-            return providers.systemProperty(name);
-        } else {
-            return providers.provider(() -> System.getProperty(name));
-        }
-    }
-
     private static Provider<String> gradlePropertyProvider(String name, Gradle gradle, ProviderFactory providers) {
         if (isGradle62OrNewer()) {
             return providers.gradleProperty(name);
@@ -714,14 +707,6 @@ final class CustomBuildScanEnhancements {
             return overrideProperty.orElse(mainProperty);
         } else {
             return providers.provider(() -> overrideProperty.isPresent() ? overrideProperty.get() : mainProperty.getOrNull());
-        }
-    }
-
-    private static Provider<String> environmentPropertyProvider(String name, ProviderFactory providers) {
-        if (isGradle61OrNewer()) {
-            return providers.environmentVariable(name);
-        } else {
-            return providers.provider(() -> System.getenv(name));
         }
     }
 

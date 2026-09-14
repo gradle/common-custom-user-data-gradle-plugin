@@ -206,10 +206,6 @@ public final class Utils {
         return isGradleNewerThan("6.0");
     }
 
-    static boolean isGradle61OrNewer() {
-        return isGradleNewerThan("6.1");
-    }
-
     static boolean isGradle62OrNewer() {
         return isGradleNewerThan("6.2");
     }
