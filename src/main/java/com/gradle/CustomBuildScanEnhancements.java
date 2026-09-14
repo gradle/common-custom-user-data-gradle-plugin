@@ -98,35 +98,40 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureIde() {
-        if (!isCi(providers)) {
-            // Prepare relevant properties for use at execution time
-            Map<String, Provider<String>> ideProperties = new HashMap<>();
-            ideProperties.put(SYSTEM_PROP_IDEA_VENDOR_NAME, systemPropertyProvider(SYSTEM_PROP_IDEA_VENDOR_NAME, providers));
-            ideProperties.put(SYSTEM_PROP_IDEA_VERSION, systemPropertyProvider(SYSTEM_PROP_IDEA_VERSION, providers));
-            ideProperties.put(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradlePropertyProvider(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradle, providers));
-            ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, firstOrElseSecond(providers, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers), gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY, gradle, providers)));
-            ideProperties.put(SYSTEM_PROP_ECLIPSE_BUILD_ID, systemPropertyProvider(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers));
-            ideProperties.put(SYSTEM_PROP_IDEA_SYNC_ACTIVE, systemPropertyProvider(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers));
-            ideProperties.put(ENV_VAR_VSCODE_PID, environmentPropertyProvider(ENV_VAR_VSCODE_PID, providers));
-            ideProperties.put(ENV_VAR_VSCODE_INJECTION, environmentPropertyProvider(ENV_VAR_VSCODE_INJECTION, providers));
+        // Prepare relevant properties for use at execution time
+        Map<String, Provider<String>> ideProperties = new HashMap<>();
+        ideProperties.put(SYSTEM_PROP_IDEA_VENDOR_NAME, systemPropertyProvider(SYSTEM_PROP_IDEA_VENDOR_NAME, providers));
+        ideProperties.put(SYSTEM_PROP_IDEA_VERSION, systemPropertyProvider(SYSTEM_PROP_IDEA_VERSION, providers));
+        ideProperties.put(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradlePropertyProvider(PROJECT_PROP_ANDROID_INVOKED_FROM_IDE, gradle, providers));
+        ideProperties.put(PROJECT_PROP_ANDROID_STUDIO_VERSION, firstOrElseSecond(providers, gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION, gradle, providers), gradlePropertyProvider(PROJECT_PROP_ANDROID_STUDIO_VERSION_LEGACY, gradle, providers)));
+        ideProperties.put(SYSTEM_PROP_ECLIPSE_BUILD_ID, systemPropertyProvider(SYSTEM_PROP_ECLIPSE_BUILD_ID, providers));
+        ideProperties.put(SYSTEM_PROP_IDEA_SYNC_ACTIVE, systemPropertyProvider(SYSTEM_PROP_IDEA_SYNC_ACTIVE, providers));
+        ideProperties.put(ENV_VAR_VSCODE_PID, environmentPropertyProvider(ENV_VAR_VSCODE_PID, providers));
+        ideProperties.put(ENV_VAR_VSCODE_INJECTION, environmentPropertyProvider(ENV_VAR_VSCODE_INJECTION, providers));
 
-            // Process data at execution time to ensure property initialization
-            buildScan.buildFinished(new CaptureIdeMetadataAction(buildScan, ideProperties));
-        }
+        // Process data at execution time to ensure property initialization, and so that CI detection
+        // does not become a configuration cache input
+        buildScan.buildFinished(new CaptureIdeMetadataAction(buildScan, providers, ideProperties));
     }
 
     private static final class CaptureIdeMetadataAction implements Action<BuildResultAdapter> {
 
         private final BuildScanAdapter buildScan;
+        private final ProviderFactory providers;
         private final Map<String, Provider<String>> props;
 
-        private CaptureIdeMetadataAction(BuildScanAdapter buildScan, Map<String, Provider<String>> props) {
+        private CaptureIdeMetadataAction(BuildScanAdapter buildScan, ProviderFactory providers, Map<String, Provider<String>> props) {
             this.buildScan = buildScan;
+            this.providers = providers;
             this.props = props;
         }
 
         @Override
         public void execute(BuildResultAdapter buildResult) {
+            if (isCi(providers)) {
+                return;
+            }
+
             if (props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).isPresent()) {
                 String ideaVendorNameValue = props.get(SYSTEM_PROP_IDEA_VENDOR_NAME).get();
                 if ("Google".equals(ideaVendorNameValue)) {
@@ -173,17 +178,33 @@ final class CustomBuildScanEnhancements {
     }
 
     private void captureCiOrLocal() {
-        buildScan.tag(isCi(providers) ? "CI" : "LOCAL");
+        // Process data at execution time so that CI detection does not become a configuration cache input
+        buildScan.buildFinished(new CaptureCiOrLocalAction(buildScan, providers));
+    }
+
+    private static final class CaptureCiOrLocalAction implements Action<BuildResultAdapter> {
+
+        private final BuildScanAdapter buildScan;
+        private final ProviderFactory providers;
+
+        private CaptureCiOrLocalAction(BuildScanAdapter buildScan, ProviderFactory providers) {
+            this.buildScan = buildScan;
+            this.providers = providers;
+        }
+
+        @Override
+        public void execute(BuildResultAdapter buildResult) {
+            buildScan.tag(isCi(providers) ? "CI" : "LOCAL");
+        }
+
     }
 
     private void captureCiMetadata() {
-        if (isCi(providers)) {
-            // Prepare project directory for use at execution time
-            Provider<Directory> projectDirectory = providers.provider(() -> gradle.getRootProject().getLayout().getProjectDirectory());
+        // Prepare project directory for use at execution time
+        Provider<Directory> projectDirectory = providers.provider(() -> gradle.getRootProject().getLayout().getProjectDirectory());
 
-            // Process data at execution time so that CI metadata does not become a configuration cache input
-            buildScan.buildFinished(new CaptureCiMetadataAction(develocity, providers, projectDirectory));
-        }
+        // Process data at execution time so that CI metadata does not become a configuration cache input
+        buildScan.buildFinished(new CaptureCiMetadataAction(develocity, providers, projectDirectory));
     }
 
     private static final class CaptureCiMetadataAction implements Action<BuildResultAdapter> {
