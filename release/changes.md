@@ -1,1 +1,1 @@
-- [NEW] TBD
+- [FIX] Capture IDE, Android Studio agent and TeamCity metadata for builds that fail during configuration on Gradle 6.5 to 7.3

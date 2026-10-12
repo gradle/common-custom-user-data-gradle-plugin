@@ -130,7 +130,7 @@ public final class Utils {
     static InputStream readFile(String name, ProviderFactory providers, Directory projectDirectory) throws FileNotFoundException {
         if (isGradle65OrNewer()) {
             RegularFile file = projectDirectory.file(name);
-            Provider<byte[]> fileContent = providers.fileContents(file).getAsBytes();
+            Provider<byte[]> fileContent = forUseAtConfigurationTime(providers.fileContents(file).getAsBytes());
             return new ByteArrayInputStream(fileContent.getOrElse(new byte[0]));
         }
         return new FileInputStream(name);
@@ -267,12 +267,13 @@ public final class Utils {
         }
     }
 
-    private static Provider<String> forUseAtConfigurationTime(Provider<String> provider) {
+    @SuppressWarnings("unchecked")
+    static <T> Provider<T> forUseAtConfigurationTime(Provider<T> provider) {
         if (isGradle65OrNewer() && !isGradle74OrNewer()) {
             try {
                 // Use reflection to access the forUseAtConfigurationTime method as it was removed in Gradle 9.
                 Method method = Provider.class.getMethod("forUseAtConfigurationTime");
-                return (Provider<String>) method.invoke(provider);
+                return (Provider<T>) method.invoke(provider);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to invoke forUseAtConfigurationTime via reflection", e);
             }

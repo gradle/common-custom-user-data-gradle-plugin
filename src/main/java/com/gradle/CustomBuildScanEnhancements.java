@@ -42,6 +42,7 @@ import static com.gradle.Utils.appendIfMissing;
 import static com.gradle.Utils.envVariable;
 import static com.gradle.Utils.execAndCheckSuccess;
 import static com.gradle.Utils.execAndGetStdOut;
+import static com.gradle.Utils.forUseAtConfigurationTime;
 import static com.gradle.Utils.isGradle43rNewer;
 import static com.gradle.Utils.isGradle56OrNewer;
 import static com.gradle.Utils.isGradle61OrNewer;
@@ -666,7 +667,7 @@ final class CustomBuildScanEnhancements {
 
     private static Provider<String> systemPropertyProvider(String name, ProviderFactory providers) {
         if (isGradle61OrNewer()) {
-            return providers.systemProperty(name);
+            return forUseAtConfigurationTime(providers.systemProperty(name));
         } else {
             return providers.provider(() -> System.getProperty(name));
         }
@@ -674,7 +675,7 @@ final class CustomBuildScanEnhancements {
 
     private static Provider<String> gradlePropertyProvider(String name, Gradle gradle, ProviderFactory providers) {
         if (isGradle62OrNewer()) {
-            return providers.gradleProperty(name);
+            return forUseAtConfigurationTime(providers.gradleProperty(name));
         } else {
             return providers.provider(() -> (String) gradle.getRootProject().findProperty(name));
         }
@@ -690,7 +691,7 @@ final class CustomBuildScanEnhancements {
 
     private static Provider<String> environmentPropertyProvider(String name, ProviderFactory providers) {
         if (isGradle61OrNewer()) {
-            return providers.environmentVariable(name);
+            return forUseAtConfigurationTime(providers.environmentVariable(name));
         } else {
             return providers.provider(() -> System.getenv(name));
         }
