@@ -1,1 +1,1 @@
-- [NEW] TBD
+- [FIX] Environment variables and system properties captured as build scan data invalidate the configuration cache
