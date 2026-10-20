@@ -21,7 +21,7 @@ jobs:
           cache-provider: external
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
       - name: Setup Develocity Artifact Cache
-        uses: gradle/develocity-artifact-cache-github-action@5dde37a74bc12be03ec42a88e06ba35870b3b955 # v1.1.0-rc-3
+        uses: gradle/develocity-artifact-cache-github-action@0d55463728b4cb8d76aab3399fcf261cf1fc4fe5 # v1.1.1
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-auth: access-key
@@ -81,7 +81,7 @@ jobs:
           gradle-version: '${{ matrix.gradle-version }}'
       - name: Setup Develocity Artifact Cache
         if: matrix.universal-cache
-        uses: gradle/develocity-artifact-cache-github-action@5dde37a74bc12be03ec42a88e06ba35870b3b955 # v1.1.0-rc-3
+        uses: gradle/develocity-artifact-cache-github-action@0d55463728b4cb8d76aab3399fcf261cf1fc4fe5 # v1.1.1
         with:
           develocity-url: https://ge.solutions-team.gradle.com
           develocity-auth: access-key
