@@ -24,7 +24,6 @@ jobs:
         uses: gradle/develocity-artifact-cache-github-action@0d55463728b4cb8d76aab3399fcf261cf1fc4fe5 # v1.1.1
         with:
           develocity-url: https://ge.solutions-team.gradle.com
-          develocity-auth: access-key
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           cli-version: 1.5.0
       - name: Build and publish to Maven Local with Gradle
@@ -84,7 +83,6 @@ jobs:
         uses: gradle/develocity-artifact-cache-github-action@0d55463728b4cb8d76aab3399fcf261cf1fc4fe5 # v1.1.1
         with:
           develocity-url: https://ge.solutions-team.gradle.com
-          develocity-auth: access-key
           develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
           cli-version: 1.5.0
           image-names: ccud-gradle-${{ matrix.gradle-version }}
