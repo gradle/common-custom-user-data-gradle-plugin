@@ -22,17 +22,30 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      - name: Get GitHub OIDC token for setup-gradle
+        id: develocity-oidc
+        run: |
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "::warning::No GitHub OIDC token available (e.g. PR from a fork), Develocity will not be authenticated"
+            exit 0
+          fi
+          token=$(curl -sSfG -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            --data-urlencode "audience=https://ge.solutions-team.gradle.com" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          echo "::add-mask::$token"
+          echo "access-key=ge.solutions-team.gradle.com=$token" >> "$GITHUB_OUTPUT"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           cache-provider: external
-          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          develocity-access-key: ${{ steps.develocity-oidc.outputs.access-key }}
           gradle-version: 'release-candidate'
       - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@0d55463728b4cb8d76aab3399fcf261cf1fc4fe5 # v1.1.1
         with:
-          develocity-url: https://ge.solutions-team.gradle.com
-          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          develocity-edge-url: https://usw2-edge.solutions-team.gradle.com
+          develocity-auth: workload-identity
+          develocity-oidc-audience: https://ge.solutions-team.gradle.com
           cli-version: 1.5.0
       - name: Build and publish to Maven Local with Gradle
         run: gradle build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
@@ -61,17 +74,30 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
+      - name: Get GitHub OIDC token for setup-gradle
+        id: develocity-oidc
+        run: |
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "::warning::No GitHub OIDC token available (e.g. PR from a fork), Develocity will not be authenticated"
+            exit 0
+          fi
+          token=$(curl -sSfG -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            --data-urlencode "audience=https://ge.solutions-team.gradle.com" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          echo "::add-mask::$token"
+          echo "access-key=ge.solutions-team.gradle.com=$token" >> "$GITHUB_OUTPUT"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           cache-provider: external
-          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          develocity-access-key: ${{ steps.develocity-oidc.outputs.access-key }}
           gradle-version: '${{ matrix.gradle-version }}'
       - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@0d55463728b4cb8d76aab3399fcf261cf1fc4fe5 # v1.1.1
         with:
-          develocity-url: https://ge.solutions-team.gradle.com
-          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+          develocity-edge-url: https://usw2-edge.solutions-team.gradle.com
+          develocity-auth: workload-identity
+          develocity-oidc-audience: https://ge.solutions-team.gradle.com
           cli-version: 1.5.0
           image-names: ccud-gradle-nightly-${{ matrix.gradle-version }}
       - name: Download plugin to maven local
