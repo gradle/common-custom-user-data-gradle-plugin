@@ -27,7 +27,7 @@ jobs:
             --data-urlencode "audience=https://ge.solutions-team.gradle.com" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
           echo "::add-mask::$token"
-          echo "access-key=solutions.develocity.cloud=$token" >> "$GITHUB_OUTPUT"
+          echo "access-key=ge.solutions-team.gradle.com=$token" >> "$GITHUB_OUTPUT"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
@@ -97,7 +97,7 @@ jobs:
             --data-urlencode "audience=https://ge.solutions-team.gradle.com" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
           echo "::add-mask::$token"
-          echo "access-key=solutions.develocity.cloud=$token" >> "$GITHUB_OUTPUT"
+          echo "access-key=ge.solutions-team.gradle.com=$token" >> "$GITHUB_OUTPUT"
       - name: Set up Gradle ${{ matrix.gradle-version }}
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
@@ -137,7 +137,7 @@ jobs:
             apply plugin: 'com.gradle.common-custom-user-data-gradle-plugin'
               
             develocity {
-              server = 'https://solutions.develocity.cloud'
+              server = 'https://ge.solutions-team.gradle.com'
             }
           """ > ${{ runner.temp }}/"$output_file"
           
@@ -178,7 +178,7 @@ jobs:
             }
           
             develocity {
-              server = \"https://solutions.develocity.cloud\"
+              server = \"https://ge.solutions-team.gradle.com\"
             }
           
             rootProject.name = \"ccud-test-gradle-${{ matrix.gradle-version }}\"
