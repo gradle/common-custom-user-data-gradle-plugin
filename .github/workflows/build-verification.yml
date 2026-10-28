@@ -36,7 +36,7 @@ jobs:
       - name: Setup Develocity Artifact Cache
         uses: gradle/develocity-artifact-cache-github-action@0d55463728b4cb8d76aab3399fcf261cf1fc4fe5 # v1.1.1
         with:
-          develocity-edge-url: https://usw2-edsolutions.develocity.cloud
+          develocity-edge-url: https://usw2-edge.solutions-team.gradle.com
           develocity-auth: workload-identity
           develocity-oidc-audience: https://solutions.develocity.cloud
           cli-version: 1.5.0
@@ -108,7 +108,7 @@ jobs:
         if: matrix.universal-cache
         uses: gradle/develocity-artifact-cache-github-action@0d55463728b4cb8d76aab3399fcf261cf1fc4fe5 # v1.1.1
         with:
-          develocity-edge-url: https://usw2-edsolutions.develocity.cloud
+          develocity-edge-url: https://usw2-edge.solutions-team.gradle.com
           develocity-auth: workload-identity
           develocity-oidc-audience: https://solutions.develocity.cloud
           cli-version: 1.5.0
