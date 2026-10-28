@@ -45,7 +45,7 @@ jobs:
         with:
           develocity-edge-url: https://usw2-edge.solutions-team.gradle.com
           develocity-auth: workload-identity
-          develocity-oidc-audience: https://ge.solutions-team.gradle.com
+          develocity-oidc-audience: https://solutions.develocity.cloud
           cli-version: 1.5.0
       - name: Build and publish to Maven Local with Gradle
         run: gradle build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
@@ -97,7 +97,7 @@ jobs:
         with:
           develocity-edge-url: https://usw2-edge.solutions-team.gradle.com
           develocity-auth: workload-identity
-          develocity-oidc-audience: https://ge.solutions-team.gradle.com
+          develocity-oidc-audience: https://solutions.develocity.cloud
           cli-version: 1.5.0
           image-names: ccud-gradle-nightly-${{ matrix.gradle-version }}
       - name: Download plugin to maven local
