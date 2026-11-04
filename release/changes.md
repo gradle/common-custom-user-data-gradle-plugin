@@ -1,1 +1,2 @@
 - [FIX] Capture IDE, Android Studio agent and TeamCity metadata for builds that fail during configuration on Gradle 6.5 to 7.3
+- [NEW] Capture the `Suspended` tag and the `Suspended time (ms)` value for builds suspended for 10 seconds or more, for example while the machine slept (Gradle 6.1+)
