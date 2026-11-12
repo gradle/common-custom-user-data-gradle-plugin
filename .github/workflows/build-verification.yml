@@ -40,6 +40,10 @@ jobs:
           develocity-auth: workload-identity
           develocity-oidc-audience: https://solutions.develocity.cloud
           cli-version: 1.5.0
+          # Auto-generated image names omit the repository, so they collide across repositories on the same Edge
+          image-names: |
+            ${{ github.repository }}~${{ github.workflow }}~${{ github.job }}~${{ github.ref }}~${{ runner.os }}~${{ runner.arch }}
+            ${{ github.repository }}~${{ github.workflow }}~${{ github.job }}~refs/heads/${{ github.base_ref || github.event.repository.default_branch }}~${{ runner.os }}~${{ runner.arch }}
       - name: Build and publish to Maven Local with Gradle
         run: ./gradlew build publishToMavenLocal -x signPluginMavenPublication -i -Porg.gradle.java.installations.auto-download=false
         env:
@@ -112,7 +116,10 @@ jobs:
           develocity-auth: workload-identity
           develocity-oidc-audience: https://solutions.develocity.cloud
           cli-version: 1.5.0
-          image-names: ccud-gradle-${{ matrix.gradle-version }}
+          # Same scheme as the verification job, with the Gradle version added so each matrix leg has its own image
+          image-names: |
+            ${{ github.repository }}~${{ github.workflow }}~${{ github.job }}~${{ matrix.gradle-version }}~${{ github.ref }}~${{ runner.os }}~${{ runner.arch }}
+            ${{ github.repository }}~${{ github.workflow }}~${{ github.job }}~${{ matrix.gradle-version }}~refs/heads/${{ github.base_ref || github.event.repository.default_branch }}~${{ runner.os }}~${{ runner.arch }}
       - name: Download plugin to maven local
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
