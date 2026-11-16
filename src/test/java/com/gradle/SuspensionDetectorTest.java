@@ -2,6 +2,9 @@ package com.gradle;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,6 +64,51 @@ public class SuspensionDetectorTest {
         advanceAndSample(INTERVAL_MILLIS);
 
         assertEquals(0, detector.getSuspendedMillis());
+    }
+
+    @Test
+    public void countsSuspensionBeforeTheFirstSample() {
+        advanceAndSample(INTERVAL_MILLIS + 60_000);
+
+        assertEquals(60_000, detector.getSuspendedMillis());
+    }
+
+    @Test
+    public void countsWallClockSetForwardAsSuspended() {
+        advanceAndSample(INTERVAL_MILLIS);
+        advanceAndSample(3_600_000);
+
+        assertEquals(3_600_000 - INTERVAL_MILLIS, detector.getSuspendedMillis());
+    }
+
+    @Test
+    public void countsOneSuspensionOnceWhenSampledConcurrently() throws InterruptedException {
+        now.addAndGet(INTERVAL_MILLIS + 60_000);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            Thread thread = new Thread(() -> {
+                awaitQuietly(start);
+                detector.sample();
+            });
+            thread.start();
+            threads.add(thread);
+        }
+
+        start.countDown();
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        assertEquals(60_000, detector.getSuspendedMillis());
+    }
+
+    private static void awaitQuietly(CountDownLatch latch) {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void advanceAndSample(long millis) {
