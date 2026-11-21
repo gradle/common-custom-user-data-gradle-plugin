@@ -84,6 +84,29 @@ tasks.withType<Test>().configureEach {
     dependsOn(tasks.named("shadowJar"))
 }
 
+val functionalTest: SourceSet by sourceSets.creating
+
+dependencies {
+    functionalTest.implementationConfigurationName(sourceSets.main.get().output)
+}
+configurations[functionalTest.implementationConfigurationName].extendsFrom(configurations.testImplementation.get())
+configurations[functionalTest.runtimeOnlyConfigurationName].extendsFrom(configurations.testRuntimeOnly.get())
+
+gradlePlugin {
+    testSourceSets(sourceSets.test.get(), functionalTest)
+}
+
+val functionalTestTask = tasks.register<Test>("functionalTest") {
+    description = "Runs builds with the plugin applied and suspends them with SIGSTOP."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    testClassesDirs = functionalTest.output.classesDirs
+    classpath = functionalTest.runtimeClasspath
+}
+
+tasks.check {
+    dependsOn(functionalTestTask)
+}
+
 /*
 The rest of the build logic in this file is only required for publishing to the Gradle Plugin Portal.
 When using this project as a template for your own plugin to publish internally, you should delete all code following this comment.
