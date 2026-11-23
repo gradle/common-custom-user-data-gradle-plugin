@@ -31,7 +31,20 @@ import java.util.regex.Pattern;
 
 public final class Utils {
 
-    private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile("^(?:(?:https://|git://)(?:.+:.+@)?|(?:ssh)?.*?@)(.*?(?:github|gitlab).*?)(?:/|:[0-9]*?/|:)(.*?)(?:\\.git)?$");
+    // Matches git remote URLs (e.g. 'https://host/path.git', 'ssh://git@host:22/path.git', 'git@host:path.git') and
+    // captures (1) the host and (2) the repository path.
+    //
+    // Any user info ('user@', 'user:token@', 'token@') before the host is consumed by a *possessive* group, so the
+    // regex can never backtrack and treat part of the credentials as the host or the path. Without this, a remote
+    // like 'https://gitlab-ci-token:<token>@scm.acme.internal/group/project.git' was matched with host
+    // 'gitlab-ci-token' and path '<token>@scm.acme.internal/group/project', which leaked the token into the
+    // 'GitLab source' link. The host itself can never contain '@', '/' or ':'.
+    private static final Pattern GIT_REPO_URI_PATTERN = Pattern.compile(
+        "^(?:[A-Za-z][A-Za-z0-9+.-]*://)?" + // optional scheme
+            "(?:[^/]*@)?+" +                  // optional user info, possessive: never backtracked into
+            "([^/@:]*(?:github|gitlab)[^/@:]*)" + // (1) host
+            "(?:/|:[0-9]*/|:)" +              // separator: '/', ':<port>/' or scp-style ':'
+            "(.*?)(?:\\.git)?$");             // (2) repository path
 
     static Optional<String> sysPropertyOrEnvVariable(String sysPropertyName, String envVarName, ProviderFactory providers) {
         Optional<String> sysProperty = sysProperty(sysPropertyName, providers);
@@ -246,6 +259,9 @@ public final class Utils {
      * returned.
      * <p>
      * The scheme can be any of <code>git://</code>, <code>https://</code>, or <code>ssh</code>.
+     * <p>
+     * Credentials embedded in the git URL are never part of the returned {@link URI}. If the host cannot be identified
+     * as a GitHub or GitLab host without looking at the credentials, {@link Optional#empty()} is returned.
      */
     static Optional<URI> toWebRepoUri(String gitRepoUri) {
         Matcher matcher = GIT_REPO_URI_PATTERN.matcher(gitRepoUri);
