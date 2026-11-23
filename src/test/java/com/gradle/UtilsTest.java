@@ -109,6 +109,10 @@ public class UtilsTest {
                     "https://github-bot:SECRET@scm.acme.internal/acme-inc/my-project.git",
                     null),
                 Arguments.arguments(
+                    "Unencoded '/' in the password (not usable by git, but must not leak either)",
+                    "https://gitlab-ci-token:SEC/RET@scm.acme.internal/acme-inc/my-project.git",
+                    null),
+                Arguments.arguments(
                     "Plain HTTP with user and password",
                     "http://user:SECRET@gitlab.acme.com/acme-inc/my-project.git",
                     "https://gitlab.acme.com/acme-inc/my-project")

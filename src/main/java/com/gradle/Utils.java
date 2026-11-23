@@ -266,6 +266,11 @@ public final class Utils {
     static Optional<URI> toWebRepoUri(String gitRepoUri) {
         Matcher matcher = GIT_REPO_URI_PATTERN.matcher(gitRepoUri);
         if (matcher.matches()) {
+            // GitHub and GitLab repository paths never contain '@'. If the path does, the user info was not consumed as
+            // such (e.g. a password with an unencoded '/'), so the captured host and path may be parts of the credentials.
+            if (matcher.group(2).contains("@")) {
+                return Optional.empty();
+            }
             String scheme = "https";
             String host = matcher.group(1);
             String path = matcher.group(2).startsWith("/") ? matcher.group(2) : "/" + matcher.group(2);
