@@ -1,1 +1,2 @@
-- [FIX] Capture IDE, Android Studio agent and TeamCity metadata for builds that fail during configuration on Gradle 6.5 to 7.3
+- [FIX] IDE, Android Studio agent and TeamCity metadata is not captured for builds that fail during configuration on Gradle 6.5 to 7.3
+- [FIX] `GitHub source` and `GitLab source` links can expose credentials embedded in the Git remote URL
