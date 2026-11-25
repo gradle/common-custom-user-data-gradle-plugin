@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.gradle.Utils.isGradle4OrNewer;
 import static com.gradle.Utils.isGradle5OrNewer;
+import static com.gradle.Utils.isGradle61OrNewer;
 import static com.gradle.Utils.isGradle6OrNewer;
 
 public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
@@ -71,6 +72,10 @@ public class CommonCustomUserDataGradlePlugin implements Plugin<Object> {
         customDevelocityConfig.configureBuildScanPublishing(buildScan);
         CustomBuildScanEnhancements buildScanEnhancements = new CustomBuildScanEnhancements(develocity, providers, settings.getGradle(), settings.getRootDir());
         buildScanEnhancements.apply();
+        // Nested builds would restart or clear the sampler that SuspensionDetection shares through a static field
+        if (isGradle61OrNewer() && settings.getGradle().getParent() == null) {
+            SuspensionDetection.apply(providers, buildScan);
+        }
 
         BuildCacheConfiguration buildCache = settings.getBuildCache();
         BuildCacheConfigurationAdapter buildCacheAdapter = new GradleBuildCacheConfigurationAdapter(buildCache);
